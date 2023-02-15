@@ -38,10 +38,12 @@
   "suggests": {
     "another-mod": "*"
   },
-
   "custom": {
-		"loom:injected_interfaces": {
-			"net/minecraft/block/RedstoneWireBlock": ["com/calvinmt/powerstones/RedstoneWireBlockInterface"]
-		}
-	}
+    "loom:injected_interfaces": {
+      "net/minecraft/block/AbstractBlock": ["com/calvinmt/powerstones/AbstractBlockInterface"],
+      "net/minecraft/block/AbstractBlock$AbstractBlockState": ["com/calvinmt/powerstones/AbstractBlockStateInterface"],
+      "net/minecraft/world/World": ["com/calvinmt/powerstones/WorldInterface"],
+      "net/minecraft/world/WorldView": ["com/calvinmt/powerstones/WorldViewInterface"]
+    }
+  }
 }
