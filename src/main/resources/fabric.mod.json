@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "powerstones",
+  "version": "${version}",
+
+  "name": "PowerStones",
+  "description": "This is an example description! Tell everyone what your mod is about!",
+  "authors": [
+    "CalvinMT"
+  ],
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": "https://github.com/CalvinMT/PowerStones"
+  },
+
+  "license": "CC0-1.0",
+  "icon": "assets/powerstones/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.calvinmt.powerstones.PowerStones"
+    ],
+    "client": [
+      "com.calvinmt.powerstones.PowerStones"
+    ]
+  },
+  "mixins": [
+    "powerstones.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.14.11",
+    "fabric-api": "*",
+    "minecraft": "~1.19.3",
+    "java": ">=17"
+  },
+  "suggests": {
+    "another-mod": "*"
+  },
+
+  "custom": {
+		"loom:injected_interfaces": {
+			"net/minecraft/block/RedstoneWireBlock": ["com/calvinmt/powerstones/RedstoneWireBlockInterface"]
+		}
+	}
+}

@@ -1,0 +1,17 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "pattern": [
+        "YYY",
+        "YYY",
+        "YYY"
+    ],
+    "key": {
+        "Y": {
+            "item": "powerstones:yellowstone"
+        }
+    },
+    "result": {
+        "item": "powerstones:yellowstone_block",
+        "count": 1
+    }
+}

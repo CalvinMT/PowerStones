@@ -1,0 +1,8 @@
+{
+    "block.powerstones.bluestone_wire" : "Bluestone Dust",
+    "block.powerstones.greenstone_wire" : "Greenstone Dust",
+    "block.powerstones.yellowstone_wire" : "Yellowstone Dust",
+    "block.powerstones.bluestone_block" : "Block of Bluestone",
+    "block.powerstones.greenstone_block" : "Block of Greenstone",
+    "block.powerstones.yellowstone_block" : "Block of Yellowstone"
+}

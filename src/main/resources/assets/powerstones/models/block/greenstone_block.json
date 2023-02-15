@@ -1,0 +1,6 @@
+{
+    "parent": "block/cube_all",
+    "textures": {
+        "all": "powerstones:block/greenstone_block"
+    }
+}
