@@ -4,7 +4,7 @@
   "version": "${version}",
 
   "name": "PowerStones",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "description": "Multiple overlappable coloured redstones.",
   "authors": [
     "CalvinMT"
   ],
@@ -18,10 +18,13 @@
 
   "environment": "*",
   "entrypoints": {
-    "main": [
-      "com.calvinmt.powerstones.PowerStones"
+    "fabric-datagen": [
+      "com.calvinmt.powerstones.generation.DataGeneration"
     ],
-    "client": [
+    "preLaunch": [
+      "com.llamalad7.mixinextras.MixinExtrasBootstrap::init"
+    ],
+    "main": [
       "com.calvinmt.powerstones.PowerStones"
     ]
   },
@@ -41,7 +44,7 @@
   "custom": {
     "loom:injected_interfaces": {
       "net/minecraft/block/AbstractBlock": ["com/calvinmt/powerstones/AbstractBlockInterface"],
-      "net/minecraft/block/AbstractBlock$AbstractBlockState": ["com/calvinmt/powerstones/AbstractBlockStateInterface"],
+      "net/minecraft/block/AbstractBlock\u0024AbstractBlockState": ["com/calvinmt/powerstones/AbstractBlockStateInterface"],
       "net/minecraft/world/World": ["com/calvinmt/powerstones/WorldInterface"],
       "net/minecraft/world/WorldView": ["com/calvinmt/powerstones/WorldViewInterface"]
     }

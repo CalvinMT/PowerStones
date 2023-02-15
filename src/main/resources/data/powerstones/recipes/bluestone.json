@@ -1,18 +1,16 @@
 {
-    "type": "minecraft:crafting_shaped",
-    "pattern": [
-        "RL"
-    ],
-    "key": {
-        "R": {
+    "type": "minecraft:crafting_shapeless",
+    "category": "redstone",
+    "ingredients": [
+        {
             "item": "minecraft:redstone"
         },
-        "L": {
+        {
             "item": "minecraft:lapis_lazuli"
         }
-    },
+    ],
     "result": {
-        "item": "powerstones:bluestone",
-        "count": 2
+        "count": 2,
+        "item": "powerstones:bluestone"
     }
 }

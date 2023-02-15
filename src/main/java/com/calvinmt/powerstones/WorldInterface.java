@@ -8,17 +8,11 @@ public interface WorldInterface {
     default boolean isEmittingPower(BlockPos pos, Direction direction) { return false; }
 
     default boolean isReceivingPower(BlockPos pos) { return false; }
+    
+    default int getMaxReceivedPower(BlockPos pos) { return 0; }
 
     default boolean isReceivingBluestonePower(BlockPos pos) { return false; }
-
-    default boolean isReceivingGreenstonePower(BlockPos pos) { return false; }
-
-    default boolean isReceivingYellowstonePower(BlockPos pos) { return false; }
     
     default int getReceivedBluestonePower(BlockPos pos) { return 0; }
-    
-    default int getReceivedGreenstonePower(BlockPos pos) { return 0; }
-    
-    default int getReceivedYellowstonePower(BlockPos pos) { return 0; }
 
 }

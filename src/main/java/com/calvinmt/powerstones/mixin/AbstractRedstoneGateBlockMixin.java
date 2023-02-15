@@ -22,9 +22,14 @@ public abstract class AbstractRedstoneGateBlockMixin {
         return 1;
     }
 
+    @ModifyConstant(method = "getPower(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)I", constant = @Constant(intValue = 15))
+    private int getPowerMaxPower(int oldMaxPower) {
+        return 16;
+    }
+
     @Redirect(method = "getPower(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)I", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;getEmittedRedstonePower(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;)I"))
     private int getPowerGetEmittingPower(World world, BlockPos pos, Direction direction) {
-        return ((WorldInterface) world).isEmittingPower(pos, direction) ? 2 : 1;
+        return ((WorldInterface) world).isEmittingPower(pos, direction) ? ((WorldInterface) world).getMaxReceivedPower(pos) : 1;
     }
 
     @ModifyArg(method = "getPower(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)I", at = @At(value = "INVOKE", target = "Ljava/lang/Math;max(II)I"), index = 1)
@@ -34,12 +39,12 @@ public abstract class AbstractRedstoneGateBlockMixin {
 
     @ModifyConstant(method = "getInputLevel(Lnet/minecraft/world/WorldView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;)I", constant = @Constant(intValue = 15))
     private int getInputLevelMaxPower(int oldMaxPower) {
-        return 2;
+        return 16;
     }
 
     @ModifyConstant(method = "getOutputLevel(Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)I", constant = @Constant(intValue = 15))
     private int getOutputLevelMaxPower(int oldMaxPower) {
-        return 2;
+        return 16;
     }
 
 }

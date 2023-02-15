@@ -17,7 +17,7 @@ public class PropertiesMixin {
         )
     )
     private static int powerMax(int oldMax) {
-        return 2;
+        return 16;
     }
 
 }

@@ -3,8 +3,7 @@
     "minVersion": "0.8",
     "package": "com.calvinmt.powerstones.mixin",
     "compatibilityLevel": "JAVA_17",
-    "mixins": [],
-    "client": [
+    "mixins": [
       "AbstractBlockMixin",
       "AbstractBlockStateMixin",
       "AbstractPressurePlateBlockMixin",
@@ -12,6 +11,8 @@
       "AbstractRedstoneGateBlockMixin",
       "BellBlockMixin",
       "BigDripleafBlockMixin",
+      "BlockColorsMixin",
+      "ClientPlayerInteractionManagerMixin",
       "CommandBlockMixin",
       "DaylightDetectorBlockMixin",
       "DispenserBlockMixin",
@@ -29,6 +30,7 @@
       "RedstoneLampBlockMixin",
       "RedstoneTorchBlockMixin",
       "RedstoneWireBlockMixin",
+      "ServerPlayerInteractionManagerMixin",
       "SculkSensorBlockMixin",
       "SculkSensorBlockEntityMixin",
       "StructureBlockMixin",
@@ -39,8 +41,8 @@
       "TripwireHookBlockMixin",
       "WeightedPressurePlateBlockMixin",
       "WorldMixin",
-      "WorldViewMixin"
-    ],
+      "WorldViewMixin"],
+    "client": [],
     "server": [],
     "injectors": {
       "defaultRequire": 1

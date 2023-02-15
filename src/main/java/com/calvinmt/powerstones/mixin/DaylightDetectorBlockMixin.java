@@ -20,7 +20,7 @@ public class DaylightDetectorBlockMixin {
 
     @ModifyConstant(method = "updateState(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)V", constant = @Constant(intValue = 15, ordinal = 1))
     private static int updateStateMaxPower(int oldMaxPower) {
-        return 2;
+        return 16;
     }
 
 }

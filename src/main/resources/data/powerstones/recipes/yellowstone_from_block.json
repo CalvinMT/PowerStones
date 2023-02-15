@@ -1,15 +1,13 @@
 {
-    "type": "minecraft:crafting_shaped",
-    "pattern": [
-        "Y"
-    ],
-    "key": {
-        "Y": {
+    "type": "minecraft:crafting_shapeless",
+    "category": "redstone",
+    "ingredients": [
+        {
             "item": "powerstones:yellowstone_block"
         }
-    },
+    ],
     "result": {
-        "item": "powerstones:yellowstone",
-        "count": 9
+        "count": 9,
+        "item": "powerstones:yellowstone"
     }
 }

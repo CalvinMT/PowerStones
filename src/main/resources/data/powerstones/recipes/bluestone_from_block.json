@@ -1,15 +1,13 @@
 {
-    "type": "minecraft:crafting_shaped",
-    "pattern": [
-        "B"
-    ],
-    "key": {
-        "B": {
+    "type": "minecraft:crafting_shapeless",
+    "category": "redstone",
+    "ingredients": [
+        {
             "item": "powerstones:bluestone_block"
         }
-    },
+    ],
     "result": {
-        "item": "powerstones:bluestone",
-        "count": 9
+        "count": 9,
+        "item": "powerstones:bluestone"
     }
 }

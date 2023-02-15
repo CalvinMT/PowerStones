@@ -26,28 +26,8 @@ public abstract class AbstractBlockStateMixin implements AbstractBlockStateInter
     }
 
     @Override
-    public int getWeakGreenstonePower(BlockView world, BlockPos pos, Direction direction) {
-        return ((AbstractBlockInterface) this.getBlock()).getWeakGreenstonePower(this.asBlockState(), world, pos, direction);
-    }
-
-    @Override
-    public int getWeakYellowstonePower(BlockView world, BlockPos pos, Direction direction) {
-        return ((AbstractBlockInterface) this.getBlock()).getWeakYellowstonePower(this.asBlockState(), world, pos, direction);
-    }
-
-    @Override
     public int getStrongBluestonePower(BlockView world, BlockPos pos, Direction direction) {
         return ((AbstractBlockInterface) this.getBlock()).getStrongBluestonePower(this.asBlockState(), world, pos, direction);
-    }
-
-    @Override
-    public int getStrongGreenstonePower(BlockView world, BlockPos pos, Direction direction) {
-        return ((AbstractBlockInterface) this.getBlock()).getStrongGreenstonePower(this.asBlockState(), world, pos, direction);
-    }
-
-    @Override
-    public int getStrongYellowstonePower(BlockView world, BlockPos pos, Direction direction) {
-        return ((AbstractBlockInterface) this.getBlock()).getStrongYellowstonePower(this.asBlockState(), world, pos, direction);
     }
 
 }

@@ -1,15 +1,13 @@
 {
-    "type": "minecraft:crafting_shaped",
-    "pattern": [
-        "G"
-    ],
-    "key": {
-        "G": {
+    "type": "minecraft:crafting_shapeless",
+    "category": "redstone",
+    "ingredients": [
+        {
             "item": "powerstones:greenstone_block"
         }
-    },
+    ],
     "result": {
-        "item": "powerstones:greenstone",
-        "count": 9
+        "count": 9,
+        "item": "powerstones:greenstone"
     }
 }

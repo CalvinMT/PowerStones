@@ -16,7 +16,7 @@ public class RedstoneTorchBlockMixin {
 
     @ModifyConstant(method = "getWeakRedstonePower(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;)I", constant = @Constant(intValue = 15))
     private int getWeakRedstonePowerMaxPower(int oldMaxPower) {
-        return 2;
+        return 16;
     }
 
 }

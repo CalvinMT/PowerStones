@@ -16,7 +16,7 @@ public class PressurePlateBlockMixin {
 
     @ModifyConstant(method = "getRedstoneOutput(Lnet/minecraft/block/BlockState;)I", constant = @Constant(intValue = 15))
     private int getRedstoneOutputMaxPower(int oldMaxPower) {
-        return 2;
+        return 16;
     }
 
 }

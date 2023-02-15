@@ -1,18 +1,16 @@
 {
-    "type": "minecraft:crafting_shaped",
-    "pattern": [
-        "RE"
-    ],
-    "key": {
-        "R": {
+    "type": "minecraft:crafting_shapeless",
+    "category": "redstone",
+    "ingredients": [
+        {
             "item": "minecraft:redstone"
         },
-        "E": {
+        {
             "item": "minecraft:emerald"
         }
-    },
+    ],
     "result": {
-        "item": "powerstones:greenstone",
-        "count": 2
+        "count": 2,
+        "item": "powerstones:greenstone"
     }
 }

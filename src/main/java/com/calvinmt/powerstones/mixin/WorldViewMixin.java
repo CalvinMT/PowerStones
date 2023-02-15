@@ -18,14 +18,4 @@ public interface WorldViewMixin extends BlockRenderView, WorldViewInterface {
         return ((AbstractBlockStateInterface) this.getBlockState(pos)).getStrongBluestonePower(this, pos, direction);
     }
 
-    @Override
-    default public int getStrongGreenstonePower(BlockPos pos, Direction direction) {
-        return ((AbstractBlockStateInterface) this.getBlockState(pos)).getStrongBluestonePower(this, pos, direction);
-    }
-
-    @Override
-    default public int getStrongYellowstonePower(BlockPos pos, Direction direction) {
-        return ((AbstractBlockStateInterface) this.getBlockState(pos)).getStrongBluestonePower(this, pos, direction);
-    }
-
 }

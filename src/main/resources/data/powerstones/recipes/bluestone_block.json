@@ -1,17 +1,17 @@
 {
     "type": "minecraft:crafting_shaped",
-    "pattern": [
-        "BBB",
-        "BBB",
-        "BBB"
-    ],
+    "category": "redstone",
     "key": {
-        "B": {
+        "#": {
             "item": "powerstones:bluestone"
         }
     },
+    "pattern": [
+        "###",
+        "###",
+        "###"
+    ],
     "result": {
-        "item": "powerstones:bluestone_block",
-        "count": 1
+        "item": "powerstones:bluestone_block"
     }
 }
