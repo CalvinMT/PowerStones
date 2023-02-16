@@ -13,7 +13,7 @@ public abstract class PowerstoneWireBlock {
         colors[0] = new Vec3d(0, 0, 0);
         for (int i = 0; i <= 15; i++) {
             float f = (float)i / 15.0f;
-            float a = f * 0.6f + (f > 0.0f ? 0.4f : 0.3f); // 0.0f - 1.0f
+            float a = f * 0.6f + (f > 0.0f ? 0.4f : 0.3f); // 0.3f - 1.0f
             float b = MathHelper.clamp(f * f * 0.35f + 0.15f, 0.0f, 1.0f); // 0.15f - 0.5f
             float c = MathHelper.clamp(f * f * 0.4f + 0.2f, 0.0f, 1.0f); // 0.2f - 0.6f
             colors[i] = new Vec3d(b, c, a);
