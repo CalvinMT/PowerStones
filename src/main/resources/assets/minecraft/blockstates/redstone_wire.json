@@ -1,31 +1,35 @@
 {
     "multipart": [
         {   "when": { "OR": [
-            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "none", "east": "none", "south": "none", "west": "none" },
-            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "side|up", "east": "side|up" },
-            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "side|up", "west": "side|up" },
-            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "south": "side|up", "east": "side|up" },
-            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "south": "side|up", "west": "side|up" }
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "0", "north": "none", "east": "none", "south": "none", "west": "none" },
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "0", "north": "side|up", "east": "side|up" },
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "0", "north": "side|up", "west": "side|up" },
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "0", "south": "side|up", "east": "side|up" },
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "0", "south": "side|up", "west": "side|up" }
         ]},
             "apply": { "model": "block/redstone_dust_dot" }
         },
         {   "when": { "OR": [
-            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "side|up" }
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "side|up", "east": "none", "south": "side|up", "west": "none" },
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "0", "north": "side|up" }
         ]},
             "apply": { "model": "block/redstone_dust_side0" }
         },
         {   "when": { "OR": [
-            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "south": "side|up" }
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "side|up", "east": "none", "south": "side|up", "west": "none" },
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "0", "south": "side|up" }
         ]},
             "apply": { "model": "block/redstone_dust_side_alt0" }
         },
         {   "when": { "OR": [
-            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "east": "side|up" }
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "none", "east": "side|up", "south": "none", "west": "side|up" },
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "0", "east": "side|up" }
         ]},
             "apply": { "model": "block/redstone_dust_side_alt1", "y": 270 }
         },
         {   "when": { "OR": [
-            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "west": "side|up" }
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "none", "east": "side|up", "south": "none", "west": "side|up" },
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "0", "west": "side|up" }
         ]},
             "apply": { "model": "block/redstone_dust_side1", "y": 270 }
         },
@@ -42,31 +46,35 @@
             "apply": { "model": "block/redstone_dust_up", "y": 270 }
         },
         {   "when": { "OR": [
-            { "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "none", "east": "none", "south": "none", "west": "none" },
-            { "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "side|up", "east": "side|up" },
-            { "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "side|up", "west": "side|up" },
-            { "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "south": "side|up", "east": "side|up" },
-            { "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "south": "side|up", "west": "side|up" }
+            { "power": "0", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "none", "east": "none", "south": "none", "west": "none" },
+            { "power": "0", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "side|up", "east": "side|up" },
+            { "power": "0", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "side|up", "west": "side|up" },
+            { "power": "0", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "south": "side|up", "east": "side|up" },
+            { "power": "0", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "south": "side|up", "west": "side|up" }
         ]},
             "apply": { "model": "powerstones:block/bluestone_dust_dot" }
         },
         {   "when": { "OR": [
-            { "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "side|up" }
+            { "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "side|up", "east": "none", "south": "side|up", "west": "none" },
+            { "power": "0", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "side|up" }
         ]},
             "apply": { "model": "powerstones:block/bluestone_dust_side0" }
         },
         {   "when": { "OR": [
-            { "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "south": "side|up" }
+            { "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "side|up", "east": "none", "south": "side|up", "west": "none" },
+            { "power": "0", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "south": "side|up" }
         ]},
             "apply": { "model": "powerstones:block/bluestone_dust_side_alt0" }
         },
         {   "when": { "OR": [
-            { "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "east": "side|up" }
+            { "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "none", "east": "side|up", "south": "none", "west": "side|up" },
+            { "power": "0", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "east": "side|up" }
         ]},
             "apply": { "model": "powerstones:block/bluestone_dust_side_alt1", "y": 270 }
         },
         {   "when": { "OR": [
-            { "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "west": "side|up" }
+            { "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "none", "east": "side|up", "south": "none", "west": "side|up" },
+            { "power": "0", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "west": "side|up" }
         ]},
             "apply": { "model": "powerstones:block/bluestone_dust_side1", "y": 270 }
         },
@@ -81,6 +89,72 @@
         },
         {   "when": { "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "west": "up" },
             "apply": { "model": "powerstones:block/bluestone_dust_up", "y": 270 }
+        },
+        {   "when": { "OR": [
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "none", "east": "none", "south": "none", "west": "none" },
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "side|up", "east": "side|up" },
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "side|up", "west": "side|up" },
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "south": "side|up", "east": "side|up" },
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "south": "side|up", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/redstone_dust_dot_duo" }
+        },
+        {   "when": { "OR": [
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "side|up", "east": "side|up" },
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "side|up", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/redstone_dust_side0_duo" }
+        },
+        {   "when": { "OR": [
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "south": "side|up", "east": "side|up" },
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "south": "side|up", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/redstone_dust_side_alt0_duo" }
+        },
+        {   "when": { "OR": [
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "side|up", "east": "side|up" },
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "south": "side|up", "east": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/redstone_dust_side_alt1_duo", "y": 270 }
+        },
+        {   "when": { "OR": [
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "side|up", "west": "side|up" },
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "south": "side|up", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/redstone_dust_side1_duo", "y": 270 }
+        },
+        {   "when": { "OR": [
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "none", "east": "none", "south": "none", "west": "none" },
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "side|up", "east": "side|up" },
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "side|up", "west": "side|up" },
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "south": "side|up", "east": "side|up" },
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "south": "side|up", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/bluestone_dust_dot_duo" }
+        },
+        {   "when": { "OR": [
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "side|up", "east": "side|up" },
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "side|up", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/bluestone_dust_side0_duo" }
+        },
+        {   "when": { "OR": [
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "south": "side|up", "east": "side|up" },
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "south": "side|up", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/bluestone_dust_side_alt0_duo" }
+        },
+        {   "when": { "OR": [
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "side|up", "east": "side|up" },
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "south": "side|up", "east": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/bluestone_dust_side_alt1_duo", "y": 270 }
+        },
+        {   "when": { "OR": [
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "north": "side|up", "west": "side|up" },
+            { "power": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "power_blue": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16", "south": "side|up", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/bluestone_dust_side1_duo", "y": 270 }
         }
     ]
 }
