@@ -51,15 +51,15 @@ public abstract class WorldMixin implements WorldInterface {
     }
 
     public boolean isEmittingPower(BlockPos pos, Direction direction) {
-        return this.getEmittedRedstonePower(pos, direction) > 1 || this.getEmittedBluestonePower(pos, direction) > 1;
+        return this.getEmittedRedstonePower(pos, direction) > 1 || this.getEmittedBluestonePower(pos, direction) > 1 || this.getEmittedGreenstonePower(pos, direction) > 1 || this.getEmittedYellowstonePower(pos, direction) > 1;
     }
     
     public boolean isReceivingPower(BlockPos pos) {
-        return this.isReceivingRedstonePower(pos) || this.isReceivingBluestonePower(pos);
+        return this.isReceivingRedstonePower(pos) || this.isReceivingBluestonePower(pos) || this.isReceivingGreenstonePower(pos) || this.isReceivingYellowstonePower(pos);
     }
     
     public int getMaxReceivedPower(BlockPos pos) {
-        return Math.max(this.getReceivedRedstonePower(pos), this.getReceivedBluestonePower(pos));
+        return Math.max(this.getReceivedRedstonePower(pos), Math.max(this.getReceivedBluestonePower(pos), Math.max(this.getReceivedGreenstonePower(pos), this.getReceivedYellowstonePower(pos))));
     }
 
     public int getReceivedStrongBluestonePower(BlockPos pos) {
