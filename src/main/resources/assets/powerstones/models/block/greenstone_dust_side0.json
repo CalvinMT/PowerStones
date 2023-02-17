@@ -1,0 +1,6 @@
+{
+    "parent": "powerstones:block/greenstone_dust_side",
+    "textures": {
+        "line": "powerstones:block/greenstone_dust_line0"
+    }
+}
