@@ -38,9 +38,12 @@ import net.minecraft.block.RepeaterBlock;
 import net.minecraft.block.enums.WireConnection;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.IntProperty;
@@ -391,20 +394,25 @@ public abstract class RedstoneWireBlockMixin extends Block {
         world.setBlockState(pos, (BlockState)(state.with(POWER, state.get(POWER))).with(PowerstoneWireBlock.POWER_BLUE, state.get(PowerstoneWireBlock.POWER_BLUE)),  Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
     }
 
+    private void placeOnUse(BlockState state, World world, BlockPos pos, PlayerEntity player, IntProperty powerProperty) {
+        BlockSoundGroup blockSoundGroup = state.getSoundGroup();
+        world.playSound(player, pos, state.getSoundGroup().getPlaceSound(), SoundCategory.BLOCKS, (blockSoundGroup.getVolume() + 1.0f) / 2.0f, blockSoundGroup.getPitch() * 0.8f);
+        if (player == null || !player.getAbilities().creativeMode) {
+            player.getMainHandStack().decrement(1);
+        }
+        world.setBlockState(pos, state.with(powerProperty, 1),  Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
+        state = world.getBlockState(pos);
+        this.updateAll(state, world, pos);
+    }
+
     @Inject(method = "onUse(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;Lnet/minecraft/util/hit/BlockHitResult;)Lnet/minecraft/util/ActionResult;", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/RedstoneWireBlock;isFullyConnected(Lnet/minecraft/block/BlockState;)Z", ordinal = 0), cancellable = true)
     public void onUseAddColor(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit, CallbackInfoReturnable<ActionResult> callbackInfo) {
         if (player.getMainHandStack().isOf(Items.REDSTONE) && state.get(POWER) == 0) {
-            player.getMainHandStack().decrement(1);
-            world.setBlockState(pos, state.with(POWER, 1),  Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
-            state = world.getBlockState(pos);
-            this.updateAll(state, world, pos);
+            this.placeOnUse(state, world, pos, player, POWER);
             callbackInfo.setReturnValue(ActionResult.SUCCESS);
         }
         else if (player.getMainHandStack().isOf(PowerStones.BLUESTONE) && state.get(PowerstoneWireBlock.POWER_BLUE) == 0) {
-            player.getMainHandStack().decrement(1);
-            world.setBlockState(pos, state.with(PowerstoneWireBlock.POWER_BLUE, 1),  Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
-            state = world.getBlockState(pos);
-            this.updateAll(state, world, pos);
+            this.placeOnUse(state, world, pos, player, PowerstoneWireBlock.POWER_BLUE);
             callbackInfo.setReturnValue(ActionResult.SUCCESS);
         }
     }
@@ -429,19 +437,35 @@ public abstract class RedstoneWireBlockMixin extends Block {
         builder.add(PowerstoneWireBlock.POWER_BLUE);
     }
 
+    private boolean hasMoreThanOnePowerstone(BlockState state) {
+        int i = 0;
+        if (state.get(POWER) > 0) {
+            i++;
+        }
+        if (state.get(PowerstoneWireBlock.POWER_BLUE) > 0) {
+            i++;
+        }
+        return i > 1;
+    }
+
+    private void breakSingle(BlockState state, World world, BlockPos pos, PlayerEntity player, IntProperty powerProperty, Item item) {
+        if (this.hasMoreThanOnePowerstone(state)) {
+            BlockSoundGroup blockSoundGroup = state.getSoundGroup();
+            world.playSound(player, pos, state.getSoundGroup().getPlaceSound(), SoundCategory.BLOCKS, (blockSoundGroup.getVolume() + 1.0f) / 2.0f, blockSoundGroup.getPitch() * 0.8f);
+        }
+        world.setBlockState(pos, state.with(powerProperty, 0),  Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
+        world.spawnEntity(new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(item)));
+        state = world.getBlockState(pos);
+        this.updateAll(state, world, pos);
+    }
+
     @Override
     public void onBlockBreakStart(BlockState state, World world, BlockPos pos, PlayerEntity player) {
         if (player.getMainHandStack().isOf(Items.REDSTONE) && state.get(POWER) > 0) {
-            world.setBlockState(pos, state.with(POWER, 0),  Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
-            world.spawnEntity(new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(Items.REDSTONE)));
-            state = world.getBlockState(pos);
-            this.updateAll(state, world, pos);
+            this.breakSingle(state, world, pos, player, POWER, Items.REDSTONE);
         }
         else if (player.getMainHandStack().isOf(PowerStones.BLUESTONE) && state.get(PowerstoneWireBlock.POWER_BLUE) > 0) {
-            world.setBlockState(pos, state.with(PowerstoneWireBlock.POWER_BLUE, 0),  Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
-            world.spawnEntity(new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(PowerStones.BLUESTONE)));
-            state = world.getBlockState(pos);
-            this.updateAll(state, world, pos);
+            this.breakSingle(state, world, pos, player, PowerstoneWireBlock.POWER_BLUE, PowerStones.BLUESTONE);
         }
     }
 
