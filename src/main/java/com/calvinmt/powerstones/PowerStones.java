@@ -21,6 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.calvinmt.powerstones.block.BluestoneBlock;
+import com.calvinmt.powerstones.block.GreenstoneBlock;
+import com.calvinmt.powerstones.block.YellowstoneBlock;
 
 public class PowerStones implements ModInitializer  {
 
@@ -30,6 +32,8 @@ public class PowerStones implements ModInitializer  {
 
 	public static final Item BLUESTONE = (Item)new AliasedBlockItem(Blocks.REDSTONE_WIRE, new FabricItemSettings());
 	public static final Block BLUESTONE_BLOCK = new BluestoneBlock(FabricBlockSettings.of(Material.METAL, MapColor.LAPIS_BLUE).requiresTool().strength(5.0f, 6.0f).sounds(BlockSoundGroup.METAL));
+	public static final Block GREENSTONE_BLOCK = new GreenstoneBlock(FabricBlockSettings.of(Material.METAL, MapColor.EMERALD_GREEN).requiresTool().strength(5.0f, 6.0f).sounds(BlockSoundGroup.METAL));
+	public static final Block YELLOWSTONE_BLOCK = new YellowstoneBlock(FabricBlockSettings.of(Material.METAL, MapColor.PALE_YELLOW).requiresTool().strength(5.0f, 6.0f).sounds(BlockSoundGroup.METAL));
 
 	@Override
 	public void onInitialize() {
@@ -40,14 +44,24 @@ public class PowerStones implements ModInitializer  {
 
 		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "bluestone"), BLUESTONE);
 		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "bluestone_block"), new BlockItem(BLUESTONE_BLOCK, new FabricItemSettings()));
+		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "greenstone_block"), new BlockItem(GREENSTONE_BLOCK, new FabricItemSettings()));
+		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "yellowstone_block"), new BlockItem(YELLOWSTONE_BLOCK, new FabricItemSettings()));
 
 		Registry.register(Registries.BLOCK, new Identifier(NAMESPACE, "bluestone_block"), BLUESTONE_BLOCK);
+		Registry.register(Registries.BLOCK, new Identifier(NAMESPACE, "greenstone_block"), GREENSTONE_BLOCK);
+		Registry.register(Registries.BLOCK, new Identifier(NAMESPACE, "yellowstone_block"), YELLOWSTONE_BLOCK);
 
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(content -> {
 			content.addAfter(Items.REDSTONE, BLUESTONE);
 		});
 		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(content -> {
 			content.addAfter(Items.REDSTONE_BLOCK, BLUESTONE_BLOCK);
+		});
+		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(content -> {
+			content.addAfter(BLUESTONE_BLOCK, GREENSTONE_BLOCK);
+		});
+		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(content -> {
+			content.addAfter(GREENSTONE_BLOCK, YELLOWSTONE_BLOCK);
 		});
 
         LootTableModifier.modifyLootTables();

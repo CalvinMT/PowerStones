@@ -7,9 +7,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockView;
 
-public class BluestoneBlock
+public class YellowstoneBlock
 extends Block {
-    public BluestoneBlock(AbstractBlock.Settings settings) {
+    public YellowstoneBlock(AbstractBlock.Settings settings) {
         super(settings);
     }
 
@@ -19,7 +19,7 @@ extends Block {
     }
 
     @Override
-    public int getWeakBluestonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
+    public int getWeakYellowstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
         return 16;
     }
 
