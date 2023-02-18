@@ -27,8 +27,14 @@ public class BlockColorsMixin {
 		if (state.get(RedstoneWireBlock.POWER) > 0 && tintIndex == 0) {
 			callbackInfo.setReturnValue(RedstoneWireBlock.getWireColor(state.get(RedstoneWireBlock.POWER)));
 		}
-		else if (state.get(PowerstoneWireBlock.POWER_BLUE) > 0 && tintIndex == 1) {
-			callbackInfo.setReturnValue(PowerstoneWireBlock.getWireColorBlue(state.get(PowerstoneWireBlock.POWER_BLUE)));
+		else if (state.get(PowerstoneWireBlock.POWER_B) > 0 && tintIndex == 1) {
+			callbackInfo.setReturnValue(PowerstoneWireBlock.getWireColorBlue(state.get(PowerstoneWireBlock.POWER_B)));
+		}
+		else if (state.get(RedstoneWireBlock.POWER) > 0 && tintIndex == 2) {
+			callbackInfo.setReturnValue(PowerstoneWireBlock.getWireColorGreen(state.get(RedstoneWireBlock.POWER)));
+		}
+		else if (state.get(PowerstoneWireBlock.POWER_B) > 0 && tintIndex == 3) {
+			callbackInfo.setReturnValue(PowerstoneWireBlock.getWireColorYellow(state.get(PowerstoneWireBlock.POWER_B)));
 		}
 		else {
 			callbackInfo.setReturnValue(PowerstoneWireBlock.getWireColorWhite());

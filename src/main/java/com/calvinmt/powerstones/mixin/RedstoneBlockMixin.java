@@ -26,4 +26,12 @@ public abstract class RedstoneBlockMixin {
         return 1;
     }
 
+    public int getWeakGreenstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
+        return 1;
+    }
+
+    public int getWeakYellowstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
+        return 1;
+    }
+
 }

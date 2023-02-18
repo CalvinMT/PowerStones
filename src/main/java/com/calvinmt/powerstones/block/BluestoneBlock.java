@@ -19,11 +19,6 @@ extends Block {
     }
 
     @Override
-    public int getWeakRedstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
-        return 1;
-    }
-
-    @Override
     public int getWeakBluestonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
         return 16;
     }

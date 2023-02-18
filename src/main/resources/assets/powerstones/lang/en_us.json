@@ -2,6 +2,9 @@
     "item.powerstones.bluestone" : "Bluestone Dust",
     "item.powerstones.greenstone" : "Greenstone Dust",
     "item.powerstones.yellowstone" : "Yellowstone Dust",
+    "block.powerstones.bluestone_torch" : "Bluestone Torch",
+    "block.powerstones.greenstone_torch" : "Greenstone Torch",
+    "block.powerstones.yellowstone_torch" : "Yellowstone Torch",
     "block.powerstones.bluestone_block" : "Block of Bluestone",
     "block.powerstones.greenstone_block" : "Block of Greenstone",
     "block.powerstones.yellowstone_block" : "Block of Yellowstone"

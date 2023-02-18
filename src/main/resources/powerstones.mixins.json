@@ -39,6 +39,7 @@
       "TrapdoorBlockMixin",
       "TrappedChestBlockMixin",
       "TripwireHookBlockMixin",
+      "WallRedstoneTorchBlockMixin",
       "WeightedPressurePlateBlockMixin",
       "WorldMixin",
       "WorldViewMixin"],
