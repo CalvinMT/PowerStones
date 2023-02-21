@@ -17,15 +17,15 @@ Mods needed to be installed in order for PowerStones to function correctly:
 
 | Name              | Crafting recipe |
 | ----------------- | --------------- |
-| Bluestone         | 
-| Greenstone        |
-| Yellowstone       |
-| Bluestone Block   |
-| Greenstone Block  |
-| Yellowstone Block |
-| Bluestone Torch   |
-| Greenstone Torch  |
-| Yellowstone Torch |
+| Bluestone         | <img src="./docs/bluestone_from_redstone.png" width="112" style="image-rendering: pixelated;">
+| Greenstone        | <img src="./docs/greenstone_from_redstone.png" width="112" style="image-rendering: pixelated;">
+| Yellowstone       | <img src="./docs/yellowstone_from_redstone.png" width="112" style="image-rendering: pixelated;">
+| Bluestone Block   | <img src="./docs/bluestone_block.png" width="112" style="image-rendering: pixelated;">
+| Greenstone Block  | <img src="./docs/greenstone_block.png" width="112" style="image-rendering: pixelated;">
+| Yellowstone Block | <img src="./docs/yellowstone_block.png" width="112" style="image-rendering: pixelated;">
+| Bluestone Torch   | <img src="./docs/bluestone_torch.png" width="112" style="image-rendering: pixelated;">
+| Greenstone Torch  | <img src="./docs/greenstone_torch.png" width="112" style="image-rendering: pixelated;">
+| Yellowstone Torch | <img src="./docs/yellowstone_torch.png" width="112" style="image-rendering: pixelated;">
 
 ### Functionalities
 
