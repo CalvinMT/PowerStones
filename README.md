@@ -17,15 +17,15 @@ Mods needed to be installed in order for PowerStones to function correctly:
 
 | Name              | Crafting recipes |
 | ----------------- | ---------------- |
-| Bluestone         | <img src="./docs/bluestone_from_redstone.png" width="112" style="image-rendering: pixelated;"> <img src="./docs/bluestone_from_block.png" width="112" style="image-rendering: pixelated;">
-| Greenstone        | <img src="./docs/greenstone_from_redstone.png" width="112" style="image-rendering: pixelated;"> <img src="./docs/greenstone_from_block.png" width="112" style="image-rendering: pixelated;">
-| Yellowstone       | <img src="./docs/yellowstone_from_redstone.png" width="112" style="image-rendering: pixelated;"> <img src="./docs/yellowstone_from_block.png" width="112" style="image-rendering: pixelated;">
-| Bluestone Block   | <img src="./docs/bluestone_block.png" width="112" style="image-rendering: pixelated;">
-| Greenstone Block  | <img src="./docs/greenstone_block.png" width="112" style="image-rendering: pixelated;">
-| Yellowstone Block | <img src="./docs/yellowstone_block.png" width="112" style="image-rendering: pixelated;">
-| Bluestone Torch   | <img src="./docs/bluestone_torch.png" width="112" style="image-rendering: pixelated;">
-| Greenstone Torch  | <img src="./docs/greenstone_torch.png" width="112" style="image-rendering: pixelated;">
-| Yellowstone Torch | <img src="./docs/yellowstone_torch.png" width="112" style="image-rendering: pixelated;">
+| Bluestone         | <img src="./docs/bluestone_from_redstone.png" style="image-rendering: pixelated;"> <img src="./docs/bluestone_from_block.png" style="image-rendering: pixelated;">
+| Greenstone        | <img src="./docs/greenstone_from_redstone.png" style="image-rendering: pixelated;"> <img src="./docs/greenstone_from_block.png" style="image-rendering: pixelated;">
+| Yellowstone       | <img src="./docs/yellowstone_from_redstone.png" style="image-rendering: pixelated;"> <img src="./docs/yellowstone_from_block.png" style="image-rendering: pixelated;">
+| Bluestone Block   | <img src="./docs/bluestone_block.png" style="image-rendering: pixelated;">
+| Greenstone Block  | <img src="./docs/greenstone_block.png" style="image-rendering: pixelated;">
+| Yellowstone Block | <img src="./docs/yellowstone_block.png" style="image-rendering: pixelated;">
+| Bluestone Torch   | <img src="./docs/bluestone_torch.png" style="image-rendering: pixelated;">
+| Greenstone Torch  | <img src="./docs/greenstone_torch.png" style="image-rendering: pixelated;">
+| Yellowstone Torch | <img src="./docs/yellowstone_torch.png" style="image-rendering: pixelated;">
 
 ### Functionalities
 
@@ -51,4 +51,4 @@ The colours blue, green and yellow were chosen around the year 2012, when this p
 
 Each new powerstone's colour comes from a combination of the redstone's colour and the resource's colour used in the powerstone's recipe. First, the powerstone texture was coloured with the resource's colour. Then, the redstone's texture was layered above before finally applying to this redstone layer a colour dodge blending filter with ~30% opacity (75/255).
 
-<img src="./docs/colour_choices.png" width="640" style="image-rendering: pixelated;">
+<img src="./docs/colour_choices.png" style="image-rendering: pixelated;">
