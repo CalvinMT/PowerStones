@@ -49,6 +49,6 @@ As the powerstone pair property seemed like a good arrangement to bring the proj
 
 The colours blue, green and yellow were chosen around the year 2012, when this project first came into mind. One of the goals was to make better application of poorly used and almost unuseful, but abundant resources such as lapis lazuli, emerald and glowstone dust.
 
-Each new powerstone's colour comes from a combination of the redstone's colour and the resource's colour used in the powerstone's recipe. First, the powerstone texture was coloured with the resource's colour. Then, the redstone's texture was layered above before finally applying to this redstone layer a colour dodge blending filter with 70% opacity.
+Each new powerstone's colour comes from a combination of the redstone's colour and the resource's colour used in the powerstone's recipe. First, the powerstone texture was coloured with the resource's colour. Then, the redstone's texture was layered above before finally applying to this redstone layer a colour dodge blending filter with ~30% opacity (75/255).
 
 <img src="./docs/colour_choices.png" width="640" style="image-rendering: pixelated;">
