@@ -15,11 +15,11 @@ Mods needed to be installed in order for PowerStones to function correctly:
 
 ### Blocks and items
 
-| Name              | Crafting recipe |
-| ----------------- | --------------- |
-| Bluestone         | <img src="./docs/bluestone_from_redstone.png" width="112" style="image-rendering: pixelated;">
-| Greenstone        | <img src="./docs/greenstone_from_redstone.png" width="112" style="image-rendering: pixelated;">
-| Yellowstone       | <img src="./docs/yellowstone_from_redstone.png" width="112" style="image-rendering: pixelated;">
+| Name              | Crafting recipes |
+| ----------------- | ---------------- |
+| Bluestone         | <img src="./docs/bluestone_from_redstone.png" width="112" style="image-rendering: pixelated;"> <img src="./docs/bluestone_from_block.png" width="112" style="image-rendering: pixelated;">
+| Greenstone        | <img src="./docs/greenstone_from_redstone.png" width="112" style="image-rendering: pixelated;"> <img src="./docs/greenstone_from_block.png" width="112" style="image-rendering: pixelated;">
+| Yellowstone       | <img src="./docs/yellowstone_from_redstone.png" width="112" style="image-rendering: pixelated;"> <img src="./docs/yellowstone_from_block.png" width="112" style="image-rendering: pixelated;">
 | Bluestone Block   | <img src="./docs/bluestone_block.png" width="112" style="image-rendering: pixelated;">
 | Greenstone Block  | <img src="./docs/greenstone_block.png" width="112" style="image-rendering: pixelated;">
 | Yellowstone Block | <img src="./docs/yellowstone_block.png" width="112" style="image-rendering: pixelated;">
