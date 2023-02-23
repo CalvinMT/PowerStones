@@ -434,7 +434,7 @@ public abstract class RedstoneWireBlockMixin extends Block {
     }
 
     @ModifyVariable(method = "getWireColor(I)I", at = @At("HEAD"))
-    private static int getWireColor(int powerLevel) {
+    private static int getWireColorPowerLevel(int powerLevel) {
         return powerLevel - 1;
     }
 
