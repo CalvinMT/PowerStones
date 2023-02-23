@@ -100,6 +100,8 @@ public abstract class RedstoneWireBlockMixin extends Block {
     private void updateForNewState(World world, BlockPos pos, BlockState oldState, BlockState newState) {}
     @Shadow
     private boolean canRunOnTop(BlockView world, BlockPos pos, BlockState floor) { return false; }
+    @Shadow
+    private int getReceivedRedstonePower(World world, BlockPos pos) { return 0; }
 
     @Shadow
     protected static boolean connectsTo(BlockState state, @Nullable Direction dir) { return false; }
@@ -316,29 +318,7 @@ public abstract class RedstoneWireBlockMixin extends Block {
         }
     }
 
-    @Overwrite
-    private int getReceivedRedstonePower(World world, BlockPos pos) {
-        this.wiresGivePower = false;
-        int i = world.getReceivedRedstonePower(pos);
-        this.wiresGivePower = true;
-        int j = 1;
-        if (i < 16) {
-            for (Direction direction : Direction.Type.HORIZONTAL) {
-                BlockPos blockPos = pos.offset(direction);
-                BlockState blockState = world.getBlockState(blockPos);
-                j = Math.max(j, this.increasePower(blockState));
-                BlockPos blockPos2 = pos.up();
-                if (blockState.isSolidBlock(world, blockPos) && !world.getBlockState(blockPos2).isSolidBlock(world, blockPos2)) {
-                    j = Math.max(j, this.increasePower(world.getBlockState(blockPos.up())));
-                    continue;
-                }
-                if (blockState.isSolidBlock(world, blockPos)) continue;
-                j = Math.max(j, this.increasePower(world.getBlockState(blockPos.down())));
-            }
-        }
-        return Math.max(i, j - 1);
-    }
-    /*@ModifyConstant(method = "getReceivedRedstonePower(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)I", constant = @Constant(intValue = 0))
+    @ModifyVariable(method = "getReceivedRedstonePower(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)I", at = @At(value = "STORE", ordinal = 0), ordinal = 1)
     private int getReceivedRedstonePowerMinPower(int oldMinPower) {
         return 1;
     }
@@ -346,7 +326,7 @@ public abstract class RedstoneWireBlockMixin extends Block {
     @ModifyConstant(method = "getReceivedRedstonePower(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)I", constant = @Constant(intValue = 15))
     private int getReceivedRedstonePowerMaxPower(int oldMaxPower) {
         return 16;
-    }*/
+    }
     
     private int getReceivedBluestonePower(World world, BlockPos pos) {
         this.wiresGivePower = false;
