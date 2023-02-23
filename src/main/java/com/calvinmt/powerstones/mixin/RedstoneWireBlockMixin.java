@@ -438,7 +438,7 @@ public abstract class RedstoneWireBlockMixin extends Block {
         return powerLevel - 1;
     }
 
-    private Vec3d getPowerStoneColor(BlockState state, Random random) {
+    private Vec3d getPowerstoneColor(BlockState state, Random random) {
         List<Vec3d[]> colorsList = new ArrayList<>();
         List<Integer> powerList = new ArrayList<>();
         if (state.get(PowerstoneWireBlock.POWER_PAIR) == PowerPair.RED_BLUE) {
@@ -466,43 +466,24 @@ public abstract class RedstoneWireBlockMixin extends Block {
         return colorsList.get(i)[power];
     }
 
-    @Overwrite
-    public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
-        if (state.get(POWER) < 2 && state.get(PowerstoneWireBlock.POWER_B) < 2) {
-            return;
-        }
-        block4: for (Direction direction : Direction.Type.HORIZONTAL) {
-            WireConnection wireConnection = (WireConnection)state.get(DIRECTION_TO_WIRE_CONNECTION_PROPERTY.get(direction));
-            switch (wireConnection) {
-                case UP: {
-                    this.addPoweredParticles(world, random, pos, getPowerStoneColor(state, random), direction, Direction.UP, -0.5f, 0.5f);
-                }
-                case SIDE: {
-                    this.addPoweredParticles(world, random, pos, getPowerStoneColor(state, random), Direction.DOWN, direction, 0.0f, 0.5f);
-                    continue block4;
-                }
-                case NONE:
-                    break;
-                default:
-                    break;
-            }
-            this.addPoweredParticles(world, random, pos, getPowerStoneColor(state, random), Direction.DOWN, direction, 0.0f, 0.3f);
-        }
-    }
-    /*@Inject(method = "randomDisplayTick(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/random/Random;)V", at = @At("HEAD"))
+    @Inject(method = "randomDisplayTick(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/random/Random;)V", at = @At("HEAD"), cancellable = true)
     private void randomDisplayTickPowerCondition(BlockState state, World world, BlockPos pos, Random random, CallbackInfo callbackInfo) {
         if (state.get(POWER) < 2 && state.get(PowerstoneWireBlock.POWER_B) < 2) {
             callbackInfo.cancel();
         }
     }
 
-    //@ModifyArg(method = "randomDisplayTick(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/random/Random;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/RedstoneWireBlock;addPoweredParticles(Lnet/minecraft/world/World;Lnet/minecraft/util/math/random/Random;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Direction;Lnet/minecraft/util/math/Direction;FF)V"), index = 3)
-    @ModifyVariable(method = "randomDisplayTick(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/random/Random;)V", at = @At(value = "FIELD", target = "Lnet/minecraft/block/RedstoneWireBlock;COLORS:[Lnet/minecraft/util/math/Vec3d;", opcode = Opcodes.GETSTATIC))
-    private Vec3d[] randomDisplayTickGetColors(Vec3d[] oldColors, BlockState state, World world, BlockPos pos, Random random) {
-        return Util.make(new Vec3d[1], colors -> {
-            colors[0] = this.getPowerStoneColor(state, random);
+    @ModifyVariable(method = "randomDisplayTick(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/random/Random;)V", at = @At("STORE"), ordinal = 0)
+    private int randomDisplayTickGetColorIndex(int i) {
+        return 1;
+    }
+
+    @Redirect(method = "randomDisplayTick(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/random/Random;)V", at = @At(value = "FIELD", target = "Lnet/minecraft/block/RedstoneWireBlock;COLORS:[Lnet/minecraft/util/math/Vec3d;"))
+    private Vec3d[] randomDisplayTickGetColor(BlockState state, World world, BlockPos pos, Random random) {
+        return Util.make(new Vec3d[2], colors -> {
+            colors[1] = this.getPowerstoneColor(state, random);
         });
-    }*/
+    }
 
     private void updateAll(BlockState state, World world, BlockPos pos) {
         for (Direction direction : Direction.values()) {
