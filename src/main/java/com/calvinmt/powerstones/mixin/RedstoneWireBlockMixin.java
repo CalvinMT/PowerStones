@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -33,9 +34,7 @@ import com.google.common.collect.Sets;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.ObserverBlock;
 import net.minecraft.block.RedstoneWireBlock;
-import net.minecraft.block.RepeaterBlock;
 import net.minecraft.block.enums.WireConnection;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -103,6 +102,9 @@ public abstract class RedstoneWireBlockMixin extends Block {
     private boolean canRunOnTop(BlockView world, BlockPos pos, BlockState floor) { return false; }
 
     @Shadow
+    protected static boolean connectsTo(BlockState state, @Nullable Direction dir) { return false; }
+
+    @Shadow
     private boolean wiresGivePower;
 
     @Shadow
@@ -117,6 +119,7 @@ public abstract class RedstoneWireBlockMixin extends Block {
     private void addPoweredParticles(World world, Random random, BlockPos pos, Vec3d color, Direction direction, Direction direction2, float f, float g) {};
 
     private BlockState oldState = null;
+    private static BlockState connectsToState = null;
 
     public RedstoneWireBlockMixin(Settings settings) {
         super(settings);
@@ -132,16 +135,6 @@ public abstract class RedstoneWireBlockMixin extends Block {
     @ModifyArg(method = "<init>(Lnet/minecraft/block/AbstractBlock$Settings;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/RedstoneWireBlock;setDefaultState(Lnet/minecraft/block/BlockState;)V"))
     public BlockState initialiseDefaultStatePowerStoneProperties(BlockState state) {
         return (BlockState)state.with(PowerstoneWireBlock.POWER_B, 0);
-    }
-
-    private boolean isSamePowerStoneType(BlockState currentState, BlockState state) {
-        boolean result = false;
-        if (currentState.get(PowerstoneWireBlock.POWER_PAIR) == state.get(PowerstoneWireBlock.POWER_PAIR)
-         && ((currentState.get(POWER) > 0 && state.get(POWER) > 0)
-          || (currentState.get(PowerstoneWireBlock.POWER_B) > 0 && state.get(PowerstoneWireBlock.POWER_B) > 0))) {
-            result = true;
-        }
-        return result;
     }
 
     @Inject(method = "getPlacementState(Lnet/minecraft/item/ItemPlacementContext;)Lnet/minecraft/block/BlockState;", at = @At("HEAD"))
@@ -260,48 +253,32 @@ public abstract class RedstoneWireBlockMixin extends Block {
         return ((AbstractBlockStateInterface) state).getWeakYellowstonePower(world, pos, direction);
     }
 
-    @Overwrite
-    private WireConnection getRenderConnectionType(BlockView world, BlockPos pos, Direction direction, boolean bl) {
-        BlockState currentState = world.getBlockState(pos);
-        BlockPos blockPos = pos.offset(direction);
-        BlockState blockState = world.getBlockState(blockPos);
-        if (! currentState.isOf(Blocks.REDSTONE_WIRE)) {
-            currentState = this.getDefaultState();
-        }
-        if (bl && this.canRunOnTop(world, blockPos, blockState) && connectsTo(currentState, world.getBlockState(blockPos.up()))) {
-            if (blockState.isSideSolidFullSquare(world, blockPos, direction.getOpposite())) {
-                return WireConnection.UP;
-            }
-            return WireConnection.SIDE;
-        }
-        if (connectsTo(currentState, blockState, direction) || !blockState.isSolidBlock(world, blockPos) && connectsTo(currentState, world.getBlockState(blockPos.down()))) {
-            return WireConnection.SIDE;
-        }
-        return WireConnection.NONE;
-    }
-
-    //@Redirect(method = "getRenderConnectionType(Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;Z)Lnet/minecraft/block/enums/WireConnection;", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/RedstoneWireBlock;connectsTo(Lnet/minecraft/block/BlockState;)Z"))
-    protected boolean connectsTo(BlockState currentState, BlockState state) {
-        return this.connectsTo(currentState, state, null);
-    }
-
-    //@Redirect(method = "getRenderConnectionType(Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;Z)Lnet/minecraft/block/enums/WireConnection;", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/RedstoneWireBlock;connectsTo(Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/Direction;)Z"))
-    protected boolean connectsTo(BlockState currentState, BlockState state, Direction dir) {
+    private static boolean isSamePowerStoneType(BlockState currentState, BlockState state) {
         boolean result = false;
-        if (state.isOf(Blocks.REDSTONE_WIRE) && isSamePowerStoneType(currentState, state)) {
+        if (currentState.get(PowerstoneWireBlock.POWER_PAIR) == state.get(PowerstoneWireBlock.POWER_PAIR)
+         && ((currentState.get(POWER) > 0 && state.get(POWER) > 0)
+          || (currentState.get(PowerstoneWireBlock.POWER_B) > 0 && state.get(PowerstoneWireBlock.POWER_B) > 0))) {
             result = true;
         }
-        else if (state.isOf(Blocks.REPEATER)) {
-            Direction direction = state.get(RepeaterBlock.FACING);
-            result = direction == dir || direction.getOpposite() == dir;
-        }
-        else if (state.isOf(Blocks.OBSERVER)) {
-            result = dir == state.get(ObserverBlock.FACING);
-        }
-        else if (! state.isOf(Blocks.REDSTONE_WIRE)) {
-            result = state.emitsRedstonePower() && dir != null;
-        }
         return result;
+    }
+
+    @Inject(method = "getRenderConnectionType(Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;Z)Lnet/minecraft/block/enums/WireConnection;", at = @At("HEAD"), cancellable = true)
+    private void saveConnectsToState(BlockView world, BlockPos pos, Direction direction, boolean bl, CallbackInfoReturnable<WireConnection> callbackInfo) {
+        connectsToState = world.getBlockState(pos);
+        if (! connectsToState.isOf(Blocks.REDSTONE_WIRE)) {
+            connectsToState = this.getDefaultState();
+        }
+    }
+
+    @Redirect(method = "connectsTo(Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/Direction;)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;isOf(Lnet/minecraft/block/Block;)Z", ordinal = 0))
+    private static boolean checkConnectsToState(BlockState state, Block block) {
+        return state.isOf(block) && isSamePowerStoneType(connectsToState, state);
+    }
+
+    @Inject(method = "connectsTo(Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/Direction;)Z", at = @At(value = "RETURN", ordinal = 3), cancellable = true)
+    private static void connectsToEmitsRedstonePower(BlockState state, @Nullable Direction dir, CallbackInfoReturnable<Boolean> callbackInfo) {
+        callbackInfo.setReturnValue(! state.isOf(Blocks.REDSTONE_WIRE) && callbackInfo.getReturnValue());
     }
 
     private boolean haveDifferentPowerLevel(int i, int j) {
