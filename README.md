@@ -9,8 +9,10 @@ Mods needed to be installed in order for PowerStones to function correctly:
 
 | Mod           | Version          | Reason |
 | ------------- | ---------------- | ------ |
+| [Fabric API]  | >=0.75.1+1.19.3  | Essential for Fabric mods to work. |
 | [FerriteCore] | >=5.1.0 (Fabric) | Enables Minecraft to load with the default 4GB of RAM, instead of 12GB which requires the addition of an argument (-Xmx12G). |
 
+[Fabric API]: https://modrinth.com/mod/fabric-api
 [FerriteCore]: https://modrinth.com/mod/ferrite-core
 
 ## Compatibility
