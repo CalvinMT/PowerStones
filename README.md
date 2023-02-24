@@ -1,6 +1,8 @@
 # PowerStones
 Minecraft mod with overlapping wires of Redstone, Bluestone, Greenstone and Yellowstone
 
+<img src="./docs/images/preview_0.png">
+
 ## Dependencies
 
 Mods needed to be installed in order for PowerStones to function correctly:
