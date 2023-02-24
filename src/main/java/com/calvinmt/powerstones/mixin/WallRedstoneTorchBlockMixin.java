@@ -28,7 +28,7 @@ public class WallRedstoneTorchBlockMixin {
 
     @Redirect(method = "shouldUnpower(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;isEmittingRedstonePower(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;)Z"))
     private boolean shouldUnpowerIsEmittingPower(World world, BlockPos pos, Direction direction) {
-        return world.isEmittingPower(pos.offset(direction), direction);
+        return world.isEmittingPower(pos, direction);
     }
 
     public int getWeakBluestonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
