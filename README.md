@@ -3,6 +3,11 @@ Minecraft mod with overlapping wires of Redstone, Bluestone, Greenstone and Yell
 
 <img src="./docs/images/preview_0.png">
 
+## Modding platforms
+
+- Modrinth: https://modrinth.com/mod/powerstones
+- CurseForge: https://www.curseforge.com/minecraft/mc-mods/cmt-powerstones
+
 ## Dependencies
 
 Mods needed to be installed in order for PowerStones to function correctly:
