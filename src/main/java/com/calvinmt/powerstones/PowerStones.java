@@ -1,5 +1,6 @@
 package com.calvinmt.powerstones;
 
+import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
@@ -36,7 +37,7 @@ import com.calvinmt.powerstones.block.WallYellowstoneTorchBlock;
 import com.calvinmt.powerstones.block.YellowstoneBlock;
 import com.calvinmt.powerstones.block.YellowstoneTorchBlock;
 
-public class PowerStones implements ModInitializer  {
+public class PowerStones implements ModInitializer   {
 
 	public static final Logger LOGGER = LoggerFactory.getLogger("PowerStones");
 
@@ -86,42 +87,6 @@ public class PowerStones implements ModInitializer  {
 		Registry.register(Registries.BLOCK, new Identifier(NAMESPACE, "bluestone_block"), BLUESTONE_BLOCK);
 		Registry.register(Registries.BLOCK, new Identifier(NAMESPACE, "greenstone_block"), GREENSTONE_BLOCK);
 		Registry.register(Registries.BLOCK, new Identifier(NAMESPACE, "yellowstone_block"), YELLOWSTONE_BLOCK);
-
-		BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getCutout(),
-			BLUESTONE_TORCH_BLOCK, GREENSTONE_TORCH_BLOCK, YELLOWSTONE_TORCH_BLOCK,
-			BLUESTONE_WALL_TORCH, GREENSTONE_WALL_TORCH, YELLOWSTONE_WALL_TORCH);
-
-		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(content -> {
-			content.addAfter(Items.REDSTONE, BLUESTONE);
-		});
-		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(content -> {
-			content.addAfter(BLUESTONE, GREENSTONE);
-		});
-		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(content -> {
-			content.addAfter(GREENSTONE, YELLOWSTONE);
-		});
-
-		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(content -> {
-			content.addAfter(Items.REDSTONE_TORCH, BLUESTONE_TORCH);
-		});
-		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(content -> {
-			content.addAfter(BLUESTONE_TORCH, GREENSTONE_TORCH);
-		});
-		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(content -> {
-			content.addAfter(GREENSTONE_TORCH, YELLOWSTONE_TORCH);
-		});
-
-		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(content -> {
-			content.addAfter(Items.REDSTONE_BLOCK, BLUESTONE_BLOCK);
-		});
-		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(content -> {
-			content.addAfter(BLUESTONE_BLOCK, GREENSTONE_BLOCK);
-		});
-		ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(content -> {
-			content.addAfter(GREENSTONE_BLOCK, YELLOWSTONE_BLOCK);
-		});
-
-        LootTableModifier.modifyLootTables();
 
 		LOGGER.info("PowerStones initialised");
 	}

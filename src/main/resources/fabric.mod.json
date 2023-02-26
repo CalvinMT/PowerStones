@@ -26,6 +26,9 @@
     ],
     "main": [
       "com.calvinmt.powerstones.PowerStones"
+    ],
+    "client": [
+      "com.calvinmt.powerstones.PowerStonesClient"
     ]
   },
   "mixins": [

@@ -11,8 +11,6 @@
       "AbstractRedstoneGateBlockMixin",
       "BellBlockMixin",
       "BigDripleafBlockMixin",
-      "BlockColorsMixin",
-      "ClientPlayerInteractionManagerMixin",
       "CommandBlockMixin",
       "DaylightDetectorBlockMixin",
       "DispenserBlockMixin",
@@ -43,7 +41,9 @@
       "WeightedPressurePlateBlockMixin",
       "WorldMixin",
       "WorldViewMixin"],
-    "client": [],
+    "client": [
+      "BlockColorsMixin",
+      "ClientPlayerInteractionManagerMixin"],
     "server": [],
     "injectors": {
       "defaultRequire": 1
