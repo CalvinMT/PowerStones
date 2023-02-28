@@ -15,6 +15,7 @@ import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3f;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
@@ -30,7 +31,7 @@ extends TorchBlock {
    //private static final int SCHEDULED_TICK_DELAY = 2;
 
    public YellowstoneTorchBlock(AbstractBlock.Settings settings) {
-       super(settings, new DustParticleEffect(PowerstoneWireBlock.YELLOW_COLORS[15].toVector3f(), 1.0f));
+       super(settings, new DustParticleEffect(new Vec3f(PowerstoneWireBlock.YELLOW_COLORS[15]), 1.0f));
        this.setDefaultState((BlockState)((BlockState)this.stateManager.getDefaultState()).with(LIT, true));
    }
 
@@ -75,7 +76,7 @@ extends TorchBlock {
                world.setBlockState(pos, (BlockState)state.with(LIT, false), Block.NOTIFY_ALL);
                if (YellowstoneTorchBlock.isBurnedOut(world, pos, true)) {
                    world.syncWorldEvent(WorldEvents.REDSTONE_TORCH_BURNS_OUT, pos, 0);
-                   world.scheduleBlockTick(pos, world.getBlockState(pos).getBlock(), 160);
+                   world.createAndScheduleBlockTick(pos, world.getBlockState(pos).getBlock(), 160);
                }
            }
        } else if (!bl && !YellowstoneTorchBlock.isBurnedOut(world, pos, false)) {
@@ -86,7 +87,7 @@ extends TorchBlock {
    @Override
    public void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify) {
        if (state.get(LIT).booleanValue() == this.shouldUnpower(world, pos, state) && !world.getBlockTickScheduler().isTicking(pos, this)) {
-           world.scheduleBlockTick(pos, this, 2);
+           world.createAndScheduleBlockTick(pos, this, 2);
        }
    }
 
