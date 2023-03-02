@@ -9,7 +9,6 @@ import net.minecraft.block.MapColor;
 import net.minecraft.block.Material;
 import net.minecraft.item.AliasedBlockItem;
 import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
 import net.minecraft.item.VerticallyAttachableBlockItem;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -43,34 +42,31 @@ public class PowerStones implements ModInitializer   {
 	public static final Block BLUESTONE_WALL_TORCH = new WallBluestoneTorchBlock(FabricBlockSettings.of(Material.DECORATION).noCollision().breakInstantly().luminance(state -> state.get(Properties.LIT) != false ? 7 : 0).sounds(BlockSoundGroup.WOOD).dropsLike(BLUESTONE_TORCH_BLOCK));
 	public static final Block GREENSTONE_WALL_TORCH = new WallGreenstoneTorchBlock(FabricBlockSettings.of(Material.DECORATION).noCollision().breakInstantly().luminance(state -> state.get(Properties.LIT) != false ? 7 : 0).sounds(BlockSoundGroup.WOOD).dropsLike(BLUESTONE_TORCH_BLOCK));
 	public static final Block YELLOWSTONE_WALL_TORCH = new WallYellowstoneTorchBlock(FabricBlockSettings.of(Material.DECORATION).noCollision().breakInstantly().luminance(state -> state.get(Properties.LIT) != false ? 7 : 0).sounds(BlockSoundGroup.WOOD).dropsLike(BLUESTONE_TORCH_BLOCK));
-
 	public static final Block BLUESTONE_BLOCK = new BluestoneBlock(FabricBlockSettings.of(Material.METAL, MapColor.LAPIS_BLUE).requiresTool().strength(5.0f, 6.0f).sounds(BlockSoundGroup.METAL));
 	public static final Block GREENSTONE_BLOCK = new GreenstoneBlock(FabricBlockSettings.of(Material.METAL, MapColor.EMERALD_GREEN).requiresTool().strength(5.0f, 6.0f).sounds(BlockSoundGroup.METAL));
 	public static final Block YELLOWSTONE_BLOCK = new YellowstoneBlock(FabricBlockSettings.of(Material.METAL, MapColor.PALE_YELLOW).requiresTool().strength(5.0f, 6.0f).sounds(BlockSoundGroup.METAL));
 
-	public static final Item BLUESTONE = (Item)new AliasedBlockItem(Blocks.REDSTONE_WIRE, new FabricItemSettings());
-	public static final Item GREENSTONE = (Item)new AliasedBlockItem(Blocks.REDSTONE_WIRE, new FabricItemSettings());
-	public static final Item YELLOWSTONE = (Item)new AliasedBlockItem(Blocks.REDSTONE_WIRE, new FabricItemSettings());
-	public static final Item BLUESTONE_TORCH = new VerticallyAttachableBlockItem(BLUESTONE_TORCH_BLOCK, BLUESTONE_WALL_TORCH, new FabricItemSettings(), Direction.DOWN);
-	public static final Item GREENSTONE_TORCH = new VerticallyAttachableBlockItem(GREENSTONE_TORCH_BLOCK, GREENSTONE_WALL_TORCH, new FabricItemSettings(), Direction.DOWN);
-	public static final Item YELLOWSTONE_TORCH = new VerticallyAttachableBlockItem(YELLOWSTONE_TORCH_BLOCK, YELLOWSTONE_WALL_TORCH, new FabricItemSettings(), Direction.DOWN);
+	public static final BlockItem BLUESTONE = new AliasedBlockItem(Blocks.REDSTONE_WIRE, new FabricItemSettings());
+	public static final BlockItem GREENSTONE = new AliasedBlockItem(Blocks.REDSTONE_WIRE, new FabricItemSettings());
+	public static final BlockItem YELLOWSTONE = new AliasedBlockItem(Blocks.REDSTONE_WIRE, new FabricItemSettings());
+	public static final BlockItem BLUESTONE_TORCH = new VerticallyAttachableBlockItem(BLUESTONE_TORCH_BLOCK, BLUESTONE_WALL_TORCH, new FabricItemSettings(), Direction.DOWN);
+	public static final BlockItem GREENSTONE_TORCH = new VerticallyAttachableBlockItem(GREENSTONE_TORCH_BLOCK, GREENSTONE_WALL_TORCH, new FabricItemSettings(), Direction.DOWN);
+	public static final BlockItem YELLOWSTONE_TORCH = new VerticallyAttachableBlockItem(YELLOWSTONE_TORCH_BLOCK, YELLOWSTONE_WALL_TORCH, new FabricItemSettings(), Direction.DOWN);
+	public static final BlockItem BLUESTONE_BLOCK_ITEM = new BlockItem(BLUESTONE_BLOCK, new FabricItemSettings());
+	public static final BlockItem GREENSTONE_BLOCK_ITEM = new BlockItem(GREENSTONE_BLOCK, new FabricItemSettings());
+	public static final BlockItem YELLOWSTONE_BLOCK_ITEM = new BlockItem(YELLOWSTONE_BLOCK, new FabricItemSettings());
 
 	@Override
 	public void onInitialize() {
-		// This code runs as soon as Minecraft is in a mod-load-ready state.
-		// However, some things (like resources) may still be uninitialized.
-		// Proceed with mild caution.
-		LOGGER.info("PowerStones initialising...");
-
 		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "bluestone"), BLUESTONE);
 		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "greenstone"), GREENSTONE);
 		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "yellowstone"), YELLOWSTONE);
 		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "bluestone_torch"), BLUESTONE_TORCH);
 		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "greenstone_torch"), GREENSTONE_TORCH);
 		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "yellowstone_torch"), YELLOWSTONE_TORCH);
-		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "bluestone_block"), new BlockItem(BLUESTONE_BLOCK, new FabricItemSettings()));
-		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "greenstone_block"), new BlockItem(GREENSTONE_BLOCK, new FabricItemSettings()));
-		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "yellowstone_block"), new BlockItem(YELLOWSTONE_BLOCK, new FabricItemSettings()));
+		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "bluestone_block"), BLUESTONE_BLOCK_ITEM);
+		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "greenstone_block"), GREENSTONE_BLOCK_ITEM);
+		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "yellowstone_block"), YELLOWSTONE_BLOCK_ITEM);
 
 		Registry.register(Registries.BLOCK, new Identifier(NAMESPACE, "bluestone_torch"), BLUESTONE_TORCH_BLOCK);
 		Registry.register(Registries.BLOCK, new Identifier(NAMESPACE, "greenstone_torch"), GREENSTONE_TORCH_BLOCK);
@@ -81,8 +77,6 @@ public class PowerStones implements ModInitializer   {
 		Registry.register(Registries.BLOCK, new Identifier(NAMESPACE, "bluestone_block"), BLUESTONE_BLOCK);
 		Registry.register(Registries.BLOCK, new Identifier(NAMESPACE, "greenstone_block"), GREENSTONE_BLOCK);
 		Registry.register(Registries.BLOCK, new Identifier(NAMESPACE, "yellowstone_block"), YELLOWSTONE_BLOCK);
-
-		LOGGER.info("PowerStones initialised");
 	}
 
 }
