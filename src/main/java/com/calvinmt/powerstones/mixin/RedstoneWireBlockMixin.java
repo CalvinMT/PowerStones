@@ -546,7 +546,9 @@ public abstract class RedstoneWireBlockMixin extends Block {
             world.playSound(player, pos, state.getSoundGroup().getPlaceSound(), SoundCategory.BLOCKS, (blockSoundGroup.getVolume() + 1.0f) / 2.0f, blockSoundGroup.getPitch() * 0.8f);
         }
         world.setBlockState(pos, state.with(powerProperty, 16),  Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
-        world.spawnEntity(new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(item)));
+        if (! player.isCreative()) {
+            world.spawnEntity(new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(item)));
+        }
         state = world.getBlockState(pos);
         this.updateAll(state, world, pos);
     }
