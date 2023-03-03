@@ -529,27 +529,25 @@ public abstract class RedstoneWireBlockMixin extends Block {
         builder.add(PowerstoneWireBlock.POWER_B, PowerstoneWireBlock.POWER_PAIR);
     }
 
-    private boolean hasMoreThanOnePowerstone(BlockState state) {
-        int i = 0;
-        if (state.get(POWER) < 16) {
-            i++;
-        }
-        if (state.get(PowerstoneWireBlock.POWER_B) < 16) {
-            i++;
-        }
-        return i > 1;
-    }
-
     private void breakSingle(BlockState state, World world, BlockPos pos, PlayerEntity player, IntProperty powerProperty, Item item) {
-        if (this.hasMoreThanOnePowerstone(state)) {
-            BlockSoundGroup blockSoundGroup = state.getSoundGroup();
-            world.playSound(player, pos, state.getSoundGroup().getPlaceSound(), SoundCategory.BLOCKS, (blockSoundGroup.getVolume() + 1.0f) / 2.0f, blockSoundGroup.getPitch() * 0.8f);
-        }
         world.setBlockState(pos, state.with(powerProperty, 16),  Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
         if (! player.isCreative()) {
             world.spawnEntity(new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(item)));
         }
+        BlockState oldState = state;
         state = world.getBlockState(pos);
+        if (state.get(POWER) == 16 && state.get(PowerstoneWireBlock.POWER_B) < 16) {
+            state.getBlock().onBreak(world, pos, (BlockState)((BlockState)(this.getDefaultState().with(POWER, oldState.get(POWER))).with(PowerstoneWireBlock.POWER_B, 16)).with(PowerstoneWireBlock.POWER_PAIR, oldState.get(PowerstoneWireBlock.POWER_PAIR)), player);
+        }
+        else if (state.get(POWER) < 16 && state.get(PowerstoneWireBlock.POWER_B) == 16) {
+            state.getBlock().onBreak(world, pos, (BlockState)((BlockState)(this.getDefaultState().with(POWER, 16)).with(PowerstoneWireBlock.POWER_B, oldState.get(PowerstoneWireBlock.POWER_B))).with(PowerstoneWireBlock.POWER_PAIR, oldState.get(PowerstoneWireBlock.POWER_PAIR)), player);
+        }
+        else if (oldState.get(POWER) == 16 && oldState.get(PowerstoneWireBlock.POWER_B) < 16) {
+            oldState.getBlock().onBreak(world, pos, (BlockState)((BlockState)(this.getDefaultState().with(POWER, 16)).with(PowerstoneWireBlock.POWER_B, 0)).with(PowerstoneWireBlock.POWER_PAIR, oldState.get(PowerstoneWireBlock.POWER_PAIR)), player);
+        }
+        else if (oldState.get(POWER) < 16 && oldState.get(PowerstoneWireBlock.POWER_B) == 16) {
+            oldState.getBlock().onBreak(world, pos, (BlockState)((BlockState)(this.getDefaultState().with(POWER, 0)).with(PowerstoneWireBlock.POWER_B, 16)).with(PowerstoneWireBlock.POWER_PAIR, oldState.get(PowerstoneWireBlock.POWER_PAIR)), player);
+        }
         this.updateAll(state, world, pos);
     }
 

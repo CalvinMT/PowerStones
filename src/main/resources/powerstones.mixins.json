@@ -10,6 +10,7 @@
       "AbstractRedstoneGateBlockMixin",
       "BellBlockMixin",
       "BigDripleafBlockMixin",
+      "BlockDustParticleMixin",
       "CommandBlockMixin",
       "DispenserBlockMixin",
       "DoorBlockMixin",
