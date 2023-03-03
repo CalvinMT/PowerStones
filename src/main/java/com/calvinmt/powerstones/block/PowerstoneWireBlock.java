@@ -45,17 +45,17 @@ public abstract class PowerstoneWireBlock {
     }));
 
     public static int getWireColorBlue(int powerLevel) {
-        Vec3d vec3d = BLUE_COLORS[powerLevel - 1];
+        Vec3d vec3d = BLUE_COLORS[powerLevel];
         return MathHelper.packRgb((float)vec3d.getX(), (float)vec3d.getY(), (float)vec3d.getZ());
     }
 
     public static int getWireColorGreen(int powerLevel) {
-        Vec3d vec3d = GREEN_COLORS[powerLevel - 1];
+        Vec3d vec3d = GREEN_COLORS[powerLevel];
         return MathHelper.packRgb((float)vec3d.getX(), (float)vec3d.getY(), (float)vec3d.getZ());
     }
 
     public static int getWireColorYellow(int powerLevel) {
-        Vec3d vec3d = YELLOW_COLORS[powerLevel - 1];
+        Vec3d vec3d = YELLOW_COLORS[powerLevel];
         return MathHelper.packRgb((float)vec3d.getX(), (float)vec3d.getY(), (float)vec3d.getZ());
     }
 

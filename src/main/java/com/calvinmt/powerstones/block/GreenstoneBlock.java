@@ -20,7 +20,7 @@ extends Block {
 
     @Override
     public int getWeakGreenstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
-        return 16;
+        return 15;
     }
 
 }

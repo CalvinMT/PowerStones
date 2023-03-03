@@ -12,10 +12,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
-import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -129,36 +127,31 @@ public abstract class RedstoneWireBlockMixin extends Block {
         // Ignored
     }
 
-    @ModifyConstant(method = "<init>(Lnet/minecraft/block/AbstractBlock$Settings;)V", constant = @Constant(intValue = 0))
-    private int redPowerStoneInitialValueOff(int oldInitialPower) {
-        return 1;
-    }
-
     @ModifyArg(method = "<init>(Lnet/minecraft/block/AbstractBlock$Settings;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/RedstoneWireBlock;setDefaultState(Lnet/minecraft/block/BlockState;)V"))
     public BlockState initialiseDefaultStatePowerStoneProperties(BlockState state) {
-        return (BlockState)state.with(PowerstoneWireBlock.POWER_B, 0);
+        return (BlockState)state.with(PowerstoneWireBlock.POWER_B, 16);
     }
 
     @Inject(method = "getPlacementState(Lnet/minecraft/item/ItemPlacementContext;)Lnet/minecraft/block/BlockState;", at = @At("HEAD"))
     private void getPlacementStateSetColor(ItemPlacementContext ctx, CallbackInfoReturnable<BlockState> callbackInfo) {
         if (ctx.getStack().isOf(PowerStones.YELLOWSTONE)) {
-            this.setDefaultState(this.getDefaultState().with(POWER, 0));
-            this.setDefaultState(this.getDefaultState().with(PowerstoneWireBlock.POWER_B, 1));
+            this.setDefaultState(this.getDefaultState().with(POWER, 16));
+            this.setDefaultState(this.getDefaultState().with(PowerstoneWireBlock.POWER_B, 0));
             this.setDefaultState(this.getDefaultState().with(PowerstoneWireBlock.POWER_PAIR, PowerPair.GREEN_YELLOW));
         }
         else if (ctx.getStack().isOf(PowerStones.GREENSTONE)) {
-            this.setDefaultState(this.getDefaultState().with(POWER, 1));
-            this.setDefaultState(this.getDefaultState().with(PowerstoneWireBlock.POWER_B, 0));
+            this.setDefaultState(this.getDefaultState().with(POWER, 0));
+            this.setDefaultState(this.getDefaultState().with(PowerstoneWireBlock.POWER_B, 16));
             this.setDefaultState(this.getDefaultState().with(PowerstoneWireBlock.POWER_PAIR, PowerPair.GREEN_YELLOW));
         }
         else if (ctx.getStack().isOf(PowerStones.BLUESTONE)) {
-            this.setDefaultState(this.getDefaultState().with(POWER, 0));
-            this.setDefaultState(this.getDefaultState().with(PowerstoneWireBlock.POWER_B, 1));
+            this.setDefaultState(this.getDefaultState().with(POWER, 16));
+            this.setDefaultState(this.getDefaultState().with(PowerstoneWireBlock.POWER_B, 0));
             this.setDefaultState(this.getDefaultState().with(PowerstoneWireBlock.POWER_PAIR, PowerPair.RED_BLUE));
         }
         else {
-            this.setDefaultState(this.getDefaultState().with(POWER, 1));
-            this.setDefaultState(this.getDefaultState().with(PowerstoneWireBlock.POWER_B, 0));
+            this.setDefaultState(this.getDefaultState().with(POWER, 0));
+            this.setDefaultState(this.getDefaultState().with(PowerstoneWireBlock.POWER_B, 16));
             this.setDefaultState(this.getDefaultState().with(PowerstoneWireBlock.POWER_PAIR, PowerPair.RED_BLUE));
         }
     }
@@ -183,6 +176,13 @@ public abstract class RedstoneWireBlockMixin extends Block {
         callbackInfo.setReturnValue(this.getPlacementState(world, (BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.dotState).with(DIRECTION_TO_WIRE_CONNECTION_PROPERTY.get(direction), wireConnection)).with(POWER, state.get(POWER))).with(PowerstoneWireBlock.POWER_B, state.get(PowerstoneWireBlock.POWER_B))).with(PowerstoneWireBlock.POWER_PAIR, state.get(PowerstoneWireBlock.POWER_PAIR)), pos));
     }
 
+    @Inject(method = "getWeakRedstonePower(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;)I", at = @At(value = "FIELD", target = "Lnet/minecraft/util/math/Direction;UP:Lnet/minecraft/util/math/Direction;", opcode = Opcodes.GETSTATIC), locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true)
+    public void getWeakRedstonePowerIfUnpowered(BlockState state, BlockView world, BlockPos pos, Direction direction, CallbackInfoReturnable<Integer> callbackInfo, int i) {
+        if (i == 16) {
+            callbackInfo.setReturnValue(0);
+        }
+    }
+
     public int getWeakBluestonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
         if (state.get(PowerstoneWireBlock.POWER_PAIR) != PowerPair.RED_BLUE) {
             return 0;
@@ -191,7 +191,7 @@ public abstract class RedstoneWireBlockMixin extends Block {
             return 0;
         }
         int i = state.get(PowerstoneWireBlock.POWER_B);
-        if (i == 0) {
+        if (i == 0 || i == 16) {
             return 0;
         }
         if (direction == Direction.UP || ((WireConnection)this.getPlacementState(world, state, pos).get(DIRECTION_TO_WIRE_CONNECTION_PROPERTY.get(direction.getOpposite()))).isConnected()) {
@@ -208,7 +208,7 @@ public abstract class RedstoneWireBlockMixin extends Block {
             return 0;
         }
         int i = state.get(POWER);
-        if (i == 0) {
+        if (i == 0 || i == 16) {
             return 0;
         }
         if (direction == Direction.UP || ((WireConnection)this.getPlacementState(world, state, pos).get(DIRECTION_TO_WIRE_CONNECTION_PROPERTY.get(direction.getOpposite()))).isConnected()) {
@@ -225,7 +225,7 @@ public abstract class RedstoneWireBlockMixin extends Block {
             return 0;
         }
         int i = state.get(PowerstoneWireBlock.POWER_B);
-        if (i == 0) {
+        if (i == 0 || i == 16) {
             return 0;
         }
         if (direction == Direction.UP || ((WireConnection)this.getPlacementState(world, state, pos).get(DIRECTION_TO_WIRE_CONNECTION_PROPERTY.get(direction.getOpposite()))).isConnected()) {
@@ -258,8 +258,8 @@ public abstract class RedstoneWireBlockMixin extends Block {
     private static boolean isSamePowerStoneType(BlockState currentState, BlockState state) {
         boolean result = false;
         if (currentState.get(PowerstoneWireBlock.POWER_PAIR) == state.get(PowerstoneWireBlock.POWER_PAIR)
-         && ((currentState.get(POWER) > 0 && state.get(POWER) > 0)
-          || (currentState.get(PowerstoneWireBlock.POWER_B) > 0 && state.get(PowerstoneWireBlock.POWER_B) > 0))) {
+         && ((currentState.get(POWER) < 16 && state.get(POWER) < 16)
+          || (currentState.get(PowerstoneWireBlock.POWER_B) < 16 && state.get(PowerstoneWireBlock.POWER_B) < 16))) {
             result = true;
         }
         return result;
@@ -284,7 +284,7 @@ public abstract class RedstoneWireBlockMixin extends Block {
     }
 
     private boolean haveDifferentPowerLevel(int i, int j) {
-        return i != 0 && j != 0 && i != j;
+        return i < 16 && j < 16 && i != j;
     }
 
     @Overwrite
@@ -317,23 +317,13 @@ public abstract class RedstoneWireBlockMixin extends Block {
             }
         }
     }
-
-    @ModifyVariable(method = "getReceivedRedstonePower(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)I", at = @At(value = "STORE", ordinal = 0), ordinal = 1)
-    private int getReceivedRedstonePowerMinPower(int oldMinPower) {
-        return 1;
-    }
-
-    @ModifyConstant(method = "getReceivedRedstonePower(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)I", constant = @Constant(intValue = 15))
-    private int getReceivedRedstonePowerMaxPower(int oldMaxPower) {
-        return 16;
-    }
     
     private int getReceivedBluestonePower(World world, BlockPos pos) {
         this.wiresGivePower = false;
         int i = ((WorldInterface) world).getReceivedBluestonePower(pos);
         this.wiresGivePower = true;
-        int j = 1;
-        if (i < 16) {
+        int j = 0;
+        if (i < 15) {
             for (Direction direction : Direction.Type.HORIZONTAL) {
                 BlockPos blockPos = pos.offset(direction);
                 BlockState blockState = world.getBlockState(blockPos);
@@ -354,8 +344,8 @@ public abstract class RedstoneWireBlockMixin extends Block {
         this.wiresGivePower = false;
         int i = ((WorldInterface) world).getReceivedGreenstonePower(pos);
         this.wiresGivePower = true;
-        int j = 1;
-        if (i < 16) {
+        int j = 0;
+        if (i < 15) {
             for (Direction direction : Direction.Type.HORIZONTAL) {
                 BlockPos blockPos = pos.offset(direction);
                 BlockState blockState = world.getBlockState(blockPos);
@@ -376,8 +366,8 @@ public abstract class RedstoneWireBlockMixin extends Block {
         this.wiresGivePower = false;
         int i = ((WorldInterface) world).getReceivedYellowstonePower(pos);
         this.wiresGivePower = true;
-        int j = 1;
-        if (i < 16) {
+        int j = 0;
+        if (i < 15) {
             for (Direction direction : Direction.Type.HORIZONTAL) {
                 BlockPos blockPos = pos.offset(direction);
                 BlockState blockState = world.getBlockState(blockPos);
@@ -396,59 +386,67 @@ public abstract class RedstoneWireBlockMixin extends Block {
 
     @Inject(method = "increasePower(Lnet/minecraft/block/BlockState;)I", at = @At("HEAD"), cancellable = true)
     private void increasePower(BlockState state, CallbackInfoReturnable<Integer> callbackInfo) {
-        if (state.isOf(this) && state.get(PowerstoneWireBlock.POWER_PAIR) != PowerPair.RED_BLUE) {
+        if (state.isOf(this) && state.get(PowerstoneWireBlock.POWER_PAIR) == PowerPair.RED_BLUE && state.get(POWER) < 16) {
+            callbackInfo.setReturnValue(state.get(POWER));
+        }
+        else {
             callbackInfo.setReturnValue(0);
         }
     }
 
     private int increasePowerBlue(BlockState state) {
-        return (state.isOf(this) && state.get(PowerstoneWireBlock.POWER_PAIR) == PowerPair.RED_BLUE) ? state.get(PowerstoneWireBlock.POWER_B) : 0;
+        if (state.isOf(this) && state.get(PowerstoneWireBlock.POWER_PAIR) == PowerPair.RED_BLUE && state.get(PowerstoneWireBlock.POWER_B) < 16) {
+            return state.get(PowerstoneWireBlock.POWER_B);
+        }
+        return 0;
     }
 
     private int increasePowerGreen(BlockState state) {
-        return (state.isOf(this) && state.get(PowerstoneWireBlock.POWER_PAIR) == PowerPair.GREEN_YELLOW) ? state.get(POWER) : 0;
+        if (state.isOf(this) && state.get(PowerstoneWireBlock.POWER_PAIR) == PowerPair.GREEN_YELLOW && state.get(POWER) < 16) {
+            return state.get(POWER);
+        }
+        return 0;
     }
 
     private int increasePowerYellow(BlockState state) {
-        return (state.isOf(this) && state.get(PowerstoneWireBlock.POWER_PAIR) == PowerPair.GREEN_YELLOW) ? state.get(PowerstoneWireBlock.POWER_B) : 0;
-    }
-
-    @ModifyVariable(method = "getWireColor(I)I", at = @At("HEAD"))
-    private static int getWireColorPowerLevel(int powerLevel) {
-        return powerLevel - 1;
+        if (state.isOf(this) && state.get(PowerstoneWireBlock.POWER_PAIR) == PowerPair.GREEN_YELLOW && state.get(PowerstoneWireBlock.POWER_B) < 16) {
+            return state.get(PowerstoneWireBlock.POWER_B);
+        }
+        return 0;
     }
 
     private Vec3d getPowerstoneColor(BlockState state, Random random) {
         List<Vec3d[]> colorsList = new ArrayList<>();
         List<Integer> powerList = new ArrayList<>();
+        int power = state.get(POWER);
+        int powerB = state.get(PowerstoneWireBlock.POWER_B);
         if (state.get(PowerstoneWireBlock.POWER_PAIR) == PowerPair.RED_BLUE) {
-            if (state.get(POWER) > 1) {
+            if (power > 0 && power < 16) {
                 colorsList.add(COLORS);
-                powerList.add(state.get(POWER));
+                powerList.add(power);
             }
-            if (state.get(PowerstoneWireBlock.POWER_B) > 1) {
+            if (powerB > 0 && powerB < 16) {
                 colorsList.add(PowerstoneWireBlock.BLUE_COLORS);
-                powerList.add(state.get(PowerstoneWireBlock.POWER_B));
+                powerList.add(powerB);
             }
         }
         if (state.get(PowerstoneWireBlock.POWER_PAIR) == PowerPair.GREEN_YELLOW) {
-            if (state.get(POWER) > 1) {
+            if (power > 0 && power < 16) {
                 colorsList.add(PowerstoneWireBlock.GREEN_COLORS);
-                powerList.add(state.get(POWER));
+                powerList.add(power);
             }
-            if (state.get(PowerstoneWireBlock.POWER_B) > 1) {
+            if (powerB > 0 && powerB < 16) {
                 colorsList.add(PowerstoneWireBlock.YELLOW_COLORS);
-                powerList.add(state.get(PowerstoneWireBlock.POWER_B));
+                powerList.add(powerB);
             }
         }
         int i = random.nextInt(colorsList.size());
-        int power = powerList.get(i) - 1;
-        return colorsList.get(i)[power];
+        return colorsList.get(i)[powerList.get(i)];
     }
 
     @Inject(method = "randomDisplayTick(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/random/Random;)V", at = @At("HEAD"), cancellable = true)
     private void randomDisplayTickPowerCondition(BlockState state, World world, BlockPos pos, Random random, CallbackInfo callbackInfo) {
-        if (state.get(POWER) < 2 && state.get(PowerstoneWireBlock.POWER_B) < 2) {
+        if ((state.get(POWER) == 0 || state.get(POWER) == 16) && (state.get(PowerstoneWireBlock.POWER_B) == 0 || state.get(PowerstoneWireBlock.POWER_B) == 16)) {
             callbackInfo.cancel();
         }
     }
@@ -482,7 +480,7 @@ public abstract class RedstoneWireBlockMixin extends Block {
         if (player == null || !player.getAbilities().creativeMode) {
             player.getMainHandStack().decrement(1);
         }
-        world.setBlockState(pos, state.with(powerProperty, 1),  Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
+        world.setBlockState(pos, state.with(powerProperty, 0), Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
         state = world.getBlockState(pos);
         this.updateAll(state, world, pos);
     }
@@ -490,21 +488,21 @@ public abstract class RedstoneWireBlockMixin extends Block {
     @Inject(method = "onUse(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;Lnet/minecraft/util/hit/BlockHitResult;)Lnet/minecraft/util/ActionResult;", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/RedstoneWireBlock;isFullyConnected(Lnet/minecraft/block/BlockState;)Z", ordinal = 0), cancellable = true)
     public void onUseAddColor(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit, CallbackInfoReturnable<ActionResult> callbackInfo) {
         if (state.get(PowerstoneWireBlock.POWER_PAIR) == PowerPair.RED_BLUE) {
-            if (player.getMainHandStack().isOf(Items.REDSTONE) && state.get(POWER) == 0) {
+            if (player.getMainHandStack().isOf(Items.REDSTONE) && state.get(POWER) == 16) {
                 this.placeOnUse(state, world, pos, player, POWER);
                 callbackInfo.setReturnValue(ActionResult.SUCCESS);
             }
-            else if (player.getMainHandStack().isOf(PowerStones.BLUESTONE) && state.get(PowerstoneWireBlock.POWER_B) == 0) {
+            else if (player.getMainHandStack().isOf(PowerStones.BLUESTONE) && state.get(PowerstoneWireBlock.POWER_B) == 16) {
                 this.placeOnUse(state, world, pos, player, PowerstoneWireBlock.POWER_B);
                 callbackInfo.setReturnValue(ActionResult.SUCCESS);
             }
         }
         else if (state.get(PowerstoneWireBlock.POWER_PAIR) == PowerPair.GREEN_YELLOW) {
-            if (player.getMainHandStack().isOf(PowerStones.GREENSTONE) && state.get(POWER) == 0) {
+            if (player.getMainHandStack().isOf(PowerStones.GREENSTONE) && state.get(POWER) == 16) {
                 this.placeOnUse(state, world, pos, player, POWER);
                 callbackInfo.setReturnValue(ActionResult.SUCCESS);
             }
-            else if (player.getMainHandStack().isOf(PowerStones.YELLOWSTONE) && state.get(PowerstoneWireBlock.POWER_B) == 0) {
+            else if (player.getMainHandStack().isOf(PowerStones.YELLOWSTONE) && state.get(PowerstoneWireBlock.POWER_B) == 16) {
                 this.placeOnUse(state, world, pos, player, PowerstoneWireBlock.POWER_B);
                 callbackInfo.setReturnValue(ActionResult.SUCCESS);
             }
@@ -533,10 +531,10 @@ public abstract class RedstoneWireBlockMixin extends Block {
 
     private boolean hasMoreThanOnePowerstone(BlockState state) {
         int i = 0;
-        if (state.get(POWER) > 0) {
+        if (state.get(POWER) < 16) {
             i++;
         }
-        if (state.get(PowerstoneWireBlock.POWER_B) > 0) {
+        if (state.get(PowerstoneWireBlock.POWER_B) < 16) {
             i++;
         }
         return i > 1;
@@ -547,7 +545,7 @@ public abstract class RedstoneWireBlockMixin extends Block {
             BlockSoundGroup blockSoundGroup = state.getSoundGroup();
             world.playSound(player, pos, state.getSoundGroup().getPlaceSound(), SoundCategory.BLOCKS, (blockSoundGroup.getVolume() + 1.0f) / 2.0f, blockSoundGroup.getPitch() * 0.8f);
         }
-        world.setBlockState(pos, state.with(powerProperty, 0),  Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
+        world.setBlockState(pos, state.with(powerProperty, 16),  Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
         world.spawnEntity(new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(), new ItemStack(item)));
         state = world.getBlockState(pos);
         this.updateAll(state, world, pos);
@@ -556,18 +554,18 @@ public abstract class RedstoneWireBlockMixin extends Block {
     @Override
     public void onBlockBreakStart(BlockState state, World world, BlockPos pos, PlayerEntity player) {
         if (state.get(PowerstoneWireBlock.POWER_PAIR) == PowerPair.RED_BLUE) {
-            if (player.getMainHandStack().isOf(Items.REDSTONE) && state.get(POWER) > 0) {
+            if (player.getMainHandStack().isOf(Items.REDSTONE) && state.get(POWER) < 16) {
                 this.breakSingle(state, world, pos, player, POWER, Items.REDSTONE);
             }
-            else if (player.getMainHandStack().isOf(PowerStones.BLUESTONE) && state.get(PowerstoneWireBlock.POWER_B) > 0) {
+            else if (player.getMainHandStack().isOf(PowerStones.BLUESTONE) && state.get(PowerstoneWireBlock.POWER_B) < 16) {
                 this.breakSingle(state, world, pos, player, PowerstoneWireBlock.POWER_B, PowerStones.BLUESTONE);
             }
         }
         else if (state.get(PowerstoneWireBlock.POWER_PAIR) == PowerPair.GREEN_YELLOW) {
-            if (player.getMainHandStack().isOf(PowerStones.GREENSTONE) && state.get(POWER) > 0) {
+            if (player.getMainHandStack().isOf(PowerStones.GREENSTONE) && state.get(POWER) < 16) {
                 this.breakSingle(state, world, pos, player, POWER, PowerStones.GREENSTONE);
             }
-            else if (player.getMainHandStack().isOf(PowerStones.YELLOWSTONE) && state.get(PowerstoneWireBlock.POWER_B) > 0) {
+            else if (player.getMainHandStack().isOf(PowerStones.YELLOWSTONE) && state.get(PowerstoneWireBlock.POWER_B) < 16) {
                 this.breakSingle(state, world, pos, player, PowerstoneWireBlock.POWER_B, PowerStones.YELLOWSTONE);
             }
         }
@@ -575,7 +573,7 @@ public abstract class RedstoneWireBlockMixin extends Block {
 
     @Override
     public float calcBlockBreakingDelta(BlockState state, PlayerEntity player, BlockView world, BlockPos pos) {
-        if (state.get(POWER) == 0 && state.get(PowerstoneWireBlock.POWER_B) == 0) {
+        if (state.get(POWER) == 16 && state.get(PowerstoneWireBlock.POWER_B) == 16) {
             return 1.0f;
         }
         if (player.getMainHandStack().isOf(Items.REDSTONE) || player.getMainHandStack().isOf(PowerStones.BLUESTONE) || player.getMainHandStack().isOf(PowerStones.GREENSTONE) || player.getMainHandStack().isOf(PowerStones.YELLOWSTONE)) {

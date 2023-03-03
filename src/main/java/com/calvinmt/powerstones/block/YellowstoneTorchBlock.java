@@ -54,9 +54,9 @@ extends TorchBlock {
    @Override
    public int getWeakYellowstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
        if (state.get(LIT).booleanValue() && Direction.UP != direction) {
-           return 16;
+           return 15;
        }
-       return 1;
+       return 0;
    }
 
    protected boolean shouldUnpower(World world, BlockPos pos, BlockState state) {
