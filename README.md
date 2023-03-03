@@ -22,9 +22,11 @@ Mods needed to be installed in order for PowerStones to function correctly:
 
 ## Compatibility
 
-PowerStones is undoubtedly incompatible with any other redstone mod. Either it will break other redstone mods, or those mods won't function correctly.
+PowerStones is compatible with other redstone mods, such as Red Bits or Redstone Bits.
 
 It is intended to make PowerStones compatible with as much other mods as possible, but this will take some time.
+
+If there is a mod that you like which seems incompatible with PowerStones, please make an new issue on GitHub using the "Mod compatibility request".
 
 ## Features
 
