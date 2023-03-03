@@ -29,7 +29,6 @@ public abstract class ClientPlayerInteractionManagerMixin {
     @Redirect(method = "Lnet/minecraft/client/network/ClientPlayerInteractionManager;method_41936(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;I)Lnet/minecraft/network/Packet;", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerInteractionManager;breakBlock(Lnet/minecraft/util/math/BlockPos;)Z"))
     private boolean attackBlockCreativeBreakBlock(ClientPlayerInteractionManager clientPlayerInteractionManager, BlockPos pos) {
         BlockState blockState = this.client.world.getBlockState(pos);
-        PowerStones.LOGGER.info("" + (blockState.isOf(Blocks.REDSTONE_WIRE)));
         if (blockState.isOf(Blocks.REDSTONE_WIRE)) {
             blockState.onBlockBreakStart(this.client.world, pos, this.client.player);
             blockState = this.client.world.getBlockState(pos);
