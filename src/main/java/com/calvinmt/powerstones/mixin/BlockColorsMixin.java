@@ -24,16 +24,16 @@ public class BlockColorsMixin {
 			to = @At(value = "FIELD", args = "Lnet/minecraft/block/Blocks;REDSTONE_WIRE")
 		))
     private static void getRedstoneWireColor(BlockState state, @Nullable BlockRenderView world, @Nullable BlockPos pos, int tintIndex, CallbackInfoReturnable<Integer> callbackInfo) {
-		if (state.get(RedstoneWireBlock.POWER) > 0 && tintIndex == 0) {
+		if (state.get(RedstoneWireBlock.POWER) < 16 && tintIndex == 0) {
 			callbackInfo.setReturnValue(RedstoneWireBlock.getWireColor(state.get(RedstoneWireBlock.POWER)));
 		}
-		else if (state.get(PowerstoneWireBlock.POWER_B) > 0 && tintIndex == 1) {
+		else if (state.get(PowerstoneWireBlock.POWER_B) < 16 && tintIndex == 1) {
 			callbackInfo.setReturnValue(PowerstoneWireBlock.getWireColorBlue(state.get(PowerstoneWireBlock.POWER_B)));
 		}
-		else if (state.get(RedstoneWireBlock.POWER) > 0 && tintIndex == 2) {
+		else if (state.get(RedstoneWireBlock.POWER) < 16 && tintIndex == 2) {
 			callbackInfo.setReturnValue(PowerstoneWireBlock.getWireColorGreen(state.get(RedstoneWireBlock.POWER)));
 		}
-		else if (state.get(PowerstoneWireBlock.POWER_B) > 0 && tintIndex == 3) {
+		else if (state.get(PowerstoneWireBlock.POWER_B) < 16 && tintIndex == 3) {
 			callbackInfo.setReturnValue(PowerstoneWireBlock.getWireColorYellow(state.get(PowerstoneWireBlock.POWER_B)));
 		}
 		else {

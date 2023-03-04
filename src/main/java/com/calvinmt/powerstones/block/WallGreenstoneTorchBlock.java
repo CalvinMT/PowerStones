@@ -81,9 +81,9 @@ extends GreenstoneTorchBlock {
     @Override
     public int getWeakGreenstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
         if (state.get(LIT).booleanValue() && state.get(FACING) != direction) {
-            return 16;
+            return 15;
         }
-        return 1;
+        return 0;
     }
 
     @Override

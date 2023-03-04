@@ -19,20 +19,20 @@ public class LootTableModifier {
     private static final Identifier REDSTONE_WIRE_LOOT_TABLE_ID = Blocks.REDSTONE_WIRE.getLootTableId();
 
     public static void modifyLootTables() {
-        // Redstone drop if POWER >= 1
+        // Redstone drop if POWER < 16
         LootTableEvents.MODIFY.register((resourceManager, lootManager, id, tableBuilder, source) -> {
             if (source.isBuiltin() && id.equals(REDSTONE_WIRE_LOOT_TABLE_ID)) {
                 LootCondition.Builder isPairRedBlueCondition = BlockStatePropertyLootCondition.builder(Blocks.REDSTONE_WIRE).properties(StatePredicate.Builder.create()
                     .exactMatch(PowerstoneWireBlock.POWER_PAIR, PowerPair.RED_BLUE));
                     LootCondition.Builder isPoweredCondition = BlockStatePropertyLootCondition.builder(Blocks.REDSTONE_WIRE).properties(StatePredicate.Builder.create()
-                        .exactMatch(RedstoneWireBlock.POWER, 0)).invert();
+                        .exactMatch(RedstoneWireBlock.POWER, 16)).invert();
                 tableBuilder.modifyPools(poolBuilder -> poolBuilder
                     .conditionally(isPairRedBlueCondition)
                     .conditionally(isPoweredCondition));
             }
         });
 
-        // Bluestone drop if POWER_B >= 1
+        // Bluestone drop if POWER_B < 16
         LootTableEvents.MODIFY.register((resourceManager, lootManager, id, tableBuilder, source) -> {
             if (source.isBuiltin() && id.equals(REDSTONE_WIRE_LOOT_TABLE_ID)) {
                 LootPool.Builder poolBuilder = LootPool.builder()
@@ -41,14 +41,14 @@ public class LootTableModifier {
                     .conditionally(BlockStatePropertyLootCondition.builder(Blocks.REDSTONE_WIRE).properties(StatePredicate.Builder.create()
                         .exactMatch(PowerstoneWireBlock.POWER_PAIR, PowerPair.RED_BLUE)))
                     .conditionally(BlockStatePropertyLootCondition.builder(Blocks.REDSTONE_WIRE).properties(StatePredicate.Builder.create()
-                        .exactMatch(PowerstoneWireBlock.POWER_B, 0)).invert())
+                        .exactMatch(PowerstoneWireBlock.POWER_B, 16)).invert())
                     .with(ItemEntry.builder(PowerStones.BLUESTONE))
                     .rolls(ConstantLootNumberProvider.create(1.0f));
                 tableBuilder.pool(poolBuilder.build());
             }
         });
 
-        // Greenstone drop if POWER >= 1
+        // Greenstone drop if POWER < 16
         LootTableEvents.MODIFY.register((resourceManager, lootManager, id, tableBuilder, source) -> {
             if (source.isBuiltin() && id.equals(REDSTONE_WIRE_LOOT_TABLE_ID)) {
                 LootPool.Builder poolBuilder = LootPool.builder()
@@ -57,14 +57,14 @@ public class LootTableModifier {
                     .conditionally(BlockStatePropertyLootCondition.builder(Blocks.REDSTONE_WIRE).properties(StatePredicate.Builder.create()
                         .exactMatch(PowerstoneWireBlock.POWER_PAIR, PowerPair.GREEN_YELLOW)))
                     .conditionally(BlockStatePropertyLootCondition.builder(Blocks.REDSTONE_WIRE).properties(StatePredicate.Builder.create()
-                        .exactMatch(RedstoneWireBlock.POWER, 0)).invert())
+                        .exactMatch(RedstoneWireBlock.POWER, 16)).invert())
                     .with(ItemEntry.builder(PowerStones.GREENSTONE))
                     .rolls(ConstantLootNumberProvider.create(1.0f));
                 tableBuilder.pool(poolBuilder.build());
             }
         });
 
-        // Yellowstone drop if POWER_B >= 1
+        // Yellowstone drop if POWER_B < 16
         LootTableEvents.MODIFY.register((resourceManager, lootManager, id, tableBuilder, source) -> {
             if (source.isBuiltin() && id.equals(REDSTONE_WIRE_LOOT_TABLE_ID)) {
                 LootPool.Builder poolBuilder = LootPool.builder()
@@ -73,7 +73,7 @@ public class LootTableModifier {
                     .conditionally(BlockStatePropertyLootCondition.builder(Blocks.REDSTONE_WIRE).properties(StatePredicate.Builder.create()
                         .exactMatch(PowerstoneWireBlock.POWER_PAIR, PowerPair.GREEN_YELLOW)))
                     .conditionally(BlockStatePropertyLootCondition.builder(Blocks.REDSTONE_WIRE).properties(StatePredicate.Builder.create()
-                        .exactMatch(PowerstoneWireBlock.POWER_B, 0)).invert())
+                        .exactMatch(PowerstoneWireBlock.POWER_B, 16)).invert())
                     .with(ItemEntry.builder(PowerStones.YELLOWSTONE))
                     .rolls(ConstantLootNumberProvider.create(1.0f));
                 tableBuilder.pool(poolBuilder.build());
