@@ -58,8 +58,6 @@ public class PowerStones implements ModInitializer   {
 
 	@Override
 	public void onInitialize() {
-		LOGGER.info("PowerStones initialising...");
-
 		Registry.register(Registry.ITEM, new Identifier(NAMESPACE, "bluestone"), BLUESTONE);
 		Registry.register(Registry.ITEM, new Identifier(NAMESPACE, "greenstone"), GREENSTONE);
 		Registry.register(Registry.ITEM, new Identifier(NAMESPACE, "yellowstone"), YELLOWSTONE);
@@ -79,8 +77,6 @@ public class PowerStones implements ModInitializer   {
 		Registry.register(Registry.BLOCK, new Identifier(NAMESPACE, "bluestone_block"), BLUESTONE_BLOCK);
 		Registry.register(Registry.BLOCK, new Identifier(NAMESPACE, "greenstone_block"), GREENSTONE_BLOCK);
 		Registry.register(Registry.BLOCK, new Identifier(NAMESPACE, "yellowstone_block"), YELLOWSTONE_BLOCK);
-
-		LOGGER.info("PowerStones initialised");
 	}
 
 }
