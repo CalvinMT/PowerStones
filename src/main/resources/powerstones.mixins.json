@@ -11,7 +11,6 @@
       "AliasedBlockItemMixin",
       "BellBlockMixin",
       "BigDripleafBlockMixin",
-      "BlockDustParticleMixin",
       "CommandBlockMixin",
       "DispenserBlockMixin",
       "DoorBlockMixin",
@@ -34,6 +33,7 @@
       "WorldViewMixin"],
     "client": [
       "BlockColorsMixin",
+      "BlockDustParticleMixin",
       "ClientPlayerInteractionManagerMixin"],
     "server": [],
     "injectors": {

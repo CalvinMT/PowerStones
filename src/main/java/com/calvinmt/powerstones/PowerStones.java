@@ -14,7 +14,6 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.item.WallStandingBlockItem;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.sound.BlockSoundGroup;
-import net.minecraft.state.property.Properties;
 import net.minecraft.util.Identifier;
 
 import org.slf4j.Logger;

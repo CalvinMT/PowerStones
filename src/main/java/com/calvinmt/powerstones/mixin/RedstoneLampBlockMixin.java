@@ -24,7 +24,7 @@ public class RedstoneLampBlockMixin {
         return ((WorldInterface) world).isReceivingPower(pos);
     }
 
-    @Redirect(method = "scheduledTick(Lnet/minecraft/block/BlockState;Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/random/Random;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;isReceivingRedstonePower(Lnet/minecraft/util/math/BlockPos;)Z"))
+    @Redirect(method = "scheduledTick(Lnet/minecraft/block/BlockState;Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/BlockPos;Ljava/util/Random;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;isReceivingRedstonePower(Lnet/minecraft/util/math/BlockPos;)Z"))
     private boolean scheduledTickIsReceivingPower(ServerWorld world, BlockPos pos) {
         return ((WorldInterface) world).isReceivingPower(pos);
     }

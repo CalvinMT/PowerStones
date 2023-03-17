@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
@@ -54,7 +55,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.random.Random;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
@@ -275,7 +275,7 @@ public abstract class RedstoneWireBlockMixin extends Block {
 
     @Redirect(method = "connectsTo(Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/Direction;)Z", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;isOf(Lnet/minecraft/block/Block;)Z", ordinal = 0))
     private static boolean checkConnectsToState(BlockState state, Block block) {
-        return state.isOf(block) && isSamePowerStoneType(connectsToState, state);
+        return state.isOf(block) && connectsToState.isOf(block) && isSamePowerStoneType(connectsToState, state);
     }
 
     @Inject(method = "connectsTo(Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/Direction;)Z", at = @At(value = "RETURN", ordinal = 3), cancellable = true)
@@ -444,19 +444,19 @@ public abstract class RedstoneWireBlockMixin extends Block {
         return colorsList.get(i)[powerList.get(i)];
     }
 
-    @Inject(method = "randomDisplayTick(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/random/Random;)V", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "randomDisplayTick(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Ljava/util/Random;)V", at = @At("HEAD"), cancellable = true)
     private void randomDisplayTickPowerCondition(BlockState state, World world, BlockPos pos, Random random, CallbackInfo callbackInfo) {
         if ((state.get(POWER) == 0 || state.get(POWER) == 16) && (state.get(PowerstoneWireBlock.POWER_B) == 0 || state.get(PowerstoneWireBlock.POWER_B) == 16)) {
             callbackInfo.cancel();
         }
     }
 
-    @ModifyVariable(method = "randomDisplayTick(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/random/Random;)V", at = @At("STORE"), ordinal = 0)
+    @ModifyVariable(method = "randomDisplayTick(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Ljava/util/Random;)V", at = @At("STORE"), ordinal = 0)
     private int randomDisplayTickGetColorIndex(int i) {
         return 1;
     }
 
-    @Redirect(method = "randomDisplayTick(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/random/Random;)V", at = @At(value = "FIELD", target = "Lnet/minecraft/block/RedstoneWireBlock;COLORS:[Lnet/minecraft/util/math/Vec3d;"))
+    @Redirect(method = "randomDisplayTick(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Ljava/util/Random;)V", at = @At(value = "FIELD", target = "Lnet/minecraft/block/RedstoneWireBlock;COLORS:[Lnet/minecraft/util/math/Vec3d;"))
     private Vec3d[] randomDisplayTickGetColor(BlockState state, World world, BlockPos pos, Random random) {
         return Util.make(new Vec3d[2], colors -> {
             colors[1] = this.getPowerstoneColor(state, random);

@@ -11,6 +11,7 @@ import com.llamalad7.mixinextras.injector.ModifyReceiver;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.server.world.ServerWorld;
@@ -26,10 +27,10 @@ public abstract class ServerPlayerInteractionManagerMixin {
     protected @Final ServerPlayerEntity player;
 
     @Shadow
-    public abstract void finishMining(BlockPos pos, int sequence, String reason);
+    public abstract void finishMining(BlockPos pos, PlayerActionC2SPacket.Action action, String reason);
 
-    @Redirect(method = "processBlockBreakingAction(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/network/packet/c2s/play/PlayerActionC2SPacket$Action;Lnet/minecraft/util/math/Direction;II)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerInteractionManager;finishMining(Lnet/minecraft/util/math/BlockPos;ILjava/lang/String;)V"))
-    private void processBlockBreakingActionCreativeFinishMining(ServerPlayerInteractionManager serverPlayerInteractionManager, BlockPos pos, int sequence, String reason) {
+    @Redirect(method = "processBlockBreakingAction(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/network/packet/c2s/play/PlayerActionC2SPacket$Action;Lnet/minecraft/util/math/Direction;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerInteractionManager;finishMining(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/network/packet/c2s/play/PlayerActionC2SPacket$Action;Ljava/lang/String;)V"))
+    private void processBlockBreakingActionCreativeFinishMining(ServerPlayerInteractionManager serverPlayerInteractionManager, BlockPos pos, PlayerActionC2SPacket.Action sequence, String reason) {
         BlockState blockState = this.world.getBlockState(pos);
         if (blockState.isOf(Blocks.REDSTONE_WIRE)) {
             blockState.onBlockBreakStart(this.world, pos, this.player);
@@ -43,7 +44,7 @@ public abstract class ServerPlayerInteractionManagerMixin {
         }
     }
 
-    @ModifyReceiver(method = "processBlockBreakingAction(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/network/packet/c2s/play/PlayerActionC2SPacket$Action;Lnet/minecraft/util/math/Direction;II)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;calcBlockBreakingDelta(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;)F"))
+    @ModifyReceiver(method = "processBlockBreakingAction(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/network/packet/c2s/play/PlayerActionC2SPacket$Action;Lnet/minecraft/util/math/Direction;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;calcBlockBreakingDelta(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;)F"))
     private BlockState processBlockBreakingActionUpdateBlockState(BlockState blockState, PlayerEntity player, BlockView world, BlockPos pos) {
         return this.world.getBlockState(pos);
     }
