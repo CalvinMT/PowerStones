@@ -41,7 +41,7 @@ public abstract class ClientPlayerInteractionManagerMixin {
         }
     }
 
-    @Redirect(method = "Lnet/minecraft/client/network/ClientPlayerInteractionManager;method_41936(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;I)Lnet/minecraft/network/Packet;", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerInteractionManager;breakBlock(Lnet/minecraft/util/math/BlockPos;)Z"))
+    @Redirect(method = "Lnet/minecraft/client/network/ClientPlayerInteractionManager;method_41936(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;I)Lnet/minecraft/network/packet/Packet;", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerInteractionManager;breakBlock(Lnet/minecraft/util/math/BlockPos;)Z"))
     private boolean attackBlockCreativeBreakBlock(ClientPlayerInteractionManager clientPlayerInteractionManager, BlockPos pos) {
         BlockState blockState = this.client.world.getBlockState(pos);
         if (blockState.isOf(Blocks.REDSTONE_WIRE)) {
@@ -54,7 +54,7 @@ public abstract class ClientPlayerInteractionManagerMixin {
         return this.breakBlock(pos);
     }
 
-    @ModifyReceiver(method = "Lnet/minecraft/client/network/ClientPlayerInteractionManager;method_41930(Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;I)Lnet/minecraft/network/Packet;", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;calcBlockBreakingDelta(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;)F"))
+    @ModifyReceiver(method = "Lnet/minecraft/client/network/ClientPlayerInteractionManager;method_41930(Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;I)Lnet/minecraft/network/packet/Packet;", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;calcBlockBreakingDelta(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;)F"))
     private BlockState attackBlockUpdateBlockState(BlockState blockState, PlayerEntity player, BlockView world, BlockPos pos) {
         return this.client.world.getBlockState(pos);
     }

@@ -36,10 +36,10 @@
   ],
 
   "depends": {
-    "ferritecore": ">=5.1.0",
-    "fabricloader": ">=0.14.11",
+    "ferritecore": ">=5.2.0",
+    "fabricloader": ">=0.14.17",
     "fabric-api": "*",
-    "minecraft": "~1.19.3",
+    "minecraft": "~1.19.4",
     "java": ">=17"
   },
   "custom": {
