@@ -1,0 +1,10 @@
+{
+    "variants": {
+        "lit=false": {
+            "model": "powerstones:block/greenstone_torch_off"
+        },
+        "lit=true": {
+            "model": "powerstones:block/greenstone_torch"
+        }
+    }
+}

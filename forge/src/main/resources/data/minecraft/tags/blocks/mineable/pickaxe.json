@@ -1,0 +1,8 @@
+{
+    "replace": false,
+    "values": [
+        "powerstones:bluestone_block",
+        "powerstones:greenstone_block",
+        "powerstones:yellowstone_block"
+    ]
+}
