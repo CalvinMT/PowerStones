@@ -200,7 +200,8 @@ def intoTargets = ["$rootDir/out/production/resources/", "$rootDir/out/productio
 def replaceProperties = [mod_id: mod_id, mod_name: mod_name, mod_version: mod_version,
         mod_authors: mod_authors, mod_description: mod_description,
         minecraft_version_range: minecraft_version_range, forge_version_range: forge_version_range,
-        loader_version_range: loader_version_range]
+        loader_version_range: loader_version_range,
+        ferritecore_version_range: ferritecore_version_range]
 processResources {
     inputs.properties replaceProperties
     replaceProperties.put 'project', project
