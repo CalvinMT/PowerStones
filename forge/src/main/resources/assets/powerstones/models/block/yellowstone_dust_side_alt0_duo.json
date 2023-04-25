@@ -1,0 +1,6 @@
+{
+    "parent": "powerstones:block/yellowstone_dust_side_alt_duo",
+    "textures": {
+        "line": "powerstones:block/yellowstone_dust_line0_duo"
+    }
+}

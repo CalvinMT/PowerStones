@@ -1,0 +1,273 @@
+{
+    "multipart": [
+        {   "when": { "OR": [
+            { "power_pair": "rb", "north": "side|up", "east": "none", "south": "side|up", "west": "none" }
+        ]},
+            "apply": { "model": "powerstones:block/redstone_dust_side0" }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "rb", "north": "side|up", "east": "none", "south": "side|up", "west": "none" }
+        ]},
+            "apply": { "model": "powerstones:block/redstone_dust_side_alt0" }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "rb", "north": "none", "east": "side|up", "south": "none", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/redstone_dust_side_alt1", "y": 270 }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "rb", "north": "none", "east": "side|up", "south": "none", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/redstone_dust_side1", "y": 270 }
+        },
+        {   "when": { "power_pair": "rb", "north": "up" },
+            "apply": { "model": "powerstones:block/redstone_dust_up" }
+        },
+        {   "when": { "power_pair": "rb", "east": "up" },
+            "apply": { "model": "powerstones:block/redstone_dust_up", "y": 90 }
+        },
+        {   "when": { "power_pair": "rb", "south": "up" },
+            "apply": { "model": "powerstones:block/redstone_dust_up", "y": 180 }
+        },
+        {   "when": { "power_pair": "rb", "west": "up" },
+            "apply": { "model": "powerstones:block/redstone_dust_up", "y": 270 }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "rb", "north": "none", "east": "none", "south": "none", "west": "none" },
+            { "power_pair": "rb", "north": "side|up", "east": "side|up" },
+            { "power_pair": "rb", "north": "side|up", "west": "side|up" },
+            { "power_pair": "rb", "south": "side|up", "east": "side|up" },
+            { "power_pair": "rb", "south": "side|up", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/redstone_dust_dot_duo" }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "rb", "north": "side|up", "east": "side|up" },
+            { "power_pair": "rb", "north": "side|up", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/redstone_dust_side0_duo" }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "rb", "south": "side|up", "east": "side|up" },
+            { "power_pair": "rb", "south": "side|up", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/redstone_dust_side_alt0_duo" }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "rb", "north": "side|up", "east": "side|up" },
+            { "power_pair": "rb", "south": "side|up", "east": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/redstone_dust_side_alt1_duo", "y": 270 }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "rb", "north": "side|up", "west": "side|up" },
+            { "power_pair": "rb", "south": "side|up", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/redstone_dust_side1_duo", "y": 270 }
+        },
+
+
+
+        {   "when": { "OR": [
+            { "power_pair": "rb", "north": "side|up", "east": "none", "south": "side|up", "west": "none" }
+        ]},
+            "apply": { "model": "powerstones:block/bluestone_dust_side0" }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "rb", "north": "side|up", "east": "none", "south": "side|up", "west": "none" }
+        ]},
+            "apply": { "model": "powerstones:block/bluestone_dust_side_alt0" }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "rb", "north": "none", "east": "side|up", "south": "none", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/bluestone_dust_side_alt1", "y": 270 }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "rb", "north": "none", "east": "side|up", "south": "none", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/bluestone_dust_side1", "y": 270 }
+        },
+        {   "when": { "power_pair": "rb", "north": "up" },
+            "apply": { "model": "powerstones:block/bluestone_dust_up" }
+        },
+        {   "when": { "power_pair": "rb", "east": "up" },
+            "apply": { "model": "powerstones:block/bluestone_dust_up", "y": 90 }
+        },
+        {   "when": { "power_pair": "rb", "south": "up" },
+            "apply": { "model": "powerstones:block/bluestone_dust_up", "y": 180 }
+        },
+        {   "when": { "power_pair": "rb", "west": "up" },
+            "apply": { "model": "powerstones:block/bluestone_dust_up", "y": 270 }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "rb", "north": "none", "east": "none", "south": "none", "west": "none" },
+            { "power_pair": "rb", "north": "side|up", "east": "side|up" },
+            { "power_pair": "rb", "north": "side|up", "west": "side|up" },
+            { "power_pair": "rb", "south": "side|up", "east": "side|up" },
+            { "power_pair": "rb", "south": "side|up", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/bluestone_dust_dot_duo" }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "rb", "north": "side|up", "east": "side|up" },
+            { "power_pair": "rb", "north": "side|up", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/bluestone_dust_side0_duo" }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "rb", "south": "side|up", "east": "side|up" },
+            { "power_pair": "rb", "south": "side|up", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/bluestone_dust_side_alt0_duo" }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "rb", "north": "side|up", "east": "side|up" },
+            { "power_pair": "rb", "south": "side|up", "east": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/bluestone_dust_side_alt1_duo", "y": 270 }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "rb", "north": "side|up", "west": "side|up" },
+            { "power_pair": "rb", "south": "side|up", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/bluestone_dust_side1_duo", "y": 270 }
+        },
+
+
+
+        {   "when": { "OR": [
+            { "power_pair": "gy", "north": "side|up", "east": "none", "south": "side|up", "west": "none" }
+        ]},
+            "apply": { "model": "powerstones:block/greenstone_dust_side0" }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "gy", "north": "side|up", "east": "none", "south": "side|up", "west": "none" }
+        ]},
+            "apply": { "model": "powerstones:block/greenstone_dust_side_alt0" }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "gy", "north": "none", "east": "side|up", "south": "none", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/greenstone_dust_side_alt1", "y": 270 }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "gy", "north": "none", "east": "side|up", "south": "none", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/greenstone_dust_side1", "y": 270 }
+        },
+        {   "when": { "power_pair": "gy", "north": "up" },
+            "apply": { "model": "powerstones:block/greenstone_dust_up" }
+        },
+        {   "when": { "power_pair": "gy", "east": "up" },
+            "apply": { "model": "powerstones:block/greenstone_dust_up", "y": 90 }
+        },
+        {   "when": { "power_pair": "gy", "south": "up" },
+            "apply": { "model": "powerstones:block/greenstone_dust_up", "y": 180 }
+        },
+        {   "when": { "power_pair": "gy", "west": "up" },
+            "apply": { "model": "powerstones:block/greenstone_dust_up", "y": 270 }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "gy", "north": "none", "east": "none", "south": "none", "west": "none" },
+            { "power_pair": "gy", "north": "side|up", "east": "side|up" },
+            { "power_pair": "gy", "north": "side|up", "west": "side|up" },
+            { "power_pair": "gy", "south": "side|up", "east": "side|up" },
+            { "power_pair": "gy", "south": "side|up", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/greenstone_dust_dot_duo" }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "gy", "north": "side|up", "east": "side|up" },
+            { "power_pair": "gy", "north": "side|up", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/greenstone_dust_side0_duo" }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "gy", "south": "side|up", "east": "side|up" },
+            { "power_pair": "gy", "south": "side|up", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/greenstone_dust_side_alt0_duo" }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "gy", "north": "side|up", "east": "side|up" },
+            { "power_pair": "gy", "south": "side|up", "east": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/greenstone_dust_side_alt1_duo", "y": 270 }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "gy", "north": "side|up", "west": "side|up" },
+            { "power_pair": "gy", "south": "side|up", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/greenstone_dust_side1_duo", "y": 270 }
+        },
+
+
+
+        {   "when": { "OR": [
+            { "power_pair": "gy", "north": "side|up", "east": "none", "south": "side|up", "west": "none" }
+        ]},
+            "apply": { "model": "powerstones:block/yellowstone_dust_side0" }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "gy", "north": "side|up", "east": "none", "south": "side|up", "west": "none" }
+        ]},
+            "apply": { "model": "powerstones:block/yellowstone_dust_side_alt0" }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "gy", "north": "none", "east": "side|up", "south": "none", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/yellowstone_dust_side_alt1", "y": 270 }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "gy", "north": "none", "east": "side|up", "south": "none", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/yellowstone_dust_side1", "y": 270 }
+        },
+        {   "when": { "power_pair": "gy", "north": "up" },
+            "apply": { "model": "powerstones:block/yellowstone_dust_up" }
+        },
+        {   "when": { "power_pair": "gy", "east": "up" },
+            "apply": { "model": "powerstones:block/yellowstone_dust_up", "y": 90 }
+        },
+        {   "when": { "power_pair": "gy", "south": "up" },
+            "apply": { "model": "powerstones:block/yellowstone_dust_up", "y": 180 }
+        },
+        {   "when": { "power_pair": "gy", "west": "up" },
+            "apply": { "model": "powerstones:block/yellowstone_dust_up", "y": 270 }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "gy", "north": "none", "east": "none", "south": "none", "west": "none" },
+            { "power_pair": "gy", "north": "side|up", "east": "side|up" },
+            { "power_pair": "gy", "north": "side|up", "west": "side|up" },
+            { "power_pair": "gy", "south": "side|up", "east": "side|up" },
+            { "power_pair": "gy", "south": "side|up", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/yellowstone_dust_dot_duo" }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "gy", "north": "side|up", "east": "side|up" },
+            { "power_pair": "gy", "north": "side|up", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/yellowstone_dust_side0_duo" }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "gy", "south": "side|up", "east": "side|up" },
+            { "power_pair": "gy", "south": "side|up", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/yellowstone_dust_side_alt0_duo" }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "gy", "north": "side|up", "east": "side|up" },
+            { "power_pair": "gy", "south": "side|up", "east": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/yellowstone_dust_side_alt1_duo", "y": 270 }
+        },
+        {   "when": { "OR": [
+            { "power_pair": "gy", "north": "side|up", "west": "side|up" },
+            { "power_pair": "gy", "south": "side|up", "west": "side|up" }
+        ]},
+            "apply": { "model": "powerstones:block/yellowstone_dust_side1_duo", "y": 270 }
+        }
+    ]
+}
