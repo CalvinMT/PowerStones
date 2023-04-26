@@ -20,11 +20,11 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RedstoneSide;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
@@ -240,13 +240,20 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
     }
 
     public static boolean canBreakFromHeldItem(BlockState state, ItemStack heldItemStack) {
-        if ((state.is(Blocks.REDSTONE_WIRE) && (heldItemStack.is(PowerStones.BLUESTONE.get()) || heldItemStack.is(PowerStones.GREENSTONE.get()) || heldItemStack.is(PowerStones.YELLOWSTONE.get())))
-         || (state.is(PowerStones.BLUESTONE_WIRE.get()) && (heldItemStack.is(Items.REDSTONE) || heldItemStack.is(PowerStones.GREENSTONE.get()) || heldItemStack.is(PowerStones.YELLOWSTONE.get())))
+        if ((state.is(PowerStones.BLUESTONE_WIRE.get()) && (heldItemStack.is(Items.REDSTONE) || heldItemStack.is(PowerStones.GREENSTONE.get()) || heldItemStack.is(PowerStones.YELLOWSTONE.get())))
          || (state.is(PowerStones.GREENSTONE_WIRE.get()) && (heldItemStack.is(Items.REDSTONE) || heldItemStack.is(PowerStones.BLUESTONE.get()) || heldItemStack.is(PowerStones.YELLOWSTONE.get())))
          || (state.is(PowerStones.YELLOWSTONE_WIRE.get())) && (heldItemStack.is(Items.REDSTONE) || heldItemStack.is(PowerStones.BLUESTONE.get()) || heldItemStack.is(PowerStones.GREENSTONE.get()))) {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, boolean willHarvest, FluidState fluid) {
+        if (! canBreakFromHeldItem(state, player.getMainHandItem())) {
+            return false;
+        }
+        return super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);
     }
 
     public static int getWireColorRed(int powerLevel) {

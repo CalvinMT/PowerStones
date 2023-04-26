@@ -32,6 +32,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.properties.RedstoneSide;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 
 @Mixin(RedStoneWireBlock.class)
@@ -159,6 +160,14 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
         state = PowerStones.MULTIPLE_WIRES.get().defaultBlockState().setValue(NORTH, state.getValue(NORTH)).setValue(EAST, state.getValue(EAST)).setValue(SOUTH, state.getValue(SOUTH)).setValue(WEST, state.getValue(WEST)).setValue(POWER, state.getValue(POWER)).setValue(PowerStones.POWER_B, 0).setValue(PowerStones.POWER_PAIR, PowerPair.RED_BLUE);
         level.setBlock(pos, state, Block.UPDATE_ALL | Block.UPDATE_IMMEDIATE);
         ((MultipleWiresBlock)state.getBlock()).updateAll(state, level, pos);
+    }
+
+    @Override
+    public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, boolean willHarvest, FluidState fluid) {
+        if (! RedstoneWireBlockInterface.canBreakFromHeldItem(state, player.getMainHandItem())) {
+            return false;
+        }
+        return super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);
     }
 
 }
