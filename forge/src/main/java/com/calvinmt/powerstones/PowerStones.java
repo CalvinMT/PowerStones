@@ -141,7 +141,8 @@ public class PowerStones {
     public static class GameEvents {
         @SubscribeEvent
         public static void breakEvent(PlayerEvent.BreakSpeed event) {
-            if (! PowerstoneWireBlock.canBreakFromHeldItem(event.getState(), event.getEntity().getMainHandItem())
+            if (! RedstoneWireBlockInterface.canBreakFromHeldItem(event.getState(), event.getEntity().getMainHandItem())
+             || ! PowerstoneWireBlock.canBreakFromHeldItem(event.getState(), event.getEntity().getMainHandItem())
              || ! MultipleWiresBlock.canBreakFromHeldItem(event.getState(), event.getEntity().getMainHandItem())) {
                 event.setCanceled(true);
             }
@@ -152,7 +153,8 @@ public class PowerStones {
     public static class ForgeGameEvents {
         @SubscribeEvent
         public static void breakEvent(BlockEvent.BreakEvent event) {
-            if (! PowerstoneWireBlock.canBreakFromHeldItem(event.getState(), event.getPlayer().getMainHandItem())
+            if (! RedstoneWireBlockInterface.canBreakFromHeldItem(event.getState(), event.getPlayer().getMainHandItem())
+             || ! PowerstoneWireBlock.canBreakFromHeldItem(event.getState(), event.getPlayer().getMainHandItem())
              || ! MultipleWiresBlock.canBreakFromHeldItem(event.getState(), event.getPlayer().getMainHandItem())) {
                 event.setCanceled(true);
             }
