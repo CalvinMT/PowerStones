@@ -452,6 +452,9 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase {
 
     @Override
     public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, boolean willHarvest, FluidState fluid) {
+        if (! canBreakFromHeldItem(state, player.getMainHandItem())) {
+            return false;
+        }
         boolean result = super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);
         if (result) {
             if (state.getValue(POWER_PAIR) == PowerPair.RED_BLUE) {
