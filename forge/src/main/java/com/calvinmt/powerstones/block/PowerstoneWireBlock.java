@@ -150,12 +150,12 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
 
     @Override
     protected boolean shouldConnectToAbove(BlockGetter level, BlockPos posAbove, BlockState stateAbove, Direction direction) {
-        return this.shouldConnectTo(level, posAbove, stateAbove, direction);
+        return this.shouldConnectTo(level, posAbove, stateAbove, null);
     }
 
     @Override
     protected boolean shouldConnectToBelow(BlockGetter level, BlockPos posBelow, BlockState stateBelow, Direction direction) {
-        return this.shouldConnectTo(level, posBelow, stateBelow, direction);
+        return this.shouldConnectTo(level, posBelow, stateBelow, null);
     }
 
     @Override
