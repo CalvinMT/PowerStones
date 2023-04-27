@@ -329,13 +329,13 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase {
     @Override
     protected boolean shouldConnectToAbove(BlockGetter level, BlockPos posAbove, BlockState stateAbove, Direction direction) {
         BlockState originalState = level.getBlockState(posAbove.below().relative(direction.getOpposite()));
-        return this.shouldConnectTo(originalState, level, posAbove, stateAbove, direction);
+        return this.shouldConnectTo(originalState, level, posAbove, stateAbove, null);
     }
 
     @Override
     protected boolean shouldConnectToBelow(BlockGetter level, BlockPos posBelow, BlockState stateBelow, Direction direction) {
         BlockState originalState = level.getBlockState(posBelow.above().relative(direction.getOpposite()));
-        return this.shouldConnectTo(originalState, level, posBelow, stateBelow, direction);
+        return this.shouldConnectTo(originalState, level, posBelow, stateBelow, null);
     }
     
     @Override
@@ -348,18 +348,26 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase {
         if (state.is(PowerStones.MULTIPLE_WIRES.get())) {
             return multipleWiresState.getValue(POWER_PAIR) == state.getValue(POWER_PAIR);
         }
-        else if (state.is(Blocks.REDSTONE_WIRE) || state.is(PowerStones.BLUESTONE_WIRE.get())
-         || state.is(Blocks.REDSTONE_TORCH) || state.is(Blocks.REDSTONE_WALL_TORCH)
-         || state.is(PowerStones.BLUESTONE_TORCH_BLOCK.get()) || state.is(PowerStones.BLUESTONE_WALL_TORCH.get())) {
+        else if (state.is(Blocks.REDSTONE_WIRE) || state.is(PowerStones.BLUESTONE_WIRE.get())) {
             return multipleWiresState.getValue(POWER_PAIR) == PowerPair.RED_BLUE;
         }
-        else if (state.is(PowerStones.GREENSTONE_WIRE.get()) || state.is(PowerStones.YELLOWSTONE_WIRE.get())
-         || state.is(PowerStones.GREENSTONE_TORCH_BLOCK.get()) || state.is(PowerStones.GREENSTONE_WALL_TORCH.get())
-         || state.is(PowerStones.YELLOWSTONE_TORCH_BLOCK.get()) || state.is(PowerStones.YELLOWSTONE_WALL_TORCH.get())) {
+        else if (state.is(PowerStones.GREENSTONE_WIRE.get()) || state.is(PowerStones.YELLOWSTONE_WIRE.get())) {
+            return multipleWiresState.getValue(POWER_PAIR) == PowerPair.GREEN_YELLOW;
+        }
+        else if (direction != null
+         && (state.is(Blocks.REDSTONE_TORCH) || state.is(Blocks.REDSTONE_WALL_TORCH)
+         || state.is(PowerStones.BLUESTONE_TORCH_BLOCK.get()) || state.is(PowerStones.BLUESTONE_WALL_TORCH.get())
+         || state.is(Blocks.REDSTONE_BLOCK) || state.is(PowerStones.BLUESTONE_BLOCK.get()))) {
+            return multipleWiresState.getValue(POWER_PAIR) == PowerPair.RED_BLUE;
+        }
+        else if (direction != null
+         && (state.is(PowerStones.GREENSTONE_TORCH_BLOCK.get()) || state.is(PowerStones.GREENSTONE_WALL_TORCH.get())
+         || state.is(PowerStones.YELLOWSTONE_TORCH_BLOCK.get()) || state.is(PowerStones.YELLOWSTONE_WALL_TORCH.get())
+         || state.is(PowerStones.GREENSTONE_BLOCK.get()) || state.is(PowerStones.YELLOWSTONE_BLOCK.get()))) {
             return multipleWiresState.getValue(POWER_PAIR) == PowerPair.GREEN_YELLOW;
         }
         else {
-            return false;
+            return state.canRedstoneConnectTo(level, pos, direction);
         }
     }
 
@@ -462,11 +470,13 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase {
                     state = PowerStones.BLUESTONE_WIRE.get().defaultBlockState().setValue(NORTH, state.getValue(NORTH)).setValue(EAST, state.getValue(EAST)).setValue(SOUTH, state.getValue(SOUTH)).setValue(WEST, state.getValue(WEST)).setValue(POWER, state.getValue(POWER_B));
                     level.setBlock(pos, state, Block.UPDATE_ALL | Block.UPDATE_IMMEDIATE);
                     ((PowerstoneWireBlock)state.getBlock()).updateAll(state, level, pos);
+                    result = false;
                 }
                 else if (player.getMainHandItem().is(PowerStones.BLUESTONE.get())) {
                     state = Blocks.REDSTONE_WIRE.defaultBlockState().setValue(NORTH, state.getValue(NORTH)).setValue(EAST, state.getValue(EAST)).setValue(SOUTH, state.getValue(SOUTH)).setValue(WEST, state.getValue(WEST)).setValue(POWER, state.getValue(POWER));
                     level.setBlock(pos, state, Block.UPDATE_ALL | Block.UPDATE_IMMEDIATE);
                     ((RedstoneWireBlockInterface)state.getBlock()).updateAll(state, level, pos);
+                    result = false;
                 }
             }
             else if (state.getValue(POWER_PAIR) == PowerPair.GREEN_YELLOW) {
@@ -474,11 +484,13 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase {
                     state = PowerStones.YELLOWSTONE_WIRE.get().defaultBlockState().setValue(NORTH, state.getValue(NORTH)).setValue(EAST, state.getValue(EAST)).setValue(SOUTH, state.getValue(SOUTH)).setValue(WEST, state.getValue(WEST)).setValue(POWER, state.getValue(POWER_B));
                     level.setBlock(pos, state, Block.UPDATE_ALL | Block.UPDATE_IMMEDIATE);
                     ((PowerstoneWireBlock)state.getBlock()).updateAll(state, level, pos);
+                    result = false;
                 }
                 else if (player.getMainHandItem().is(PowerStones.YELLOWSTONE.get())) {
                     state = PowerStones.GREENSTONE_WIRE.get().defaultBlockState().setValue(NORTH, state.getValue(NORTH)).setValue(EAST, state.getValue(EAST)).setValue(SOUTH, state.getValue(SOUTH)).setValue(WEST, state.getValue(WEST)).setValue(POWER, state.getValue(POWER));
                     level.setBlock(pos, state, Block.UPDATE_ALL | Block.UPDATE_IMMEDIATE);
                     ((PowerstoneWireBlock)state.getBlock()).updateAll(state, level, pos);
+                    result = false;
                 }
             }
         }

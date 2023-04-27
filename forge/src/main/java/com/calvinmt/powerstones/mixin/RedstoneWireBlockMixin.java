@@ -1,7 +1,10 @@
 package com.calvinmt.powerstones.mixin;
 
+import java.util.Map;
+
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Constant;
@@ -23,6 +26,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RedStoneWireBlock;
@@ -49,6 +53,8 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
     @Shadow
     public static @Final IntegerProperty POWER;
     @Shadow
+    public static @Final Map<Direction, EnumProperty<RedstoneSide>> PROPERTY_BY_DIRECTION;
+    @Shadow
     private void updateNeighborsOfNeighboringWires(Level level, BlockPos pos) {}
     @Shadow
     private void updatePowerStrength(Level pLevel, BlockPos pPos, BlockState pState) {}
@@ -61,9 +67,36 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
         super(settings);
     }
 
-    @Redirect(method = "updateIndirectNeighbourShapes(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/core/BlockPos;II)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z"))
-    private boolean updateIndirectNeighbourShapesIs(BlockState state, Block block) {
-        return state.is(block) || (state.is(PowerStones.MULTIPLE_WIRES.get()) && state.getValue(PowerStones.POWER_PAIR) == PowerPair.RED_BLUE);
+    @Overwrite
+    public void updateIndirectNeighbourShapes(BlockState state, LevelAccessor level, BlockPos pos, int pFlags, int pRecursionLeft) {
+        BlockPos.MutableBlockPos blockpos$mutableblockpos = new BlockPos.MutableBlockPos();
+
+        for(Direction direction : Direction.Plane.HORIZONTAL) {
+            RedstoneSide redstoneside = state.getValue(PROPERTY_BY_DIRECTION.get(direction));
+            blockpos$mutableblockpos.setWithOffset(pos, direction);
+            if (redstoneside != RedstoneSide.NONE
+             && (! level.getBlockState(blockpos$mutableblockpos).is(this) || ! this.isOtherConnectablePowerstone(level.getBlockState(blockpos$mutableblockpos)))) {
+                blockpos$mutableblockpos.move(Direction.DOWN);
+                BlockState blockstate = level.getBlockState(blockpos$mutableblockpos);
+                if (blockstate.is(this) || this.isOtherConnectablePowerstone(blockstate)) {
+                    BlockPos blockpos = blockpos$mutableblockpos.relative(direction.getOpposite());
+                    BlockState newBlockstate = blockstate.updateShape(direction.getOpposite(), level.getBlockState(blockpos), level, blockpos$mutableblockpos, blockpos);
+                    updateOrDestroy(blockstate, newBlockstate, level, blockpos$mutableblockpos, pFlags, pRecursionLeft);
+                }
+
+                blockpos$mutableblockpos.setWithOffset(pos, direction).move(Direction.UP);
+                BlockState blockstate1 = level.getBlockState(blockpos$mutableblockpos);
+                if (blockstate1.is(this) || this.isOtherConnectablePowerstone(blockstate1)) {
+                    BlockPos blockpos1 = blockpos$mutableblockpos.relative(direction.getOpposite());
+                    BlockState newBlockstate1 = blockstate1.updateShape(direction.getOpposite(), level.getBlockState(blockpos1), level, blockpos$mutableblockpos, blockpos1);
+                    updateOrDestroy(blockstate1, newBlockstate1, level, blockpos$mutableblockpos, pFlags, pRecursionLeft);
+                }
+            }
+        }
+    }
+
+    private boolean isOtherConnectablePowerstone(BlockState state) {
+        return state.is(PowerStones.MULTIPLE_WIRES.get()) && state.getValue(PowerStones.POWER_PAIR) == PowerPair.RED_BLUE;
     }
 
     @Redirect(method = "getConnectingSide(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;Z)Lnet/minecraft/world/level/block/state/properties/RedstoneSide;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;canRedstoneConnectTo(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;)Z"))
