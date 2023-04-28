@@ -1,0 +1,6 @@
+{
+    "parent": "powerstones:block/redstone_dust_side_duo",
+    "textures": {
+        "line": "powerstones:block/redstone_dust_line0_duo"
+    }
+}

@@ -1,0 +1,38 @@
+{
+  "required": true,
+  "package": "${project.group}.mixin",
+  "plugin": "com.calvinmt.powerstones",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "${mod_id}.refmap.json",
+  "mixins": [
+    "BaseRailBlockMixin",
+    "BellBlockMixin",
+    "BigDripleafBlockMixin",
+    "BlockBehaviourMixin",
+    "BlockStateBaseMixin",
+    "CommandBlockMixin",
+    "DiodeBlockMixin",
+    "DispenserBlockMixin",
+    "DoorBlockMixin",
+    "FenceGateBlockMixin",
+    "HopperBlockMixin",
+    "LevelMixin",
+    "LevelReaderMixin",
+    "NoteBlockMixin",
+    "PistonBaseBlockMixin",
+    "PoweredBlockMixin",
+    "PoweredRailBlockMixin",
+    "RedstoneLampBlockMixin",
+    "RedstoneTorchBlockMixin",
+    "RedstoneWallTorchBlockMixin",
+    "RedstoneWireBlockMixin",
+    "StructureBlockMixin",
+    "TntBlockMixin",
+    "TrapdoorBlockMixin"
+  ],
+  "client": [
+    "TerrainParticleMixin"
+  ],
+  "server": [],
+  "minVersion": "0.8.5"
+}

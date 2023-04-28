@@ -1,0 +1,10 @@
+{
+    "variants": {
+        "lit=false": {
+            "model": "powerstones:block/bluestone_torch_off"
+        },
+        "lit=true": {
+            "model": "powerstones:block/bluestone_torch"
+        }
+    }
+}
