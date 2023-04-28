@@ -33,4 +33,16 @@ public class RedstoneWallTorchBlockMixin {
         return 0;
     }
 
+    public int getDirectSignalBlue(BlockState state, BlockGetter world, BlockPos pos, Direction direction) {
+        return 0;
+    }
+
+    public int getDirectSignalGreen(BlockState state, BlockGetter world, BlockPos pos, Direction direction) {
+        return 0;
+    }
+
+    public int getDirectSignalYellow(BlockState state, BlockGetter world, BlockPos pos, Direction direction) {
+        return 0;
+    }
+
 }
