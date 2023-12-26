@@ -25,6 +25,26 @@ public abstract class LevelMixin implements LevelInterface {
     @Shadow
     public abstract int getBestNeighborSignal(BlockPos pos);
 
+    @FunctionalInterface
+    private interface BlockStateSignalFunction {
+        int apply(BlockStateBaseInterface blockState, Level level, BlockPos position, Direction direction);
+    }
+
+    @FunctionalInterface
+    private interface SignalFunction {
+        int apply(BlockPos position, Direction direction);
+    }
+
+    @FunctionalInterface
+    private interface DirectSignalFunction {
+        int apply(LevelReaderInterface level, BlockPos position, Direction direction);
+    }
+
+    @FunctionalInterface
+    private interface DirectSignalToFunction {
+        int apply(BlockPos position);
+    }
+
     @Override
     public boolean isEmittingSignal(BlockPos pos, Direction direction) {
         int redstonePower = this.getSignal(pos, direction);
@@ -44,193 +64,99 @@ public abstract class LevelMixin implements LevelInterface {
         return Math.max(this.getSignal(pos, direction), Math.max(this.getSignalBlue(pos, direction), Math.max(this.getSignalGreen(pos, direction), this.getSignalYellow(pos, direction))));
     }
 
-    public int getDirectSignalBlueTo(BlockPos pos) {
+    private int getDirectSignalColouredTo(BlockPos pos, DirectSignalFunction directSignalFunction) {
         int i = 0;
-        if ((i = Math.max(i, ((LevelReaderInterface) this).getDirectSignalBlue(pos.below(), Direction.DOWN))) >= 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((LevelReaderInterface) this).getDirectSignalBlue(pos.above(), Direction.UP))) >= 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((LevelReaderInterface) this).getDirectSignalBlue(pos.north(), Direction.NORTH))) >= 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((LevelReaderInterface) this).getDirectSignalBlue(pos.south(), Direction.SOUTH))) >= 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((LevelReaderInterface) this).getDirectSignalBlue(pos.west(), Direction.WEST))) >= 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((LevelReaderInterface) this).getDirectSignalBlue(pos.east(), Direction.EAST))) >= 15) {
-            return i;
+        for(Direction direction : DIRECTIONS) {
+            i = Math.max(i, directSignalFunction.apply((LevelReaderInterface) this, pos, direction));
+            if (i >= 15) {
+                break;
+            }
         }
         return i;
+    }
+
+    public int getDirectSignalBlueTo(BlockPos pos) {
+        return this.getDirectSignalColouredTo(pos, (level, position, direction) -> level.getDirectSignalBlue(position, direction));
     }
 
     public int getDirectSignalGreenTo(BlockPos pos) {
-        int i = 0;
-        if ((i = Math.max(i, ((LevelReaderInterface) this).getDirectSignalGreen(pos.below(), Direction.DOWN))) >= 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((LevelReaderInterface) this).getDirectSignalGreen(pos.above(), Direction.UP))) >= 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((LevelReaderInterface) this).getDirectSignalGreen(pos.north(), Direction.NORTH))) >= 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((LevelReaderInterface) this).getDirectSignalGreen(pos.south(), Direction.SOUTH))) >= 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((LevelReaderInterface) this).getDirectSignalGreen(pos.west(), Direction.WEST))) >= 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((LevelReaderInterface) this).getDirectSignalGreen(pos.east(), Direction.EAST))) >= 15) {
-            return i;
-        }
-        return i;
+        return this.getDirectSignalColouredTo(pos, (level, position, direction) -> level.getDirectSignalGreen(position, direction));
     }
 
     public int getDirectSignalYellowTo(BlockPos pos) {
-        int i = 0;
-        if ((i = Math.max(i, ((LevelReaderInterface) this).getDirectSignalYellow(pos.below(), Direction.DOWN))) >= 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((LevelReaderInterface) this).getDirectSignalYellow(pos.above(), Direction.UP))) >= 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((LevelReaderInterface) this).getDirectSignalYellow(pos.north(), Direction.NORTH))) >= 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((LevelReaderInterface) this).getDirectSignalYellow(pos.south(), Direction.SOUTH))) >= 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((LevelReaderInterface) this).getDirectSignalYellow(pos.west(), Direction.WEST))) >= 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((LevelReaderInterface) this).getDirectSignalYellow(pos.east(), Direction.EAST))) >= 15) {
-            return i;
-        }
-        return i;
+        return this.getDirectSignalColouredTo(pos, (level, position, direction) -> level.getDirectSignalYellow(position, direction));
+    }
+
+    private int getSignalColoured(BlockPos pos, Direction direction, BlockStateSignalFunction blockStateSignalFunction, DirectSignalToFunction directSignalToFunction) {
+        BlockState blockState = this.getBlockState(pos);
+        int i = blockStateSignalFunction.apply(((BlockStateBaseInterface) blockState), (Level)(Object)this, pos, direction);
+        return blockState.shouldCheckWeakPower((Level)(Object)this, pos, direction) ? Math.max(i, directSignalToFunction.apply(pos)) : i;
     }
 
     public int getSignalBlue(BlockPos pos, Direction direction) {
-        BlockState blockState = this.getBlockState(pos);
-        int i = ((BlockStateBaseInterface) blockState).getSignalBlue((Level)(Object)this, pos, direction);
-        return blockState.shouldCheckWeakPower((Level)(Object)this, pos, direction) ? Math.max(i, this.getDirectSignalBlueTo(pos)) : i;
+        return this.getSignalColoured(pos, direction, (blockState, level, position, dir) -> blockState.getSignalBlue(level, position, dir), (position) -> this.getDirectSignalBlueTo(position));
     }
 
     public int getSignalGreen(BlockPos pos, Direction direction) {
-        BlockState blockState = this.getBlockState(pos);
-        int i = ((BlockStateBaseInterface) blockState).getSignalGreen((Level)(Object)this, pos, direction);
-        return blockState.shouldCheckWeakPower((Level)(Object)this, pos, direction) ? Math.max(i, this.getDirectSignalGreenTo(pos)) : i;
+        return this.getSignalColoured(pos, direction, (blockState, level, position, dir) -> blockState.getSignalGreen(level, position, dir), (position) -> this.getDirectSignalGreenTo(position));
     }
 
     public int getSignalYellow(BlockPos pos, Direction direction) {
-        BlockState blockState = this.getBlockState(pos);
-        int i = ((BlockStateBaseInterface) blockState).getSignalYellow((Level)(Object)this, pos, direction);
-        return blockState.shouldCheckWeakPower((Level)(Object)this, pos, direction) ? Math.max(i, this.getDirectSignalYellowTo(pos)) : i;
+        return this.getSignalColoured(pos, direction, (blockState, level, position, dir) -> blockState.getSignalYellow(level, position, dir), (position) -> this.getDirectSignalYellowTo(position));
+    }
+
+    private boolean hasNeighborSignalColoured(BlockPos pos, SignalFunction signalFunction) {
+        boolean result = false;
+        for(Direction direction : DIRECTIONS) {
+            if (signalFunction.apply(pos.relative(direction), direction) > 0) {
+                result = true;
+                break;
+            }
+        }
+        return result;
     }
 
     @Override
-    public boolean hasNeighborSignalBlue(BlockPos pos) { 
-        if (this.getSignalBlue(pos.below(), Direction.DOWN) > 0) {
-            return true;
-        }
-        if (this.getSignalBlue(pos.above(), Direction.UP) > 0) {
-            return true;
-        }
-        if (this.getSignalBlue(pos.north(), Direction.NORTH) > 0) {
-            return true;
-        }
-        if (this.getSignalBlue(pos.south(), Direction.SOUTH) > 0) {
-            return true;
-        }
-        if (this.getSignalBlue(pos.west(), Direction.WEST) > 0) {
-            return true;
-        }
-        return this.getSignalBlue(pos.east(), Direction.EAST) > 0;
+    public boolean hasNeighborSignalBlue(BlockPos pos) {
+        return this.hasNeighborSignalColoured(pos, (position, direction) -> this.getSignalBlue(position, direction));
     }
 
     @Override
-    public boolean hasNeighborSignalGreen(BlockPos pos) { 
-        if (this.getSignalGreen(pos.below(), Direction.DOWN) > 0) {
-            return true;
-        }
-        if (this.getSignalGreen(pos.above(), Direction.UP) > 0) {
-            return true;
-        }
-        if (this.getSignalGreen(pos.north(), Direction.NORTH) > 0) {
-            return true;
-        }
-        if (this.getSignalGreen(pos.south(), Direction.SOUTH) > 0) {
-            return true;
-        }
-        if (this.getSignalGreen(pos.west(), Direction.WEST) > 0) {
-            return true;
-        }
-        return this.getSignalGreen(pos.east(), Direction.EAST) > 0;
+    public boolean hasNeighborSignalGreen(BlockPos pos) {
+        return this.hasNeighborSignalColoured(pos, (position, direction) -> this.getSignalGreen(position, direction));
     }
 
     @Override
-    public boolean hasNeighborSignalYellow(BlockPos pos) { 
-        if (this.getSignalYellow(pos.below(), Direction.DOWN) > 0) {
-            return true;
+    public boolean hasNeighborSignalYellow(BlockPos pos) {
+        return this.hasNeighborSignalColoured(pos, (position, direction) -> this.getSignalYellow(position, direction));
+    }
+
+    private int getBestNeighborSignalColoured(BlockPos pos, SignalFunction signalFunction) {
+        int i = 0;
+        for (Direction direction : DIRECTIONS) {
+            int j = signalFunction.apply(pos.relative(direction), direction);
+            if (j >= 15) {
+                return 15;
+            }
+            if (j <= i) continue;
+            i = j;
         }
-        if (this.getSignalYellow(pos.above(), Direction.UP) > 0) {
-            return true;
-        }
-        if (this.getSignalYellow(pos.north(), Direction.NORTH) > 0) {
-            return true;
-        }
-        if (this.getSignalYellow(pos.south(), Direction.SOUTH) > 0) {
-            return true;
-        }
-        if (this.getSignalYellow(pos.west(), Direction.WEST) > 0) {
-            return true;
-        }
-        return this.getSignalYellow(pos.east(), Direction.EAST) > 0;
+        return i;
     }
 
     @Override
     public int getBestNeighborSignalBlue(BlockPos pos) {
-        int i = 0;
-        for (Direction direction : DIRECTIONS) {
-            int j = this.getSignalBlue(pos.relative(direction), direction);
-            if (j >= 15) {
-                return 15;
-            }
-            if (j <= i) continue;
-            i = j;
-        }
-        return i;
+        return this.getBestNeighborSignalColoured(pos, (position, direction) -> this.getSignalBlue(position, direction));
     }
 
     @Override
     public int getBestNeighborSignalGreen(BlockPos pos) {
-        int i = 0;
-        for (Direction direction : DIRECTIONS) {
-            int j = this.getSignalGreen(pos.relative(direction), direction);
-            if (j >= 15) {
-                return 15;
-            }
-            if (j <= i) continue;
-            i = j;
-        }
-        return i;
+        return this.getBestNeighborSignalColoured(pos, (position, direction) -> this.getSignalGreen(position, direction));
     }
 
     @Override
     public int getBestNeighborSignalYellow(BlockPos pos) {
-        int i = 0;
-        for (Direction direction : DIRECTIONS) {
-            int j = this.getSignalYellow(pos.relative(direction), direction);
-            if (j >= 15) {
-                return 15;
-            }
-            if (j <= i) continue;
-            i = j;
-        }
-        return i;
+        return this.getBestNeighborSignalColoured(pos, (position, direction) -> this.getSignalYellow(position, direction));
     }
 
 }
