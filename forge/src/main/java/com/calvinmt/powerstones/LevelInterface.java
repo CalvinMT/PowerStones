@@ -9,7 +9,7 @@ public interface LevelInterface {
 
     default boolean isReceivingSignal(BlockPos pos) { return false; }
     
-    default int getMaxReceivedSignal(BlockPos pos) { return 0; }
+    default int getMaxSignal(BlockPos pos, Direction direction) { return 0; }
 
     default boolean hasNeighborSignalBlue(BlockPos pos) { return false; }
 
