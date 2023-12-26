@@ -15,7 +15,7 @@ public abstract class DiodeBlockMixin {
 
     @Redirect(method = "getInputSignal(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;)I", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;getSignal(Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;)I"))
     private int getInputSignalGetEmittingSignal(Level level, BlockPos pos, Direction direction) {
-        return ((LevelInterface) level).isEmittingSignal(pos, direction) ? ((LevelInterface) level).getMaxReceivedSignal(pos) : 0;
+        return ((LevelInterface) level).getMaxSignal(pos, direction);
     }
 
 }
