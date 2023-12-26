@@ -40,8 +40,8 @@ public abstract class LevelMixin implements LevelInterface {
     }
 
     @Override
-    public int getMaxReceivedSignal(BlockPos pos) {
-        return Math.max(this.getBestNeighborSignal(pos), Math.max(this.getBestNeighborSignalBlue(pos), Math.max(this.getBestNeighborSignalGreen(pos), this.getBestNeighborSignalYellow(pos))));
+    public int getMaxSignal(BlockPos pos, Direction direction) {
+        return Math.max(this.getSignal(pos, direction), Math.max(this.getSignalBlue(pos, direction), Math.max(this.getSignalGreen(pos, direction), this.getSignalYellow(pos, direction))));
     }
 
     public int getDirectSignalBlueTo(BlockPos pos) {
