@@ -2,5 +2,6 @@
   "parent": "minecraft:block/template_torch",
   "textures": {
     "torch": "powerstones:block/bluestone_torch_off"
-  }
+  },
+  "render_type": "minecraft:cutout"
 }

@@ -11,7 +11,6 @@
       "AliasedBlockItemMixin",
       "BellBlockMixin",
       "BigDripleafBlockMixin",
-      "BlockDustParticleMixin",
       "CommandBlockMixin",
       "DispenserBlockMixin",
       "DoorBlockMixin",
@@ -20,21 +19,20 @@
       "NoteBlockMixin",
       "PistonBlockMixin",
       "PoweredRailBlockMixin",
-      "PropertiesMixin",
       "RedstoneBlockMixin",
       "RedstoneLampBlockMixin",
       "RedstoneTorchBlockMixin",
       "RedstoneWireBlockMixin",
-      "ServerPlayerInteractionManagerMixin",
       "StructureBlockMixin",
       "TntBlockMixin",
       "TrapdoorBlockMixin",
       "WallRedstoneTorchBlockMixin",
       "WorldMixin",
-      "WorldViewMixin"],
+      "WorldViewMixin"
+    ],
     "client": [
-      "BlockColorsMixin",
-      "ClientPlayerInteractionManagerMixin"],
+      "BlockDustParticleMixin"
+    ],
     "server": [],
     "injectors": {
       "defaultRequire": 1

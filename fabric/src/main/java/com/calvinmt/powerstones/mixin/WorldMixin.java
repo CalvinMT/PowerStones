@@ -1,7 +1,6 @@
 package com.calvinmt.powerstones.mixin;
 
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
 import com.calvinmt.powerstones.AbstractBlockStateInterface;
@@ -12,7 +11,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldView;
 
 @Mixin(World.class)
 public abstract class WorldMixin implements WorldInterface {
@@ -26,260 +24,141 @@ public abstract class WorldMixin implements WorldInterface {
     public abstract int getEmittedRedstonePower(BlockPos pos, Direction direction);
     @Shadow
     public abstract boolean isReceivingRedstonePower(BlockPos pos);
+    @Shadow
+    public abstract int getReceivedRedstonePower(BlockPos pos);
 
-    @Overwrite
-    public int getReceivedStrongRedstonePower(BlockPos pos) {
-        int i = 0;
-        if ((i = Math.max(i, ((WorldView)this).getStrongRedstonePower(pos.down(), Direction.DOWN))) == 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((WorldView)this).getStrongRedstonePower(pos.up(), Direction.UP))) == 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((WorldView)this).getStrongRedstonePower(pos.north(), Direction.NORTH))) == 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((WorldView)this).getStrongRedstonePower(pos.south(), Direction.SOUTH))) == 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((WorldView)this).getStrongRedstonePower(pos.west(), Direction.WEST))) == 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((WorldView)this).getStrongRedstonePower(pos.east(), Direction.EAST))) == 15) {
-            return i;
-        }
-        return i;
+    @FunctionalInterface
+    private interface BlockStatePowerFunction {
+        int apply(AbstractBlockStateInterface blockState, World world, BlockPos position, Direction direction);
     }
 
-    @Overwrite
-    public int getReceivedRedstonePower(BlockPos pos) {
-        int i = 0;
-        for (Direction direction : DIRECTIONS) {
-            int j = this.getEmittedRedstonePower(pos.offset(direction), direction);
-            if (j == 15) {
-                return 15;
-            }
-            if (j == 16 || j <= i) continue;
-            i = j;
-        }
-        return i;
+    @FunctionalInterface
+    private interface PowerFunction {
+        int apply(BlockPos position, Direction direction);
     }
 
+    @FunctionalInterface
+    private interface StrongPowerFunction {
+        int apply(WorldViewInterface world, BlockPos position, Direction direction);
+    }
+
+    @FunctionalInterface
+    private interface StrongPowerToFunction {
+        int apply(BlockPos position);
+    }
+
+    @Override
     public boolean isEmittingPower(BlockPos pos, Direction direction) {
         int redstonePower = this.getEmittedRedstonePower(pos, direction);
         int bluestonePower = this.getEmittedBluestonePower(pos, direction);
         int greenstonePower = this.getEmittedGreenstonePower(pos, direction);
         int yellowstonePower = this.getEmittedYellowstonePower(pos, direction);
-        return (redstonePower > 0 && redstonePower < 16)
-            || (bluestonePower > 0 && bluestonePower < 16)
-            || (greenstonePower > 0 && greenstonePower < 16)
-            || (yellowstonePower > 0 && yellowstonePower < 16);
+        return redstonePower > 0 || bluestonePower > 0 || greenstonePower > 0 || yellowstonePower > 0;
     }
-    
+
+    @Override
     public boolean isReceivingPower(BlockPos pos) {
         return this.isReceivingRedstonePower(pos) || this.isReceivingBluestonePower(pos) || this.isReceivingGreenstonePower(pos) || this.isReceivingYellowstonePower(pos);
     }
-    
-    public int getMaxReceivedPower(BlockPos pos) {
-        return Math.max(this.getReceivedRedstonePower(pos), Math.max(this.getReceivedBluestonePower(pos), Math.max(this.getReceivedGreenstonePower(pos), this.getReceivedYellowstonePower(pos))));
+
+    @Override
+    public int getMaxPower(BlockPos pos, Direction direction) {
+        return Math.max(this.getEmittedRedstonePower(pos, direction), Math.max(this.getEmittedBluestonePower(pos, direction), Math.max(this.getEmittedGreenstonePower(pos, direction), this.getEmittedYellowstonePower(pos, direction))));
+    }
+
+    private int getReceivedStrongColouredTo(BlockPos pos, StrongPowerFunction strongPowerFunction) {
+        int i = 0;
+        for(Direction direction : DIRECTIONS) {
+            i = Math.max(i, strongPowerFunction.apply((WorldViewInterface) this, pos, direction));
+            if (i >= 15) {
+                break;
+            }
+        }
+        return i;
     }
 
     public int getReceivedStrongBluestonePower(BlockPos pos) {
-        int i = 0;
-        if ((i = Math.max(i, ((WorldViewInterface) this).getStrongBluestonePower(pos.down(), Direction.DOWN))) == 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((WorldViewInterface) this).getStrongBluestonePower(pos.up(), Direction.UP))) == 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((WorldViewInterface) this).getStrongBluestonePower(pos.north(), Direction.NORTH))) == 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((WorldViewInterface) this).getStrongBluestonePower(pos.south(), Direction.SOUTH))) == 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((WorldViewInterface) this).getStrongBluestonePower(pos.west(), Direction.WEST))) == 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((WorldViewInterface) this).getStrongBluestonePower(pos.east(), Direction.EAST))) == 15) {
-            return i;
-        }
-        return i;
+        return this.getReceivedStrongColouredTo(pos, (level, position, direction) -> level.getStrongBluestonePower(position, direction));
     }
 
     public int getReceivedStrongGreenstonePower(BlockPos pos) {
-        int i = 0;
-        if ((i = Math.max(i, ((WorldViewInterface) this).getStrongGreenstonePower(pos.down(), Direction.DOWN))) == 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((WorldViewInterface) this).getStrongGreenstonePower(pos.up(), Direction.UP))) == 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((WorldViewInterface) this).getStrongGreenstonePower(pos.north(), Direction.NORTH))) == 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((WorldViewInterface) this).getStrongGreenstonePower(pos.south(), Direction.SOUTH))) == 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((WorldViewInterface) this).getStrongGreenstonePower(pos.west(), Direction.WEST))) == 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((WorldViewInterface) this).getStrongGreenstonePower(pos.east(), Direction.EAST))) == 15) {
-            return i;
-        }
-        return i;
+        return this.getReceivedStrongColouredTo(pos, (level, position, direction) -> level.getStrongGreenstonePower(position, direction));
     }
 
     public int getReceivedStrongYellowstonePower(BlockPos pos) {
-        int i = 0;
-        if ((i = Math.max(i, ((WorldViewInterface) this).getStrongYellowstonePower(pos.down(), Direction.DOWN))) == 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((WorldViewInterface) this).getStrongYellowstonePower(pos.up(), Direction.UP))) == 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((WorldViewInterface) this).getStrongYellowstonePower(pos.north(), Direction.NORTH))) == 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((WorldViewInterface) this).getStrongYellowstonePower(pos.south(), Direction.SOUTH))) == 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((WorldViewInterface) this).getStrongYellowstonePower(pos.west(), Direction.WEST))) == 15) {
-            return i;
-        }
-        if ((i = Math.max(i, ((WorldViewInterface) this).getStrongYellowstonePower(pos.east(), Direction.EAST))) == 15) {
-            return i;
-        }
-        return i;
+        return this.getReceivedStrongColouredTo(pos, (level, position, direction) -> level.getStrongYellowstonePower(position, direction));
+    }
+
+    private int getEmittedPowerColoured(BlockPos pos, Direction direction, BlockStatePowerFunction blockStatePowerFunction, StrongPowerToFunction strongPowerToFunction) {
+        BlockState blockState = this.getBlockState(pos);
+        int i = blockStatePowerFunction.apply(((AbstractBlockStateInterface) blockState), (World)(Object)this, pos, direction);
+        return blockState.isSolidBlock((World)(Object)this, pos) ? Math.max(i, strongPowerToFunction.apply(pos)) : i;
     }
 
     public int getEmittedBluestonePower(BlockPos pos, Direction direction) {
-        BlockState blockState = this.getBlockState(pos);
-        int i = ((AbstractBlockStateInterface) blockState).getWeakBluestonePower((World)((Object) this), pos, direction);
-        if (blockState.isSolidBlock((World)((Object) this), pos)) {
-            return Math.max(i, this.getReceivedStrongBluestonePower(pos));
-        }
-        return i;
+        return this.getEmittedPowerColoured(pos, direction, (blockState, level, position, dir) -> blockState.getWeakBluestonePower(level, position, dir), (position) -> this.getReceivedStrongBluestonePower(position));
     }
 
     public int getEmittedGreenstonePower(BlockPos pos, Direction direction) {
-        BlockState blockState = this.getBlockState(pos);
-        int i = ((AbstractBlockStateInterface) blockState).getWeakGreenstonePower((World)((Object) this), pos, direction);
-        if (blockState.isSolidBlock((World)((Object) this), pos)) {
-            return Math.max(i, this.getReceivedStrongGreenstonePower(pos));
-        }
-        return i;
+        return this.getEmittedPowerColoured(pos, direction, (blockState, level, position, dir) -> blockState.getWeakGreenstonePower(level, position, dir), (position) -> this.getReceivedStrongGreenstonePower(position));
     }
 
     public int getEmittedYellowstonePower(BlockPos pos, Direction direction) {
-        BlockState blockState = this.getBlockState(pos);
-        int i = ((AbstractBlockStateInterface) blockState).getWeakYellowstonePower((World)((Object) this), pos, direction);
-        if (blockState.isSolidBlock((World)((Object) this), pos)) {
-            return Math.max(i, this.getReceivedStrongYellowstonePower(pos));
+        return this.getEmittedPowerColoured(pos, direction, (blockState, level, position, dir) -> blockState.getWeakYellowstonePower(level, position, dir), (position) -> this.getReceivedStrongYellowstonePower(position));
+    }
+
+    private boolean isReceivingPowerColoured(BlockPos pos, PowerFunction powerFunction) {
+        boolean result = false;
+        for(Direction direction : DIRECTIONS) {
+            if (powerFunction.apply(pos.offset(direction), direction) > 0) {
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public boolean isReceivingBluestonePower(BlockPos pos) {
+        return this.isReceivingPowerColoured(pos, (position, direction) -> this.getEmittedBluestonePower(position, direction));
+    }
+
+    @Override
+    public boolean isReceivingGreenstonePower(BlockPos pos) {
+        return this.isReceivingPowerColoured(pos, (position, direction) -> this.getEmittedGreenstonePower(position, direction));
+    }
+
+    @Override
+    public boolean isReceivingYellowstonePower(BlockPos pos) {
+        return this.isReceivingPowerColoured(pos, (position, direction) -> this.getEmittedYellowstonePower(position, direction));
+    }
+
+    private int getReceivedPowerColoured(BlockPos pos, PowerFunction powerFunction) {
+        int i = 0;
+        for (Direction direction : DIRECTIONS) {
+            int j = powerFunction.apply(pos.offset(direction), direction);
+            if (j >= 15) {
+                return 15;
+            }
+            if (j <= i) continue;
+            i = j;
         }
         return i;
-    }
-
-    @Override
-    public boolean isReceivingBluestonePower(BlockPos pos) { 
-        if (this.getEmittedBluestonePower(pos.down(), Direction.DOWN) > 0) {
-            return true;
-        }
-        if (this.getEmittedBluestonePower(pos.up(), Direction.UP) > 0) {
-            return true;
-        }
-        if (this.getEmittedBluestonePower(pos.north(), Direction.NORTH) > 0) {
-            return true;
-        }
-        if (this.getEmittedBluestonePower(pos.south(), Direction.SOUTH) > 0) {
-            return true;
-        }
-        if (this.getEmittedBluestonePower(pos.west(), Direction.WEST) > 0) {
-            return true;
-        }
-        return this.getEmittedBluestonePower(pos.east(), Direction.EAST) > 0;
-    }
-
-    @Override
-    public boolean isReceivingGreenstonePower(BlockPos pos) { 
-        if (this.getEmittedGreenstonePower(pos.down(), Direction.DOWN) > 0) {
-            return true;
-        }
-        if (this.getEmittedGreenstonePower(pos.up(), Direction.UP) > 0) {
-            return true;
-        }
-        if (this.getEmittedGreenstonePower(pos.north(), Direction.NORTH) > 0) {
-            return true;
-        }
-        if (this.getEmittedGreenstonePower(pos.south(), Direction.SOUTH) > 0) {
-            return true;
-        }
-        if (this.getEmittedGreenstonePower(pos.west(), Direction.WEST) > 0) {
-            return true;
-        }
-        return this.getEmittedGreenstonePower(pos.east(), Direction.EAST) > 0;
-    }
-
-    @Override
-    public boolean isReceivingYellowstonePower(BlockPos pos) { 
-        if (this.getEmittedYellowstonePower(pos.down(), Direction.DOWN) > 0) {
-            return true;
-        }
-        if (this.getEmittedYellowstonePower(pos.up(), Direction.UP) > 0) {
-            return true;
-        }
-        if (this.getEmittedYellowstonePower(pos.north(), Direction.NORTH) > 0) {
-            return true;
-        }
-        if (this.getEmittedYellowstonePower(pos.south(), Direction.SOUTH) > 0) {
-            return true;
-        }
-        if (this.getEmittedYellowstonePower(pos.west(), Direction.WEST) > 0) {
-            return true;
-        }
-        return this.getEmittedYellowstonePower(pos.east(), Direction.EAST) > 0;
     }
 
     @Override
     public int getReceivedBluestonePower(BlockPos pos) {
-        int i = 0;
-        for (Direction direction : DIRECTIONS) {
-            int j = this.getEmittedBluestonePower(pos.offset(direction), direction);
-            if (j == 15) {
-                return 15;
-            }
-            if (j == 16 || j <= i) continue;
-            i = j;
-        }
-        return i;
+        return this.getReceivedPowerColoured(pos, (position, direction) -> this.getEmittedBluestonePower(position, direction));
     }
 
     @Override
     public int getReceivedGreenstonePower(BlockPos pos) {
-        int i = 0;
-        for (Direction direction : DIRECTIONS) {
-            int j = this.getEmittedGreenstonePower(pos.offset(direction), direction);
-            if (j == 15) {
-                return 15;
-            }
-            if (j == 16 || j <= i) continue;
-            i = j;
-        }
-        return i;
+        return this.getReceivedPowerColoured(pos, (position, direction) -> this.getEmittedGreenstonePower(position, direction));
     }
 
     @Override
     public int getReceivedYellowstonePower(BlockPos pos) {
-        int i = 0;
-        for (Direction direction : DIRECTIONS) {
-            int j = this.getEmittedYellowstonePower(pos.offset(direction), direction);
-            if (j == 15) {
-                return 15;
-            }
-            if (j == 16 || j <= i) continue;
-            i = j;
-        }
-        return i;
+        return this.getReceivedPowerColoured(pos, (position, direction) -> this.getEmittedYellowstonePower(position, direction));
     }
 
 }
