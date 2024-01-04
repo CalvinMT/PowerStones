@@ -19,22 +19,20 @@
       "NoteBlockMixin",
       "PistonBlockMixin",
       "PoweredRailBlockMixin",
-      "PropertiesMixin",
       "RedstoneBlockMixin",
       "RedstoneLampBlockMixin",
       "RedstoneTorchBlockMixin",
       "RedstoneWireBlockMixin",
-      "ServerPlayerInteractionManagerMixin",
       "StructureBlockMixin",
       "TntBlockMixin",
       "TrapdoorBlockMixin",
       "WallRedstoneTorchBlockMixin",
       "WorldMixin",
-      "WorldViewMixin"],
+      "WorldViewMixin"
+    ],
     "client": [
-      "BlockColorsMixin",
-      "BlockDustParticleMixin",
-      "ClientPlayerInteractionManagerMixin"],
+      "BlockDustParticleMixin"
+    ],
     "server": [],
     "injectors": {
       "defaultRequire": 1

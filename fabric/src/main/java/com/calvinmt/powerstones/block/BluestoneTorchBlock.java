@@ -28,7 +28,6 @@ extends TorchBlock {
    public static final int field_31227 = 60;
    public static final int field_31228 = 8;
    public static final int field_31229 = 160;
-   //private static final int SCHEDULED_TICK_DELAY = 2;
 
    public BluestoneTorchBlock(AbstractBlock.Settings settings) {
        super(settings, new DustParticleEffect(new Vec3f(PowerstoneWireBlock.BLUE_COLORS[15]), 1.0f));
