@@ -1,5 +1,6 @@
 {
     "ambientocclusion": false,
+    "render_type": "minecraft:cutout",
     "textures": {
         "particle": "powerstones:block/bluestone_dust_dot",
         "line": "powerstones:block/bluestone_dust_dot",

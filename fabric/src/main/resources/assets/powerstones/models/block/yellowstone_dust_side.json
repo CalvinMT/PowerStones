@@ -1,5 +1,6 @@
 {
     "ambientocclusion": false,
+    "render_type": "minecraft:cutout",
     "textures": {
         "particle": "powerstones:block/yellowstone_dust_dot",
         "overlay": "powerstones:block/yellowstone_dust_overlay"

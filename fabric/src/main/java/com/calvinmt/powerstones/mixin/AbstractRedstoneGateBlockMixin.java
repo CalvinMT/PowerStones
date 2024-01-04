@@ -15,7 +15,7 @@ public abstract class AbstractRedstoneGateBlockMixin {
 
     @Redirect(method = "getPower(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)I", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;getEmittedRedstonePower(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;)I"))
     private int getPowerGetEmittingPower(World world, BlockPos pos, Direction direction) {
-        return ((WorldInterface) world).isEmittingPower(pos, direction) ? ((WorldInterface) world).getMaxReceivedPower(pos) : 0;
+        return ((WorldInterface) world).getMaxPower(pos, direction);
     }
 
 }
