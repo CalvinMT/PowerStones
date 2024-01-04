@@ -194,9 +194,6 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
     protected void placeOnUse(BlockState state, Level level, BlockPos pos, Player player) {
         SoundType soundType = state.getSoundType();
         level.playSound(player, pos, state.getSoundType().getPlaceSound(), SoundSource.BLOCKS, (soundType.getVolume() + 1.0f) / 2.0f, soundType.getPitch() * 0.8f);
-        if (player == null || !player.getAbilities().instabuild) {
-            player.getMainHandItem().shrink(1);
-        }
         if (player.getMainHandItem().is(Items.REDSTONE)) {
             state = PowerStones.MULTIPLE_WIRES.get().defaultBlockState().setValue(NORTH, state.getValue(NORTH)).setValue(EAST, state.getValue(EAST)).setValue(SOUTH, state.getValue(SOUTH)).setValue(WEST, state.getValue(WEST)).setValue(POWER, 0).setValue(PowerStones.POWER_B, state.getValue(POWER)).setValue(PowerStones.POWER_PAIR, PowerPair.RED_BLUE);
         }
@@ -208,6 +205,9 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
         }
         else if (player.getMainHandItem().is(PowerStones.YELLOWSTONE.get())) {
             state = PowerStones.MULTIPLE_WIRES.get().defaultBlockState().setValue(NORTH, state.getValue(NORTH)).setValue(EAST, state.getValue(EAST)).setValue(SOUTH, state.getValue(SOUTH)).setValue(WEST, state.getValue(WEST)).setValue(POWER, state.getValue(POWER)).setValue(PowerStones.POWER_B, 0).setValue(PowerStones.POWER_PAIR, PowerPair.GREEN_YELLOW);
+        }
+        if (player == null || !player.getAbilities().instabuild) {
+            player.getMainHandItem().shrink(1);
         }
         level.setBlock(pos, state, Block.UPDATE_ALL | Block.UPDATE_IMMEDIATE);
         ((MultipleWiresBlock)state.getBlock()).updateAll(state, level, pos);
