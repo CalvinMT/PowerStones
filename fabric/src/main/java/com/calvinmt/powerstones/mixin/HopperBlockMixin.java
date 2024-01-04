@@ -13,7 +13,7 @@ import net.minecraft.world.World;
 @Mixin(HopperBlock.class)
 public class HopperBlockMixin {
 
-    @Redirect(method = "updateEnabled(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;isReceivingRedstonePower(Lnet/minecraft/util/math/BlockPos;)Z"))
+    @Redirect(method = "updateEnabled(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;isReceivingRedstonePower(Lnet/minecraft/util/math/BlockPos;)Z"))
     private boolean updateEnabledIsReceivingPower(World world, BlockPos pos) {
         return ((WorldInterface) world).isReceivingPower(pos);
     }

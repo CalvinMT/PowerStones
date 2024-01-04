@@ -9,7 +9,7 @@ public interface WorldInterface {
 
     default boolean isReceivingPower(BlockPos pos) { return false; }
     
-    default int getMaxReceivedPower(BlockPos pos) { return 0; }
+    default int getMaxPower(BlockPos pos, Direction direction) { return 0; }
 
     default boolean isReceivingBluestonePower(BlockPos pos) { return false; }
 
