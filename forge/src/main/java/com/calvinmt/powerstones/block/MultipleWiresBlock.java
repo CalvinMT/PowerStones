@@ -242,22 +242,27 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase {
         return 0;
     }
 
+    @Override
     public int getDirectSignal(BlockState blockState, BlockGetter blockAccess, BlockPos pos, Direction side) {
         return ! shouldSignal ? 0 : blockState.getSignal(blockAccess, pos, side);
     }
 
+    @Override
     public int getDirectSignalBlue(BlockState blockState, BlockGetter blockAccess, BlockPos pos, Direction side) {
         return ! shouldSignal ? 0 : ((BlockStateBaseInterface)blockState).getSignalBlue(blockAccess, pos, side);
     }
 
+    @Override
     public int getDirectSignalGreen(BlockState blockState, BlockGetter blockAccess, BlockPos pos, Direction side) {
         return ! shouldSignal ? 0 : ((BlockStateBaseInterface)blockState).getSignalGreen(blockAccess, pos, side);
     }
 
+    @Override
     public int getDirectSignalYellow(BlockState blockState, BlockGetter blockAccess, BlockPos pos, Direction side) {
         return ! shouldSignal ? 0 : ((BlockStateBaseInterface)blockState).getSignalYellow(blockAccess, pos, side);
     }
 
+    @Override
     public int getSignal(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
         if (! shouldSignal || direction == Direction.DOWN) {
             return 0;
@@ -275,6 +280,7 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase {
         return 0;
     }
 
+    @Override
     public int getSignalBlue(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
         if (! shouldSignal || direction == Direction.DOWN) {
             return 0;
@@ -292,6 +298,7 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase {
         return 0;
     }
 
+    @Override
     public int getSignalGreen(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
         if (! shouldSignal || direction == Direction.DOWN) {
             return 0;
@@ -309,6 +316,7 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase {
         return 0;
     }
 
+    @Override
     public int getSignalYellow(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
         if (! shouldSignal || direction == Direction.DOWN) {
             return 0;

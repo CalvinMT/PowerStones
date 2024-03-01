@@ -3,6 +3,7 @@ package com.calvinmt.powerstones.block;
 import java.util.Map;
 import java.util.Random;
 
+import com.calvinmt.powerstones.BlockBehaviourInterface;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.mojang.math.Vector3f;
@@ -34,7 +35,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public abstract class PowerstoneWireBlockBase extends Block {
+public abstract class PowerstoneWireBlockBase extends Block implements BlockBehaviourInterface {
     
     public static final EnumProperty<RedstoneSide> NORTH = BlockStateProperties.NORTH_REDSTONE;
     public static final EnumProperty<RedstoneSide> EAST = BlockStateProperties.EAST_REDSTONE;
