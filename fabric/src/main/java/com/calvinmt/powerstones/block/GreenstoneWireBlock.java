@@ -41,6 +41,7 @@ public class GreenstoneWireBlock extends PowerstoneWireBlock {
         return 0;
     }
 
+    @Override
     public int getStrongGreenstonePower(BlockState blockState, BlockView blockAccess, BlockPos pos, Direction side) {
         if (! wiresGivePower) {
             return 0;
@@ -52,6 +53,7 @@ public class GreenstoneWireBlock extends PowerstoneWireBlock {
         return 0;
     }
 
+    @Override
     public int getWeakGreenstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
         if (! wiresGivePower || direction == Direction.DOWN) {
             return 0;
