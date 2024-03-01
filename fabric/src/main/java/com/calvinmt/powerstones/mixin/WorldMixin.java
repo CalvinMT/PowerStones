@@ -69,7 +69,7 @@ public abstract class WorldMixin implements WorldInterface {
     private int getReceivedStrongColouredTo(BlockPos pos, StrongPowerFunction strongPowerFunction) {
         int i = 0;
         for(Direction direction : DIRECTIONS) {
-            i = Math.max(i, strongPowerFunction.apply((WorldViewInterface) this, pos, direction));
+            i = Math.max(i, strongPowerFunction.apply((WorldViewInterface) this, pos.offset(direction), direction));
             if (i >= 15) {
                 break;
             }

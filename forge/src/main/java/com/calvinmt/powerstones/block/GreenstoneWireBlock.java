@@ -39,6 +39,7 @@ public class GreenstoneWireBlock extends PowerstoneWireBlock {
         return 0;
     }
 
+    @Override
     public int getDirectSignalGreen(BlockState blockState, BlockGetter blockAccess, BlockPos pos, Direction side) {
         if (! shouldSignal) {
             return 0;
@@ -50,6 +51,7 @@ public class GreenstoneWireBlock extends PowerstoneWireBlock {
         return 0;
     }
 
+    @Override
     public int getSignalGreen(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
         if (! shouldSignal || direction == Direction.DOWN) {
             return 0;
