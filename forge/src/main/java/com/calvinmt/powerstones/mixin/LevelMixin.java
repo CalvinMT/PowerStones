@@ -67,7 +67,7 @@ public abstract class LevelMixin implements LevelInterface {
     private int getDirectSignalColouredTo(BlockPos pos, DirectSignalFunction directSignalFunction) {
         int i = 0;
         for(Direction direction : DIRECTIONS) {
-            i = Math.max(i, directSignalFunction.apply((LevelReaderInterface) this, pos, direction));
+            i = Math.max(i, directSignalFunction.apply((LevelReaderInterface) this, pos.relative(direction), direction));
             if (i >= 15) {
                 break;
             }

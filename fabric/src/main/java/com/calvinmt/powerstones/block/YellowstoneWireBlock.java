@@ -41,6 +41,7 @@ public class YellowstoneWireBlock extends PowerstoneWireBlock {
         return 0;
     }
 
+    @Override
     public int getStrongYellowstonePower(BlockState blockState, BlockView blockAccess, BlockPos pos, Direction side) {
         if (! wiresGivePower) {
             return 0;
@@ -52,6 +53,7 @@ public class YellowstoneWireBlock extends PowerstoneWireBlock {
         return 0;
     }
 
+    @Override
     public int getWeakYellowstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
         if (! wiresGivePower || direction == Direction.DOWN) {
             return 0;

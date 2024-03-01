@@ -242,22 +242,27 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase {
         return 0;
     }
 
+    @Override
     public int getStrongRedstonePower(BlockState blockState, BlockView blockAccess, BlockPos pos, Direction side) {
         return ! wiresGivePower ? 0 : blockState.getWeakRedstonePower(blockAccess, pos, side);
     }
 
+    @Override
     public int getStrongBluestonePower(BlockState blockState, BlockView blockAccess, BlockPos pos, Direction side) {
         return ! wiresGivePower ? 0 : ((AbstractBlockStateInterface)blockState).getWeakBluestonePower(blockAccess, pos, side);
     }
 
+    @Override
     public int getStrongGreenstonePower(BlockState blockState, BlockView blockAccess, BlockPos pos, Direction side) {
         return ! wiresGivePower ? 0 : ((AbstractBlockStateInterface)blockState).getWeakGreenstonePower(blockAccess, pos, side);
     }
 
+    @Override
     public int getStrongYellowstonePower(BlockState blockState, BlockView blockAccess, BlockPos pos, Direction side) {
         return ! wiresGivePower ? 0 : ((AbstractBlockStateInterface)blockState).getWeakYellowstonePower(blockAccess, pos, side);
     }
 
+    @Override
     public int getWeakRedstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
         if (! wiresGivePower || direction == Direction.DOWN) {
             return 0;
@@ -275,6 +280,7 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase {
         return 0;
     }
 
+    @Override
     public int getWeakBluestonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
         if (! wiresGivePower || direction == Direction.DOWN) {
             return 0;
@@ -292,6 +298,7 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase {
         return 0;
     }
 
+    @Override
     public int getWeakGreenstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
         if (! wiresGivePower || direction == Direction.DOWN) {
             return 0;
@@ -309,6 +316,7 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase {
         return 0;
     }
 
+    @Override
     public int getWeakYellowstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
         if (! wiresGivePower || direction == Direction.DOWN) {
             return 0;
