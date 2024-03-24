@@ -1,0 +1,27 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_yellowstone": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "powerstones:yellowstone"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_yellowstone"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "powerstones:redstone_from_yellowstone"
+    ]
+  }
+}
