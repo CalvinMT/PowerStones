@@ -22,7 +22,7 @@ Mods needed to be installed in order for PowerStones to function correctly:
 
 ## Compatibility
 
-PowerStones is compatible with other redstone mods, such as Redstone Bits.
+PowerStones is compatible with other redstone mods, such as Red Bits or Redstone Bits.
 
 It is intended to make PowerStones compatible with as much other mods as possible, but this will take some time.
 
@@ -32,17 +32,18 @@ If there is a mod that you like which seems incompatible with PowerStones, pleas
 
 ### Blocks and items
 
-| Name              | Crafting recipes |
-| ----------------- | ---------------- |
-| Bluestone         | <img src="./docs/bluestone_from_redstone.png" style="image-rendering: pixelated;"> <img src="./docs/bluestone_from_block.png" style="image-rendering: pixelated;">
-| Greenstone        | <img src="./docs/greenstone_from_redstone.png" style="image-rendering: pixelated;"> <img src="./docs/greenstone_from_block.png" style="image-rendering: pixelated;">
-| Yellowstone       | <img src="./docs/yellowstone_from_redstone.png" style="image-rendering: pixelated;"> <img src="./docs/yellowstone_from_block.png" style="image-rendering: pixelated;">
-| Bluestone Block   | <img src="./docs/bluestone_block.png" style="image-rendering: pixelated;">
-| Greenstone Block  | <img src="./docs/greenstone_block.png" style="image-rendering: pixelated;">
-| Yellowstone Block | <img src="./docs/yellowstone_block.png" style="image-rendering: pixelated;">
-| Bluestone Torch   | <img src="./docs/bluestone_torch.png" style="image-rendering: pixelated;">
-| Greenstone Torch  | <img src="./docs/greenstone_torch.png" style="image-rendering: pixelated;">
-| Yellowstone Torch | <img src="./docs/yellowstone_torch.png" style="image-rendering: pixelated;">
+| Name              | Image | Crafting recipes |
+| ----------------- | ----- | ---------------- |
+| Redstone          | <img src="./docs/redstone.png" style="image-rendering: pixelated;"> | <img src="./docs/redstone_from_bluestone.png" style="image-rendering: pixelated;"> <img src="./docs/redstone_from_greenstone.png" style="image-rendering: pixelated;"> <img src="./docs/redstone_from_yellowstone.png" style="image-rendering: pixelated;"> |
+| Bluestone         | <img src="./docs/bluestone.png" style="image-rendering: pixelated;"> | <img src="./docs/bluestone_from_redstone.png" style="image-rendering: pixelated;"> <img src="./docs/bluestone_from_block.png" style="image-rendering: pixelated;">
+| Greenstone        | <img src="./docs/greenstone.png" style="image-rendering: pixelated;"> | <img src="./docs/greenstone_from_redstone.png" style="image-rendering: pixelated;"> <img src="./docs/greenstone_from_block.png" style="image-rendering: pixelated;">
+| Yellowstone       | <img src="./docs/yellowstone.png" style="image-rendering: pixelated;"> | <img src="./docs/yellowstone_from_redstone.png" style="image-rendering: pixelated;"> <img src="./docs/yellowstone_from_block.png" style="image-rendering: pixelated;">
+| Bluestone Block   | <img src="./docs/bluestone_block.png" style="image-rendering: pixelated;"> | <img src="./docs/bluestone_block_from_bluestone.png" style="image-rendering: pixelated;">
+| Greenstone Block  | <img src="./docs/greenstone_block.png" style="image-rendering: pixelated;"> | <img src="./docs/greenstone_block_from_greenstone.png" style="image-rendering: pixelated;">
+| Yellowstone Block | <img src="./docs/yellowstone_block.png" style="image-rendering: pixelated;"> | <img src="./docs/yellowstone_block_from_yellowstone.png" style="image-rendering: pixelated;">
+| Bluestone Torch   | <img src="./docs/bluestone_torch.png" style="image-rendering: pixelated;"> | <img src="./docs/bluestone_torch_from_bluestone.png" style="image-rendering: pixelated;">
+| Greenstone Torch  | <img src="./docs/greenstone_torch.png" style="image-rendering: pixelated;"> | <img src="./docs/greenstone_torch_from_greenstone.png" style="image-rendering: pixelated;">
+| Yellowstone Torch | <img src="./docs/yellowstone_torch.png" style="image-rendering: pixelated;"> | <img src="./docs/yellowstone_torch_from_yellowstone.png" style="image-rendering: pixelated;">
 
 ### Functionalities
 
@@ -61,6 +62,10 @@ The idea of having overlappable powerstones still viewed as a goal, an attempt t
 Extending the mod with greenstone and yellowstone wires could not have been achieved through the addition of two more power properties for the same reason as stated in the initial idea (too many states). The choice had then been made to make wires overlappable by pairs. Redstone wires would be overlappable with bluestone wires, while greenstone wires would be overlappable with yellowstone wires. This was easily achievable through the addition of a single property with two states (one state per pair of powerstones), ending with a number of states for the redstone wire block of 46 818 (3x3x3x3x17x17x2). Adding this basic property rendered the game's startup slower (~1mn30s). However, with higher concern, the number of memory (RAM) needed in order for the game to load every state approximated 12GB. Even if asking users to add a simple Java argument in the Minecraft's launcher to extend the maximum amount of allocated memory to the game is done for other mods, 12GB of memory is huge in comparison to the small addition this mod would have brought to the game.
 
 As the powerstone pair property seemed like a good settle point to bring the project as close to the initial goal as it could have after six weeks of learning and developping, the decision was taken to find a mod which could considerably reduce the amount of memory allocated to run the game with PowerStones. After a quick search, FerriteCore seemed adequate and, against all expectations, made it possible for the game to run with PowerStones wihtout changing the maximum amount of allocated memory (<4GB). Although PowerStones has become dependent of a performance mod, users can benefit from it without worrying about memory consumption.
+
+PowerStones was initially developed to be used with Fabric and largely relied on mixins. After a sufficiently successful start of the mod and wanting to make it useable with Forge, help was sought on the Forge Discord. However, asking mixin related questions only brought criticism towards the [O-So-Cursed-Mixin] reliance of PowerStones. Although the suggestions were helpful in their depth, their arrogant form and suppositions could have been left behind. In spite of this unpleasant experience with some of Forge's community, time and rational reasoning proved to show that using each mod loader's API and separate powerstone classes instead of overrelying on mixins would be best, not only to make it available through Forge, but also to minimise bugs and maximise mod compatibility. An overhaul of the mod then took place to apply these necessary changes.
+
+[O-So-Cursed-Mixin]: https://discord.com/channels/313125603924639766/983834532904042537/1093992576211763241
 
 ## Colour choices
 
