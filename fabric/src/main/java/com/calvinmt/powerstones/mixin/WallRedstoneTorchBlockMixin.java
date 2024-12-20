@@ -31,4 +31,16 @@ public class WallRedstoneTorchBlockMixin {
         return 0;
     }
 
+    public int getStrongBluestonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
+        return 0;
+    }
+
+    public int getStrongGreenstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
+        return 0;
+    }
+
+    public int getStrongYellowstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
+        return 0;
+    }
+
 }
