@@ -1,6 +1,7 @@
 package com.calvinmt.powerstones.mixin;
 
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -21,6 +22,9 @@ import net.minecraft.world.WorldView;
 
 @Mixin(AbstractRedstoneGateBlock.class)
 public abstract class AbstractRedstoneGateBlockMixin extends HorizontalFacingBlock {
+
+    @Shadow
+    protected abstract boolean isValidInput(BlockState state);
 
     protected AbstractRedstoneGateBlockMixin(Settings settings) {
         super(settings);
@@ -46,17 +50,19 @@ public abstract class AbstractRedstoneGateBlockMixin extends HorizontalFacingBlo
         callbackInfo.setReturnValue(Math.max(callbackInfo.getReturnValue(), power));
     }
 
-    @Inject(method = "getInputLevel(Lnet/minecraft/world/WorldView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;)I", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/AbstractRedstoneGateBlock;isValidInput(Lnet/minecraft/block/BlockState;)Z", shift = At.Shift.AFTER), cancellable = true)
+    @Inject(method = "getInputLevel(Lnet/minecraft/world/WorldView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;)I", at = @At("HEAD"), cancellable = true)
     public void getInputLevelConditions(WorldView world, BlockPos pos, Direction dir, CallbackInfoReturnable<Integer> callbackInfo) {
         BlockState blockState = world.getBlockState(pos);
-        if (blockState.isOf(PowerStones.BLUESTONE_BLOCK) || blockState.isOf(PowerStones.GREENSTONE_BLOCK) || blockState.isOf(PowerStones.YELLOWSTONE_BLOCK)) {
-            callbackInfo.setReturnValue(15);
-        }
-        else if (blockState.isOf(PowerStones.BLUESTONE_WIRE) || blockState.isOf(PowerStones.GREENSTONE_WIRE) || blockState.isOf(PowerStones.YELLOWSTONE_WIRE)) {
-            callbackInfo.setReturnValue(blockState.get(PowerstoneWireBlockBase.POWER));
-        }
-        else if (blockState.isOf(PowerStones.MULTIPLE_WIRES)) {
-            callbackInfo.setReturnValue(Math.max(blockState.get(MultipleWiresBlock.POWER), blockState.get(MultipleWiresBlock.POWER_B)));
+        if (this.isValidInput(blockState)) {
+            if (blockState.isOf(PowerStones.BLUESTONE_BLOCK) || blockState.isOf(PowerStones.GREENSTONE_BLOCK) || blockState.isOf(PowerStones.YELLOWSTONE_BLOCK)) {
+                callbackInfo.setReturnValue(15);
+            }
+            else if (blockState.isOf(PowerStones.BLUESTONE_WIRE) || blockState.isOf(PowerStones.GREENSTONE_WIRE) || blockState.isOf(PowerStones.YELLOWSTONE_WIRE)) {
+                callbackInfo.setReturnValue(blockState.get(PowerstoneWireBlockBase.POWER));
+            }
+            else if (blockState.isOf(PowerStones.MULTIPLE_WIRES)) {
+                callbackInfo.setReturnValue(Math.max(blockState.get(MultipleWiresBlock.POWER), blockState.get(MultipleWiresBlock.POWER_B)));
+            }
         }
     }
 
