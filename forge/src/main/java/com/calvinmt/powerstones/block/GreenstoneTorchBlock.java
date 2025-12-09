@@ -55,7 +55,7 @@ public class GreenstoneTorchBlock extends TorchBlock {
    }
 
    protected boolean hasNeighborSignal(Level pLevel, BlockPos pPos, BlockState pState) {
-      return ((LevelInterface)pLevel).isEmittingSignal(pPos.below(), Direction.DOWN);
+      return ((LevelInterface)pLevel).isEmittingGreenstoneSignal(pPos.below(), Direction.DOWN);
    }
 
    public void tick(BlockState pState, ServerLevel pLevel, BlockPos pPos, RandomSource pRandom) {

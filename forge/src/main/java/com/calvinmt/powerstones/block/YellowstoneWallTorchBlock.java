@@ -69,7 +69,7 @@ public class YellowstoneWallTorchBlock extends YellowstoneTorchBlock {
 
    protected boolean hasNeighborSignal(Level pLevel, BlockPos pPos, BlockState pState) {
       Direction direction = pState.getValue(FACING).getOpposite();
-      return ((LevelInterface)pLevel).isEmittingSignal(pPos.relative(direction), direction);
+      return ((LevelInterface)pLevel).isEmittingYellowstoneSignal(pPos.relative(direction), direction);
    }
 
    public int getSignalYellow(BlockState pBlockState, BlockGetter pBlockAccess, BlockPos pPos, Direction pSide) {
