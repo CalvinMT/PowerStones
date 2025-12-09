@@ -60,7 +60,7 @@ extends TorchBlock {
    }
 
    protected boolean shouldUnpower(World world, BlockPos pos, BlockState state) {
-       return world.isEmittingPower(pos.down(), Direction.DOWN);
+       return world.isEmittingBluestonePower(pos.down(), Direction.DOWN);
    }
 
    @Override
