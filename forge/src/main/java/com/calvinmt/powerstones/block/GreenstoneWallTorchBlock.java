@@ -70,7 +70,7 @@ public class GreenstoneWallTorchBlock extends GreenstoneTorchBlock {
 
    protected boolean hasNeighborSignal(Level pLevel, BlockPos pPos, BlockState pState) {
       Direction direction = pState.getValue(FACING).getOpposite();
-      return ((LevelInterface)pLevel).isEmittingSignal(pPos.relative(direction), direction);
+      return ((LevelInterface)pLevel).isEmittingGreenstoneSignal(pPos.relative(direction), direction);
    }
 
    public int getSignalGreen(BlockState pBlockState, BlockGetter pBlockAccess, BlockPos pPos, Direction pSide) {

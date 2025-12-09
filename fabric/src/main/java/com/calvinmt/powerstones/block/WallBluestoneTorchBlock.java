@@ -77,7 +77,7 @@ extends BluestoneTorchBlock {
     @Override
     protected boolean shouldUnpower(World world, BlockPos pos, BlockState state) {
         Direction direction = state.get(FACING).getOpposite();
-        return world.isEmittingPower(pos.offset(direction), direction);
+        return world.isEmittingBluestonePower(pos.offset(direction), direction);
     }
 
     @Override

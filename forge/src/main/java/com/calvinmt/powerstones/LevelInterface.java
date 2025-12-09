@@ -7,6 +7,12 @@ public interface LevelInterface {
 
     default boolean isEmittingSignal(BlockPos pos, Direction direction) { return false; }
 
+    default boolean isEmittingBluestoneSignal(BlockPos pos, Direction direction) { return false; }
+
+    default boolean isEmittingGreenstoneSignal(BlockPos pos, Direction direction) { return false; }
+
+    default boolean isEmittingYellowstoneSignal(BlockPos pos, Direction direction) { return false; }
+
     default boolean isReceivingSignal(BlockPos pos) { return false; }
     
     default int getMaxSignal(BlockPos pos, Direction direction) { return 0; }

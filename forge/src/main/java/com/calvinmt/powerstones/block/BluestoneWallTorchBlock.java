@@ -70,7 +70,7 @@ public class BluestoneWallTorchBlock extends BluestoneTorchBlock {
 
    protected boolean hasNeighborSignal(Level pLevel, BlockPos pPos, BlockState pState) {
       Direction direction = pState.getValue(FACING).getOpposite();
-      return ((LevelInterface)pLevel).isEmittingSignal(pPos.relative(direction), direction);
+      return ((LevelInterface)pLevel).isEmittingBluestoneSignal(pPos.relative(direction), direction);
    }
 
    public int getSignalBlue(BlockState pBlockState, BlockGetter pBlockAccess, BlockPos pPos, Direction pSide) {
