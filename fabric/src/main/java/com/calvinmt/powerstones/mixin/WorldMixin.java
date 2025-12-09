@@ -21,6 +21,8 @@ public abstract class WorldMixin implements WorldInterface {
     @Shadow
     public abstract BlockState getBlockState(BlockPos pos);
     @Shadow
+    public abstract boolean isEmittingRedstonePower(BlockPos pos, Direction direction);
+    @Shadow
     public abstract int getEmittedRedstonePower(BlockPos pos, Direction direction);
     @Shadow
     public abstract boolean isReceivingRedstonePower(BlockPos pos);
@@ -49,11 +51,23 @@ public abstract class WorldMixin implements WorldInterface {
 
     @Override
     public boolean isEmittingPower(BlockPos pos, Direction direction) {
-        int redstonePower = this.getEmittedRedstonePower(pos, direction);
-        int bluestonePower = this.getEmittedBluestonePower(pos, direction);
-        int greenstonePower = this.getEmittedGreenstonePower(pos, direction);
-        int yellowstonePower = this.getEmittedYellowstonePower(pos, direction);
-        return redstonePower > 0 || bluestonePower > 0 || greenstonePower > 0 || yellowstonePower > 0;
+        boolean redstonePower = this.isEmittingRedstonePower(pos, direction);
+        boolean bluestonePower = this.isEmittingBluestonePower(pos, direction);
+        boolean greenstonePower = this.isEmittingGreenstonePower(pos, direction);
+        boolean yellowstonePower = this.isEmittingYellowstonePower(pos, direction);
+        return redstonePower || bluestonePower || greenstonePower || yellowstonePower;
+    }
+
+    public boolean isEmittingBluestonePower(BlockPos pos, Direction direction) {
+        return this.getEmittedBluestonePower(pos, direction) > 0;
+    }
+
+    public boolean isEmittingGreenstonePower(BlockPos pos, Direction direction) {
+        return this.getEmittedGreenstonePower(pos, direction) > 0;
+    }
+
+    public boolean isEmittingYellowstonePower(BlockPos pos, Direction direction) {
+        return this.getEmittedYellowstonePower(pos, direction) > 0;
     }
 
     @Override

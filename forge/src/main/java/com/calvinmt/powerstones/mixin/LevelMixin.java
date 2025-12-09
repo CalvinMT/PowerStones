@@ -19,6 +19,8 @@ public abstract class LevelMixin implements LevelInterface {
     @Shadow
     public abstract BlockState getBlockState(BlockPos pos);
     @Shadow
+    public abstract boolean hasSignal(BlockPos pos, Direction direction);
+    @Shadow
     public abstract int getSignal(BlockPos pos, Direction direction);
     @Shadow
     public abstract boolean hasNeighborSignal(BlockPos pos);
@@ -47,11 +49,23 @@ public abstract class LevelMixin implements LevelInterface {
 
     @Override
     public boolean isEmittingSignal(BlockPos pos, Direction direction) {
-        int redstonePower = this.getSignal(pos, direction);
-        int bluestonePower = this.getSignalBlue(pos, direction);
-        int greenstonePower = this.getSignalGreen(pos, direction);
-        int yellowstonePower = this.getSignalYellow(pos, direction);
-        return redstonePower > 0 || bluestonePower > 0 || greenstonePower > 0 || yellowstonePower > 0;
+        boolean redstonePower = this.hasSignal(pos, direction);
+        boolean bluestonePower = this.isEmittingBluestoneSignal(pos, direction);
+        boolean greenstonePower = this.isEmittingGreenstoneSignal(pos, direction);
+        boolean yellowstonePower = this.isEmittingYellowstoneSignal(pos, direction);
+        return redstonePower || bluestonePower || greenstonePower || yellowstonePower;
+    }
+
+    public boolean isEmittingBluestoneSignal(BlockPos pos, Direction direction) {
+        return this.getSignalBlue(pos, direction) > 0;
+    }
+
+    public boolean isEmittingGreenstoneSignal(BlockPos pos, Direction direction) {
+        return this.getSignalGreen(pos, direction) > 0;
+    }
+
+    public boolean isEmittingYellowstoneSignal(BlockPos pos, Direction direction) {
+        return this.getSignalYellow(pos, direction) > 0;
     }
 
     @Override
