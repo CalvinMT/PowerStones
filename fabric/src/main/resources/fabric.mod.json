@@ -4,7 +4,7 @@
   "version": "${version}",
 
   "name": "PowerStones",
-  "description": "Multiple overlappable coloured redstones.",
+  "description": "Overlapping wires of Redstone, Bluestone, Greenstone and Yellowstone.",
   "authors": [
     "CalvinMT"
   ],
