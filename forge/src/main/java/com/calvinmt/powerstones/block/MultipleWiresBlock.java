@@ -35,6 +35,8 @@ import net.minecraft.world.level.levelgen.RandomSource;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class MultipleWiresBlock extends PowerstoneWireBlockBase implements EntityBlock {
 
@@ -43,6 +45,11 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
     public MultipleWiresBlock(BlockBehaviour.Properties pProperties) {
         super(pProperties);
         this.registerDefaultState(this.stateDefinition.any().setValue(NORTH, RedstoneSide.NONE).setValue(EAST, RedstoneSide.NONE).setValue(SOUTH, RedstoneSide.NONE).setValue(WEST, RedstoneSide.NONE));
+    }
+
+    @Override
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return (VoxelShape)SHAPES_CACHE.get(state);
     }
 
     @Override

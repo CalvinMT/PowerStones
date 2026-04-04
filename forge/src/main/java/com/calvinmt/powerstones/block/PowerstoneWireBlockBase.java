@@ -49,7 +49,7 @@ public abstract class PowerstoneWireBlockBase extends Block implements BlockBeha
     private static final VoxelShape SHAPE_DOT = Block.box(3.0D, 0.0D, 3.0D, 13.0D, 1.0D, 13.0D);
     private static final Map<Direction, VoxelShape> SHAPES_FLOOR = Maps.newEnumMap(ImmutableMap.of(Direction.NORTH, Block.box(3.0D, 0.0D, 0.0D, 13.0D, 1.0D, 13.0D), Direction.SOUTH, Block.box(3.0D, 0.0D, 3.0D, 13.0D, 1.0D, 16.0D), Direction.EAST, Block.box(3.0D, 0.0D, 3.0D, 16.0D, 1.0D, 13.0D), Direction.WEST, Block.box(0.0D, 0.0D, 3.0D, 13.0D, 1.0D, 13.0D)));
     private static final Map<Direction, VoxelShape> SHAPES_UP = Maps.newEnumMap(ImmutableMap.of(Direction.NORTH, Shapes.or(SHAPES_FLOOR.get(Direction.NORTH), Block.box(3.0D, 0.0D, 0.0D, 13.0D, 16.0D, 1.0D)), Direction.SOUTH, Shapes.or(SHAPES_FLOOR.get(Direction.SOUTH), Block.box(3.0D, 0.0D, 15.0D, 13.0D, 16.0D, 16.0D)), Direction.EAST, Shapes.or(SHAPES_FLOOR.get(Direction.EAST), Block.box(15.0D, 0.0D, 3.0D, 16.0D, 16.0D, 13.0D)), Direction.WEST, Shapes.or(SHAPES_FLOOR.get(Direction.WEST), Block.box(0.0D, 0.0D, 3.0D, 1.0D, 16.0D, 13.0D))));
-    private static final Map<BlockState, VoxelShape> SHAPES_CACHE = Maps.newHashMap();
+    protected static final Map<BlockState, VoxelShape> SHAPES_CACHE = Maps.newHashMap();
     protected final BlockState crossState;
     protected boolean shouldSignal = true;
 
@@ -58,7 +58,7 @@ public abstract class PowerstoneWireBlockBase extends Block implements BlockBeha
         this.crossState = this.defaultBlockState().setValue(NORTH, RedstoneSide.SIDE).setValue(EAST, RedstoneSide.SIDE).setValue(SOUTH, RedstoneSide.SIDE).setValue(WEST, RedstoneSide.SIDE);
 
         for(BlockState blockstate : this.getStateDefinition().getPossibleStates()) {
-                SHAPES_CACHE.put(blockstate, this.calculateShape(blockstate));
+            SHAPES_CACHE.put(blockstate, this.calculateShape(blockstate));
         }
     }
 
@@ -77,9 +77,7 @@ public abstract class PowerstoneWireBlockBase extends Block implements BlockBeha
         return voxelshape;
     }
 
-    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPES_CACHE.get(state.setValue(POWER, Integer.valueOf(0)));
-    }
+    public abstract VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context);
 
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         return this.getConnectionState(context.getLevel(), this.crossState, context.getClickedPos());

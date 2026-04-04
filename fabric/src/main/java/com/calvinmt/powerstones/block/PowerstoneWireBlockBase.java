@@ -54,7 +54,7 @@ public abstract class PowerstoneWireBlockBase extends Block {
     private static final VoxelShape DOT_SHAPE = Block.createCuboidShape(3.0, 0.0, 3.0, 13.0, 1.0, 13.0);
     private static final Map<Direction, VoxelShape> SHAPES_FLOOR = Maps.newEnumMap(ImmutableMap.of(Direction.NORTH, Block.createCuboidShape(3.0, 0.0, 0.0, 13.0, 1.0, 13.0), Direction.SOUTH, Block.createCuboidShape(3.0, 0.0, 3.0, 13.0, 1.0, 16.0), Direction.EAST, Block.createCuboidShape(3.0, 0.0, 3.0, 16.0, 1.0, 13.0), Direction.WEST, Block.createCuboidShape(0.0, 0.0, 3.0, 13.0, 1.0, 13.0)));
     private static final Map<Direction, VoxelShape> SHAPES_UP = Maps.newEnumMap(ImmutableMap.of(Direction.NORTH, VoxelShapes.union((VoxelShape)SHAPES_FLOOR.get(Direction.NORTH), Block.createCuboidShape(3.0, 0.0, 0.0, 13.0, 16.0, 1.0)), Direction.SOUTH, VoxelShapes.union((VoxelShape)SHAPES_FLOOR.get(Direction.SOUTH), Block.createCuboidShape(3.0, 0.0, 15.0, 13.0, 16.0, 16.0)), Direction.EAST, VoxelShapes.union((VoxelShape)SHAPES_FLOOR.get(Direction.EAST), Block.createCuboidShape(15.0, 0.0, 3.0, 16.0, 16.0, 13.0)), Direction.WEST, VoxelShapes.union((VoxelShape)SHAPES_FLOOR.get(Direction.WEST), Block.createCuboidShape(0.0, 0.0, 3.0, 1.0, 16.0, 13.0))));
-    private static final Map<BlockState, VoxelShape> SHAPES = Maps.newHashMap();
+    protected static final Map<BlockState, VoxelShape> SHAPES = Maps.newHashMap();
     protected final BlockState dotState;
     protected boolean wiresGivePower = true;
 
@@ -64,7 +64,7 @@ public abstract class PowerstoneWireBlockBase extends Block {
         this.dotState = (BlockState)((BlockState)((BlockState)((BlockState)this.getDefaultState().with(WIRE_CONNECTION_NORTH, WireConnection.SIDE)).with(WIRE_CONNECTION_EAST, WireConnection.SIDE)).with(WIRE_CONNECTION_SOUTH, WireConnection.SIDE)).with(WIRE_CONNECTION_WEST, WireConnection.SIDE);
 
         for(BlockState blockState : this.getStateManager().getStates()) {
-                SHAPES.put(blockState, this.getShapeForState(blockState));
+            SHAPES.put(blockState, this.getShapeForState(blockState));
         }
 
     }
@@ -84,9 +84,7 @@ public abstract class PowerstoneWireBlockBase extends Block {
         return voxelShape;
     }
 
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return (VoxelShape)SHAPES.get(state.with(POWER, 0));
-    }
+    public abstract VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context);
 
     public BlockState getPlacementState(ItemPlacementContext ctx) {
         return this.getPlacementState(ctx.getWorld(), this.dotState, ctx.getBlockPos());
