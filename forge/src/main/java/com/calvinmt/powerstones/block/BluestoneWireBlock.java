@@ -29,12 +29,12 @@ public class BluestoneWireBlock extends PowerstoneWireBlock {
     }
 
     @Override
-    protected int getWireSignal(BlockState state) {
+    protected int getWireSignal(BlockState state, Level level, BlockPos pos) {
         if (state.is(this)) {
             return state.getValue(POWER);
         }
         if (state.is(PowerStones.MULTIPLE_WIRES.get()) && state.getValue(PowerStones.POWER_PAIR) == PowerPair.RED_BLUE) {
-            return state.getValue(PowerStones.POWER_B);
+            return MultipleWiresBlock.getPowerB(level, pos);
         }
         return 0;
     }
@@ -64,7 +64,7 @@ public class BluestoneWireBlock extends PowerstoneWireBlock {
             if (state.getValue(PowerStones.POWER_PAIR) != PowerPair.RED_BLUE) {
                 return 0;
             }
-            i = state.getValue(PowerStones.POWER_B);
+            i = MultipleWiresBlock.getPowerB((Level) level, pos);
         }
         if (i == 0) {
             return 0;

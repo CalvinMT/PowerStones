@@ -14,6 +14,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundCategory;
+import net.minecraft.state.StateManager;
+import net.minecraft.state.property.IntProperty;
+import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Util;
@@ -28,6 +31,8 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
 public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
+
+    public static final IntProperty POWER = Properties.POWER;
 
     private Vec3d[] COLORS;
 
@@ -130,14 +135,18 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
             for (Direction direction : Type.HORIZONTAL) {
                 BlockPos blockPos = pos.offset(direction);
                 BlockState blockState = world.getBlockState(blockPos);
-                j = Math.max(j, this.getPower(blockState));
+                j = Math.max(j, this.getPower(blockState, world, blockPos));
                 BlockPos blockPos2 = pos.up();
                 if (blockState.isSolidBlock(world, blockPos) && !world.getBlockState(blockPos2).isSolidBlock(world, blockPos2)) {
-                    j = Math.max(j, this.getPower(world.getBlockState(blockPos.up())));
+                    BlockPos blockPosUp = blockPos.up();
+                    BlockState blockStateUp = world.getBlockState(blockPosUp);
+                    j = Math.max(j, this.getPower(blockStateUp, world, blockPosUp));
                     continue;
                 }
                 if (blockState.isSolidBlock(world, blockPos)) continue;
-                j = Math.max(j, this.getPower(world.getBlockState(blockPos.down())));
+                BlockPos blockPosDown = blockPos.down();
+                BlockState blockStateDown = world.getBlockState(blockPosDown);
+                j = Math.max(j, this.getPower(blockStateDown, world, blockPosDown));
             }
         }
         return Math.max(i, j - 1);
@@ -145,7 +154,7 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
 
     protected abstract int getReceivedPower(World world, BlockPos pos);
 
-    protected abstract int getPower(BlockState state);
+    protected abstract int getPower(BlockState state, World world, BlockPos pos);
 
     @Override
     protected boolean shouldConnectToAbove(BlockView world, BlockPos posAbove, BlockState stateAbove, Direction direction) {
@@ -181,33 +190,53 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
     }
 
     @Override
-    protected boolean hasPowerOn(BlockState state) {
-        return state.get(POWER) > 0;
+    protected boolean hasPowerOn(World world, BlockPos pos) {
+        return world.getBlockState(pos).get(POWER) > 0;
     }
 
     @Override
-    protected Vec3d getPowerstoneColor(BlockState state, Random random) {
+    protected Vec3d getPowerstoneColor(BlockState state, World world, BlockPos pos, Random random) {
         return COLORS[state.get(POWER)];
+    }
+
+    @Override
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+        super.appendProperties(builder);
+        builder.add(POWER);
     }
 
     protected void placeOnUse(BlockState state, World world, BlockPos pos, PlayerEntity player) {
         BlockSoundGroup soundType = state.getSoundGroup();
         world.playSound(player, pos, state.getSoundGroup().getPlaceSound(), SoundCategory.BLOCKS, (soundType.getVolume() + 1.0f) / 2.0f, soundType.getPitch() * 0.8f);
+        PowerPair powerPair = null;
+        int powerA = 0;
+        int powerB = 0;
         if (player.getMainHandStack().isOf(Items.REDSTONE)) {
-            state = PowerStones.MULTIPLE_WIRES.getDefaultState().with(WIRE_CONNECTION_NORTH, state.get(WIRE_CONNECTION_NORTH)).with(WIRE_CONNECTION_EAST, state.get(WIRE_CONNECTION_EAST)).with(WIRE_CONNECTION_SOUTH, state.get(WIRE_CONNECTION_SOUTH)).with(WIRE_CONNECTION_WEST, state.get(WIRE_CONNECTION_WEST)).with(POWER, 0).with(PowerStones.POWER_B, state.get(POWER)).with(PowerStones.POWER_PAIR, PowerPair.RED_BLUE);
+            powerPair = PowerPair.RED_BLUE;
+            powerA = 0;
+            powerB = state.get(POWER);
         }
         else if (player.getMainHandStack().isOf(PowerStones.BLUESTONE)) {
-            state = PowerStones.MULTIPLE_WIRES.getDefaultState().with(WIRE_CONNECTION_NORTH, state.get(WIRE_CONNECTION_NORTH)).with(WIRE_CONNECTION_EAST, state.get(WIRE_CONNECTION_EAST)).with(WIRE_CONNECTION_SOUTH, state.get(WIRE_CONNECTION_SOUTH)).with(WIRE_CONNECTION_WEST, state.get(WIRE_CONNECTION_WEST)).with(POWER, state.get(POWER)).with(PowerStones.POWER_B, 0).with(PowerStones.POWER_PAIR, PowerPair.RED_BLUE);
+            powerPair = PowerPair.RED_BLUE;
+            powerA = state.get(POWER);
+            powerB = 0;
         }
         else if (player.getMainHandStack().isOf(PowerStones.GREENSTONE)) {
-            state = PowerStones.MULTIPLE_WIRES.getDefaultState().with(WIRE_CONNECTION_NORTH, state.get(WIRE_CONNECTION_NORTH)).with(WIRE_CONNECTION_EAST, state.get(WIRE_CONNECTION_EAST)).with(WIRE_CONNECTION_SOUTH, state.get(WIRE_CONNECTION_SOUTH)).with(WIRE_CONNECTION_WEST, state.get(WIRE_CONNECTION_WEST)).with(POWER, 0).with(PowerStones.POWER_B, state.get(POWER)).with(PowerStones.POWER_PAIR, PowerPair.GREEN_YELLOW);
+            powerPair = PowerPair.GREEN_YELLOW;
+            powerA = 0;
+            powerB = state.get(POWER);
         }
         else if (player.getMainHandStack().isOf(PowerStones.YELLOWSTONE)) {
-            state = PowerStones.MULTIPLE_WIRES.getDefaultState().with(WIRE_CONNECTION_NORTH, state.get(WIRE_CONNECTION_NORTH)).with(WIRE_CONNECTION_EAST, state.get(WIRE_CONNECTION_EAST)).with(WIRE_CONNECTION_SOUTH, state.get(WIRE_CONNECTION_SOUTH)).with(WIRE_CONNECTION_WEST, state.get(WIRE_CONNECTION_WEST)).with(POWER, state.get(POWER)).with(PowerStones.POWER_B, 0).with(PowerStones.POWER_PAIR, PowerPair.GREEN_YELLOW);
+            powerPair = PowerPair.GREEN_YELLOW;
+            powerA = state.get(POWER);
+            powerB = 0;
         }
         if (player == null || !player.getAbilities().creativeMode) {
             player.getMainHandStack().decrement(1);
         }
+        state = PowerStones.MULTIPLE_WIRES.getDefaultState().with(WIRE_CONNECTION_NORTH, state.get(WIRE_CONNECTION_NORTH)).with(WIRE_CONNECTION_EAST, state.get(WIRE_CONNECTION_EAST)).with(WIRE_CONNECTION_SOUTH, state.get(WIRE_CONNECTION_SOUTH)).with(WIRE_CONNECTION_WEST, state.get(WIRE_CONNECTION_WEST)).with(MultipleWiresBlock.POWER_PAIR, powerPair);
+        MultipleWiresBlock.setPowerA(world, pos, powerA);
+        MultipleWiresBlock.setPowerB(world, pos, powerB);
         world.setBlockState(pos, state, Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
         ((MultipleWiresBlock)state.getBlock()).updateAll(state, world, pos);
     }

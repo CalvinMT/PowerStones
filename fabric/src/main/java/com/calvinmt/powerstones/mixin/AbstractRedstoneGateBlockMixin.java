@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import com.calvinmt.powerstones.PowerStones;
 import com.calvinmt.powerstones.WorldInterface;
 import com.calvinmt.powerstones.block.MultipleWiresBlock;
-import com.calvinmt.powerstones.block.PowerstoneWireBlockBase;
+import com.calvinmt.powerstones.block.PowerstoneWireBlock;
 
 import net.minecraft.block.AbstractRedstoneGateBlock;
 import net.minecraft.block.BlockState;
@@ -42,10 +42,10 @@ public abstract class AbstractRedstoneGateBlockMixin extends HorizontalFacingBlo
         BlockState blockState = world.getBlockState(blockPos);
         int power = 0;
         if (blockState.isOf(PowerStones.BLUESTONE_WIRE) || blockState.isOf(PowerStones.GREENSTONE_WIRE) || blockState.isOf(PowerStones.YELLOWSTONE_WIRE)) {
-            power = blockState.get(PowerstoneWireBlockBase.POWER);
+            power = blockState.get(PowerstoneWireBlock.POWER);
         }
         else if (blockState.isOf(PowerStones.MULTIPLE_WIRES)) {
-            power = Math.max(blockState.get(MultipleWiresBlock.POWER), blockState.get(MultipleWiresBlock.POWER_B));
+            power = Math.max(MultipleWiresBlock.getPowerA(world, blockPos), MultipleWiresBlock.getPowerB(world, blockPos));
         }
         callbackInfo.setReturnValue(Math.max(callbackInfo.getReturnValue(), power));
     }
@@ -58,10 +58,10 @@ public abstract class AbstractRedstoneGateBlockMixin extends HorizontalFacingBlo
                 callbackInfo.setReturnValue(15);
             }
             else if (blockState.isOf(PowerStones.BLUESTONE_WIRE) || blockState.isOf(PowerStones.GREENSTONE_WIRE) || blockState.isOf(PowerStones.YELLOWSTONE_WIRE)) {
-                callbackInfo.setReturnValue(blockState.get(PowerstoneWireBlockBase.POWER));
+                callbackInfo.setReturnValue(blockState.get(PowerstoneWireBlock.POWER));
             }
             else if (blockState.isOf(PowerStones.MULTIPLE_WIRES)) {
-                callbackInfo.setReturnValue(Math.max(blockState.get(MultipleWiresBlock.POWER), blockState.get(MultipleWiresBlock.POWER_B)));
+                callbackInfo.setReturnValue(Math.max(MultipleWiresBlock.getPowerA(world, pos), MultipleWiresBlock.getPowerB(world, pos)));
             }
         }
     }

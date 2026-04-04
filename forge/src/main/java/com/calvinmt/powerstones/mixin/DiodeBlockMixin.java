@@ -11,7 +11,7 @@ import com.calvinmt.powerstones.LevelInterface;
 import com.calvinmt.powerstones.LevelReaderInterface;
 import com.calvinmt.powerstones.PowerStones;
 import com.calvinmt.powerstones.block.MultipleWiresBlock;
-import com.calvinmt.powerstones.block.PowerstoneWireBlockBase;
+import com.calvinmt.powerstones.block.PowerstoneWireBlock;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -25,7 +25,7 @@ import net.minecraft.world.level.block.state.BlockState;
 public abstract class DiodeBlockMixin extends HorizontalDirectionalBlock {
 
     @Shadow
-    protected abstract boolean isValidInput(BlockState state);
+    protected abstract boolean isAlternateInput(BlockState state);
 
     protected DiodeBlockMixin(Properties properties) {
         super(properties);
@@ -43,10 +43,10 @@ public abstract class DiodeBlockMixin extends HorizontalDirectionalBlock {
         BlockState blockState = level.getBlockState(blockPos);
         int power = 0;
         if (blockState.is(PowerStones.BLUESTONE_WIRE.get()) || blockState.is(PowerStones.GREENSTONE_WIRE.get()) || blockState.is(PowerStones.YELLOWSTONE_WIRE.get())) {
-            power = blockState.getValue(PowerstoneWireBlockBase.POWER);
+            power = blockState.getValue(PowerstoneWireBlock.POWER);
         }
         else if (blockState.is(PowerStones.MULTIPLE_WIRES.get())) {
-            power = Math.max(blockState.getValue(MultipleWiresBlock.POWER), blockState.getValue(MultipleWiresBlock.POWER_B));
+            power = Math.max(MultipleWiresBlock.getPowerA(level, blockPos), MultipleWiresBlock.getPowerB(level, blockPos));
         }
         callbackInfo.setReturnValue(Math.max(callbackInfo.getReturnValue(), power));
     }
@@ -54,15 +54,15 @@ public abstract class DiodeBlockMixin extends HorizontalDirectionalBlock {
     @Inject(method = "getAlternateSignalAt(Lnet/minecraft/world/level/LevelReader;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;)I", at = @At("HEAD"), cancellable = true)
     public void getAlternateSignalAtConditions(LevelReader level, BlockPos pos, Direction dir, CallbackInfoReturnable<Integer> callbackInfo) {
         BlockState blockState = level.getBlockState(pos);
-        if (this.isValidInput(blockState)) {
+        if (this.isAlternateInput(blockState)) {
             if (blockState.is(PowerStones.BLUESTONE_BLOCK.get()) || blockState.is(PowerStones.GREENSTONE_BLOCK.get()) || blockState.is(PowerStones.YELLOWSTONE_BLOCK.get())) {
                 callbackInfo.setReturnValue(15);
             }
             else if (blockState.is(PowerStones.BLUESTONE_WIRE.get()) || blockState.is(PowerStones.GREENSTONE_WIRE.get()) || blockState.is(PowerStones.YELLOWSTONE_WIRE.get())) {
-                callbackInfo.setReturnValue(blockState.getValue(PowerstoneWireBlockBase.POWER));
+                callbackInfo.setReturnValue(blockState.getValue(PowerstoneWireBlock.POWER));
             }
             else if (blockState.is(PowerStones.MULTIPLE_WIRES.get())) {
-                callbackInfo.setReturnValue(Math.max(blockState.getValue(MultipleWiresBlock.POWER), blockState.getValue(MultipleWiresBlock.POWER_B)));
+                callbackInfo.setReturnValue(Math.max(MultipleWiresBlock.getPowerA((Level) level, pos), MultipleWiresBlock.getPowerB((Level) level, pos)));
             }
         }
     }

@@ -39,7 +39,7 @@ public class PowerStonesClient implements ClientModInitializer {
             return ((YellowstoneWireBlock)state.getBlock()).getColorForPower(state.get(PowerstoneWireBlock.POWER));
         }, PowerStones.YELLOWSTONE_WIRE);
         ColorProviderRegistry.BLOCK.register((state, blockAndTintGetter, pos, tintIndex) -> {
-            return MultipleWiresBlock.getColorForTintIndex(state, tintIndex);
+            return MultipleWiresBlock.getColorForTintIndex(state, blockAndTintGetter, pos, tintIndex);
         }, PowerStones.MULTIPLE_WIRES);
     }
 

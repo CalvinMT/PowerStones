@@ -8,9 +8,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -18,6 +17,9 @@ import com.calvinmt.powerstones.PowerPair;
 import com.calvinmt.powerstones.PowerStones;
 import com.calvinmt.powerstones.RedstoneWireBlockInterface;
 import com.calvinmt.powerstones.block.MultipleWiresBlock;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
@@ -131,12 +133,26 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
         return result;
     }
 
-    @ModifyConstant(method = "increasePower(Lnet/minecraft/block/BlockState;)I", constant = @Constant(intValue = 0))
-    private int getWireSignalMultipleWires(int oldResult, BlockState state) {
+    @WrapOperation(method = "getReceivedRedstonePower(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)I", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/RedstoneWireBlock;increasePower(Lnet/minecraft/block/BlockState;)I", ordinal = 0))
+    private int getIncreasePower(RedstoneWireBlock self, BlockState state, Operation<Integer> original, World world, BlockPos pos, @Local(name = "blockPos") BlockPos blockPos) {
+        return this.increasePower(world, blockPos, state);
+    }
+
+    @WrapOperation( method = "getReceivedRedstonePower(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)I", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/RedstoneWireBlock;increasePower(Lnet/minecraft/block/BlockState;)I", ordinal = 1))
+    private int getIncreasePowerUp(RedstoneWireBlock self, BlockState state, Operation<Integer> original, World world, BlockPos pos, @Local(name = "blockPos") BlockPos blockPos) {
+        return this.increasePower(world, blockPos.up(), state);
+    }
+
+    @WrapOperation(method = "getReceivedRedstonePower(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)I", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/RedstoneWireBlock;increasePower(Lnet/minecraft/block/BlockState;)I", ordinal = 2))
+    private int getIncreasePowerDown(RedstoneWireBlock self, BlockState state, Operation<Integer> original, World world, BlockPos pos, @Local(name = "blockPos") BlockPos blockPos) {
+        return this.increasePower(world, blockPos.down(), state);
+    }
+
+    private int increasePower(World world, BlockPos pos, BlockState state) {
         if (state.isOf(PowerStones.MULTIPLE_WIRES) && state.get(PowerStones.POWER_PAIR) == PowerPair.RED_BLUE) {
-            return state.get(POWER);
+            return MultipleWiresBlock.getPowerA(world, pos);
         }
-        return oldResult;
+        return state.isOf(this) ? (Integer)state.get(POWER) : 0;
     }
 
     @Inject(method = "onUse(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;Lnet/minecraft/util/hit/BlockHitResult;)Lnet/minecraft/util/ActionResult;", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/RedstoneWireBlock;isFullyConnected(Lnet/minecraft/block/BlockState;)Z", ordinal = 0), cancellable = true)
@@ -149,6 +165,17 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
 
     public void setShouldSignal(boolean wiresGivePower) {
         this.wiresGivePower = wiresGivePower;
+    }
+
+    @ModifyVariable(method = "getWeakRedstonePower(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;)I", at = @At(value = "STORE"), ordinal = 0)
+    public int modifyWeakRedstonePower(int original, BlockState state, BlockView world, BlockPos pos, Direction direction) {
+        if (state.isOf(PowerStones.MULTIPLE_WIRES)) {
+            if (state.get(PowerStones.POWER_PAIR) != PowerPair.RED_BLUE) {
+                return 0;
+            }
+            return MultipleWiresBlock.getPowerA(world, pos);
+        }
+        return original;
     }
 
     public int getWeakBluestonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
@@ -193,7 +220,11 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
         if (player == null || !player.getAbilities().creativeMode) {
             player.getMainHandStack().decrement(1);
         }
-        state = PowerStones.MULTIPLE_WIRES.getDefaultState().with(WIRE_CONNECTION_NORTH, state.get(WIRE_CONNECTION_NORTH)).with(WIRE_CONNECTION_EAST, state.get(WIRE_CONNECTION_EAST)).with(WIRE_CONNECTION_SOUTH, state.get(WIRE_CONNECTION_SOUTH)).with(WIRE_CONNECTION_WEST, state.get(WIRE_CONNECTION_WEST)).with(POWER, state.get(POWER)).with(PowerStones.POWER_B, 0).with(PowerStones.POWER_PAIR, PowerPair.RED_BLUE);
+        int powerA = state.get(POWER);
+        int powerB = 0;
+        state = PowerStones.MULTIPLE_WIRES.getDefaultState().with(WIRE_CONNECTION_NORTH, state.get(WIRE_CONNECTION_NORTH)).with(WIRE_CONNECTION_EAST, state.get(WIRE_CONNECTION_EAST)).with(WIRE_CONNECTION_SOUTH, state.get(WIRE_CONNECTION_SOUTH)).with(WIRE_CONNECTION_WEST, state.get(WIRE_CONNECTION_WEST)).with(PowerStones.POWER_PAIR, PowerPair.RED_BLUE);
+        MultipleWiresBlock.setPowerA(world, pos, powerA);
+        MultipleWiresBlock.setPowerB(world, pos, powerB);
         world.setBlockState(pos, state, Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
         ((MultipleWiresBlock)state.getBlock()).updateAll(state, world, pos);
     }
