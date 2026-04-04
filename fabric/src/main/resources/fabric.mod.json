@@ -21,9 +21,6 @@
     "fabric-datagen": [
       "com.calvinmt.powerstones.generation.DataGeneration"
     ],
-    "preLaunch": [
-      "com.llamalad7.mixinextras.MixinExtrasBootstrap::init"
-    ],
     "main": [
       "com.calvinmt.powerstones.PowerStones"
     ],
