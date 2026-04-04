@@ -9,8 +9,10 @@ import com.google.common.collect.Sets;
 
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.enums.WireConnection;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
@@ -34,7 +36,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-public class MultipleWiresBlock extends PowerstoneWireBlockBase {
+public class MultipleWiresBlock extends PowerstoneWireBlockBase implements BlockEntityProvider {
 
     public static final IntProperty POWER_B = PowerStones.POWER_B;
     public static final EnumProperty<PowerPair> POWER_PAIR = PowerStones.POWER_PAIR;
@@ -42,6 +44,10 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase {
     public MultipleWiresBlock(AbstractBlock.Settings settings) {
         super(settings);
         this.setDefaultState(this.stateManager.getDefaultState().with(WIRE_CONNECTION_NORTH, WireConnection.NONE).with(WIRE_CONNECTION_EAST, WireConnection.NONE).with(WIRE_CONNECTION_SOUTH, WireConnection.NONE).with(WIRE_CONNECTION_WEST, WireConnection.NONE).with(POWER, Integer.valueOf(0)).with(POWER_B, Integer.valueOf(0)));
+
+    @Override
+    public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+        return new MultipleWiresBlockEntity(pos, state);
     }
 
     @Override

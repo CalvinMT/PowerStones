@@ -9,6 +9,7 @@ import com.calvinmt.powerstones.block.GreenstoneTorchBlock;
 import com.calvinmt.powerstones.block.GreenstoneWallTorchBlock;
 import com.calvinmt.powerstones.block.GreenstoneWireBlock;
 import com.calvinmt.powerstones.block.MultipleWiresBlock;
+import com.calvinmt.powerstones.block.MultipleWiresBlockEntity;
 import com.calvinmt.powerstones.block.PowerstoneWireBlock;
 import com.calvinmt.powerstones.block.YellowstoneBlock;
 import com.calvinmt.powerstones.block.YellowstoneTorchBlock;
@@ -23,6 +24,7 @@ import net.minecraft.world.item.StandingAndWallBlockItem;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
@@ -51,6 +53,7 @@ public class PowerStones {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, MODID);
+    public static final DeferredRegister<BlockEntityType<?>> BLOCKENTITIES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, MODID);
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
 
     public static final IntegerProperty POWER_B = IntegerProperty.create("power_b", 0, 15);
@@ -70,6 +73,8 @@ public class PowerStones {
     public static final RegistryObject<Block> GREENSTONE_BLOCK = BLOCKS.register("greenstone_block", () -> new GreenstoneBlock(BlockBehaviour.Properties.of(Material.METAL).requiresCorrectToolForDrops().strength(5.0f, 6.0f).sound(SoundType.METAL)));
     public static final RegistryObject<Block> YELLOWSTONE_BLOCK = BLOCKS.register("yellowstone_block", () -> new YellowstoneBlock(BlockBehaviour.Properties.of(Material.METAL).requiresCorrectToolForDrops().strength(5.0f, 6.0f).sound(SoundType.METAL)));
     
+    public static final RegistryObject<BlockEntityType<MultipleWiresBlockEntity>> MULTIPLE_WIRES_BE_TYPE = BLOCKENTITIES.register("multiple_wires_be", () -> BlockEntityType.Builder.of(MultipleWiresBlockEntity::new, MULTIPLE_WIRES.get()).build(null));
+
     public static final RegistryObject<BlockItem> BLUESTONE = ITEMS.register("bluestone", () -> new ItemNameBlockItem(BLUESTONE_WIRE.get(), new Item.Properties().tab(CreativeModeTab.TAB_REDSTONE)));
     public static final RegistryObject<BlockItem> GREENSTONE = ITEMS.register("greenstone", () -> new ItemNameBlockItem(GREENSTONE_WIRE.get(), new Item.Properties().tab(CreativeModeTab.TAB_REDSTONE)));
     public static final RegistryObject<BlockItem> YELLOWSTONE = ITEMS.register("yellowstone", () -> new ItemNameBlockItem(YELLOWSTONE_WIRE.get(), new Item.Properties().tab(CreativeModeTab.TAB_REDSTONE)));
@@ -87,6 +92,7 @@ public class PowerStones {
         MinecraftForge.EVENT_BUS.register(this);
 
         BLOCKS.register(modEventBus);
+        BLOCKENTITIES.register(modEventBus);
         ITEMS.register(modEventBus);
     }
 
