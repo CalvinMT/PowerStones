@@ -60,9 +60,3 @@ description='''${mod_description}'''
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
-[[dependencies.${mod_id}]]
-    modId="ferritecore"
-    mandatory=true
-    versionRange="${ferritecore_version_range}"
-    ordering="NONE"
-    side="BOTH"
