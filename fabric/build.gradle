@@ -17,10 +17,8 @@ repositories {
 	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
 	// for more information about repositories.
 
-	// Used for MixinExtras
-	maven {
-		url "https://jitpack.io"
-	}
+	// MixinExtras
+	mavenCentral()
 }
 
 dependencies {
@@ -38,9 +36,7 @@ dependencies {
 	// modImplementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
 
 	// MixinExtras
-    implementation("com.github.LlamaLad7:MixinExtras:0.1.1")
-    annotationProcessor("com.github.LlamaLad7:MixinExtras:0.1.1")
-	include("com.github.LlamaLad7:MixinExtras:0.1.1")
+	include(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:${project.mixinextras_version}")))
 }
 
 processResources {
