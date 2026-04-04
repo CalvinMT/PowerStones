@@ -29,7 +29,6 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.material.Material;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ColorHandlerEvent;
@@ -59,7 +58,6 @@ public class PowerStones {
     public static final DeferredRegister<BlockEntityType<?>> BLOCKENTITIES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITIES, MODID);
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
 
-    public static final IntegerProperty POWER_B = IntegerProperty.create("power_b", 0, 15);
     public static final EnumProperty<PowerPair> POWER_PAIR = EnumProperty.create("power_pair", PowerPair.class);
 
     public static final RegistryObject<Block> BLUESTONE_WIRE = BLOCKS.register("bluestone_wire", () -> new BluestoneWireBlock(BlockBehaviour.Properties.copy(Blocks.REDSTONE_WIRE)));
@@ -132,7 +130,7 @@ public class PowerStones {
                 return ((YellowstoneWireBlock)state.getBlock()).getColorForPower(state.getValue(PowerstoneWireBlock.POWER));
             }, YELLOWSTONE_WIRE.get());
             event.getBlockColors().register((state, blockAndTintGetter, pos, tintIndex) -> {
-                return MultipleWiresBlock.getColorForTintIndex(state, tintIndex);
+                return MultipleWiresBlock.getColorForTintIndex(state, blockAndTintGetter, pos, tintIndex);
             }, MULTIPLE_WIRES.get());
         }
     }

@@ -3,7 +3,6 @@ package com.calvinmt.powerstones.block;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import java.util.Map;
-import java.util.Random;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -20,7 +19,6 @@ import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.EnumProperty;
-import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.ActionResult;
@@ -39,6 +37,7 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
+import net.minecraft.world.gen.random.AbstractRandom;
 
 public abstract class PowerstoneWireBlockBase extends Block {
 
@@ -46,7 +45,6 @@ public abstract class PowerstoneWireBlockBase extends Block {
     public static final EnumProperty<WireConnection> WIRE_CONNECTION_EAST = Properties.EAST_WIRE_CONNECTION;
     public static final EnumProperty<WireConnection> WIRE_CONNECTION_SOUTH = Properties.SOUTH_WIRE_CONNECTION;
     public static final EnumProperty<WireConnection> WIRE_CONNECTION_WEST = Properties.WEST_WIRE_CONNECTION;
-    public static final IntProperty POWER = Properties.POWER;
     public static final Map<Direction, EnumProperty<WireConnection>> DIRECTION_TO_WIRE_CONNECTION_PROPERTY = Maps.newEnumMap(ImmutableMap.of(Direction.NORTH, WIRE_CONNECTION_NORTH, Direction.EAST, WIRE_CONNECTION_EAST, Direction.SOUTH, WIRE_CONNECTION_SOUTH, Direction.WEST, WIRE_CONNECTION_WEST));
     protected static final int H = 1;
     protected static final int W = 3;
@@ -62,13 +60,11 @@ public abstract class PowerstoneWireBlockBase extends Block {
 
     public PowerstoneWireBlockBase(AbstractBlock.Settings settings) {
         super(settings);
-        this.setDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateManager.getDefaultState()).with(WIRE_CONNECTION_NORTH, WireConnection.NONE)).with(WIRE_CONNECTION_EAST, WireConnection.NONE)).with(WIRE_CONNECTION_SOUTH, WireConnection.NONE)).with(WIRE_CONNECTION_WEST, WireConnection.NONE)).with(POWER, 0));
+        this.setDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateManager.getDefaultState()).with(WIRE_CONNECTION_NORTH, WireConnection.NONE)).with(WIRE_CONNECTION_EAST, WireConnection.NONE)).with(WIRE_CONNECTION_SOUTH, WireConnection.NONE)).with(WIRE_CONNECTION_WEST, WireConnection.NONE)));
         this.dotState = (BlockState)((BlockState)((BlockState)((BlockState)this.getDefaultState().with(WIRE_CONNECTION_NORTH, WireConnection.SIDE)).with(WIRE_CONNECTION_EAST, WireConnection.SIDE)).with(WIRE_CONNECTION_SOUTH, WireConnection.SIDE)).with(WIRE_CONNECTION_WEST, WireConnection.SIDE);
 
         for(BlockState blockState : this.getStateManager().getStates()) {
-            if ((Integer)blockState.get(POWER) == 0) {
                 SHAPES.put(blockState, this.getShapeForState(blockState));
-            }
         }
 
     }
@@ -335,7 +331,7 @@ public abstract class PowerstoneWireBlockBase extends Block {
         return this.wiresGivePower;
     }
 
-    private void addPoweredParticles(World world, Random random, BlockPos pos, Vec3d color, Direction direction, Direction direction2, float f, float g) {
+    private void addPoweredParticles(World world, AbstractRandom random, BlockPos pos, Vec3d color, Direction direction, Direction direction2, float f, float g) {
         float h = g - f;
         if (!(random.nextFloat() >= 0.2F * h)) {
             float j = f + h * random.nextFloat();
@@ -346,29 +342,29 @@ public abstract class PowerstoneWireBlockBase extends Block {
         }
     }
 
-    public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
-        if (this.hasPowerOn(state)) {
+    public void randomDisplayTick(BlockState state, World world, BlockPos pos, AbstractRandom random) {
+        if (this.hasPowerOn(world, pos)) {
 
         for(Direction direction : Type.HORIZONTAL) {
                 WireConnection wireConnection = (WireConnection)state.get(DIRECTION_TO_WIRE_CONNECTION_PROPERTY.get(direction));
                 switch (wireConnection) {
                 case UP:
-                    this.addPoweredParticles(world, random, pos, this.getPowerstoneColor(state, random), direction, Direction.UP, -0.5F, 0.5F);
+                    this.addPoweredParticles(world, random, pos, this.getPowerstoneColor(state, world, pos, random), direction, Direction.UP, -0.5F, 0.5F);
                 case SIDE:
-                    this.addPoweredParticles(world, random, pos, this.getPowerstoneColor(state, random), Direction.DOWN, direction, 0.0F, 0.5F);
+                    this.addPoweredParticles(world, random, pos, this.getPowerstoneColor(state, world, pos, random), Direction.DOWN, direction, 0.0F, 0.5F);
                     break;
                 case NONE:
                 default:
-                    this.addPoweredParticles(world, random, pos, this.getPowerstoneColor(state, random), Direction.DOWN, direction, 0.0F, 0.3F);
+                    this.addPoweredParticles(world, random, pos, this.getPowerstoneColor(state, world, pos, random), Direction.DOWN, direction, 0.0F, 0.3F);
                 }
             }
 
         }
     }
 
-    protected abstract boolean hasPowerOn(BlockState state);
+    protected abstract boolean hasPowerOn(World world, BlockPos pos);
 
-    protected abstract Vec3d getPowerstoneColor(BlockState state, Random random);
+    protected abstract Vec3d getPowerstoneColor(BlockState state, World world, BlockPos pos, AbstractRandom random);
 
     public BlockState rotate(BlockState state, BlockRotation rotation) {
         switch (rotation) {
@@ -395,7 +391,7 @@ public abstract class PowerstoneWireBlockBase extends Block {
     }
 
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        builder.add(new Property[]{WIRE_CONNECTION_NORTH, WIRE_CONNECTION_EAST, WIRE_CONNECTION_SOUTH, WIRE_CONNECTION_WEST, POWER});
+        builder.add(new Property[]{WIRE_CONNECTION_NORTH, WIRE_CONNECTION_EAST, WIRE_CONNECTION_SOUTH, WIRE_CONNECTION_WEST});
     }
 
     public void updateAll(BlockState state, World world, BlockPos pos) {
@@ -409,24 +405,7 @@ public abstract class PowerstoneWireBlockBase extends Block {
         world.setBlockState(pos, state, Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
     }
 
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        if (!player.getAbilities().allowModifyWorld) {
-            return ActionResult.PASS;
-        } else {
-            if (isFullyConnected(state) || isNotConnected(state)) {
-                BlockState blockState = isFullyConnected(state) ? this.getDefaultState() : this.dotState;
-                blockState = (BlockState)blockState.with(POWER, (Integer)state.get(POWER));
-                blockState = this.getPlacementState(world, blockState, pos);
-                if (blockState != state) {
-                    world.setBlockState(pos, blockState, 3);
-                    this.updateForNewState(world, pos, state, blockState);
-                    return ActionResult.SUCCESS;
-                }
-            }
-
-            return ActionResult.PASS;
-        }
-    }
+    public abstract ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit);
 
     protected void updateForNewState(World world, BlockPos pos, BlockState oldState, BlockState newState) { 
         for(Direction direction : Type.HORIZONTAL) {

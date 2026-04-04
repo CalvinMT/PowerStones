@@ -1,7 +1,6 @@
 package com.calvinmt.powerstones.block;
 
 import java.util.Map;
-import java.util.Random;
 
 import com.calvinmt.powerstones.BlockBehaviourInterface;
 import com.google.common.collect.ImmutableMap;
@@ -27,8 +26,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.properties.RedstoneSide;
+import net.minecraft.world.level.levelgen.RandomSource;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -41,7 +40,6 @@ public abstract class PowerstoneWireBlockBase extends Block implements BlockBeha
     public static final EnumProperty<RedstoneSide> EAST = BlockStateProperties.EAST_REDSTONE;
     public static final EnumProperty<RedstoneSide> SOUTH = BlockStateProperties.SOUTH_REDSTONE;
     public static final EnumProperty<RedstoneSide> WEST = BlockStateProperties.WEST_REDSTONE;
-    public static final IntegerProperty POWER = BlockStateProperties.POWER;
     public static final Map<Direction, EnumProperty<RedstoneSide>> PROPERTY_BY_DIRECTION = Maps.newEnumMap(ImmutableMap.of(Direction.NORTH, NORTH, Direction.EAST, EAST, Direction.SOUTH, SOUTH, Direction.WEST, WEST));
     protected static final int H = 1;
     protected static final int W = 3;
@@ -60,9 +58,7 @@ public abstract class PowerstoneWireBlockBase extends Block implements BlockBeha
         this.crossState = this.defaultBlockState().setValue(NORTH, RedstoneSide.SIDE).setValue(EAST, RedstoneSide.SIDE).setValue(SOUTH, RedstoneSide.SIDE).setValue(WEST, RedstoneSide.SIDE);
 
         for(BlockState blockstate : this.getStateDefinition().getPossibleStates()) {
-            if (blockstate.getValue(POWER) == 0) {
                 SHAPES_CACHE.put(blockstate, this.calculateShape(blockstate));
-            }
         }
     }
 
@@ -307,7 +303,7 @@ public abstract class PowerstoneWireBlockBase extends Block implements BlockBeha
         return shouldSignal;
     }
 
-    private void spawnParticlesAlongLine(Level level, Random random, BlockPos pos, Vec3 particleVec, Direction xDirection, Direction zDirection, float min, float max) {
+    private void spawnParticlesAlongLine(Level level, RandomSource random, BlockPos pos, Vec3 particleVec, Direction xDirection, Direction zDirection, float min, float max) {
         float f = max - min;
         if (!(random.nextFloat() >= 0.2F * f)) {
             float f2 = min + f * random.nextFloat();
@@ -318,28 +314,28 @@ public abstract class PowerstoneWireBlockBase extends Block implements BlockBeha
         }
     }
 
-    public void animateTick(BlockState state, Level level, BlockPos pos, Random random) {
-        if (this.hasPowerOn(state)) {
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        if (this.hasPowerOn(state, level, pos)) {
             for(Direction direction : Direction.Plane.HORIZONTAL) {
                 RedstoneSide redstoneside = state.getValue(PROPERTY_BY_DIRECTION.get(direction));
                 switch (redstoneside) {
                 case UP:
-                    this.spawnParticlesAlongLine(level, random, pos, this.getPowerstoneColor(state, random), direction, Direction.UP, -0.5F, 0.5F);
+                    this.spawnParticlesAlongLine(level, random, pos, this.getPowerstoneColor(state, level, pos, random), direction, Direction.UP, -0.5F, 0.5F);
                 case SIDE:
-                    this.spawnParticlesAlongLine(level, random, pos, this.getPowerstoneColor(state, random), Direction.DOWN, direction, 0.0F, 0.5F);
+                    this.spawnParticlesAlongLine(level, random, pos, this.getPowerstoneColor(state, level, pos, random), Direction.DOWN, direction, 0.0F, 0.5F);
                     break;
                 case NONE:
                 default:
-                    this.spawnParticlesAlongLine(level, random, pos, this.getPowerstoneColor(state, random), Direction.DOWN, direction, 0.0F, 0.3F);
+                    this.spawnParticlesAlongLine(level, random, pos, this.getPowerstoneColor(state, level, pos, random), Direction.DOWN, direction, 0.0F, 0.3F);
                 }
             }
 
         }
     }
 
-    protected abstract boolean hasPowerOn(BlockState state);
+    protected abstract boolean hasPowerOn(BlockState state, Level level, BlockPos pos);
 
-    protected abstract Vec3 getPowerstoneColor(BlockState state, Random random);
+    protected abstract Vec3 getPowerstoneColor(BlockState state, Level level, BlockPos pos, RandomSource random);
 
     public BlockState rotate(BlockState state, Rotation rotation) {
         switch (rotation) {
@@ -366,7 +362,7 @@ public abstract class PowerstoneWireBlockBase extends Block implements BlockBeha
     }
 
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(NORTH, EAST, SOUTH, WEST, POWER);
+        builder.add(NORTH, EAST, SOUTH, WEST);
     }
 
     public void updateAll(BlockState state, Level level, BlockPos pos) {
@@ -380,24 +376,7 @@ public abstract class PowerstoneWireBlockBase extends Block implements BlockBeha
         level.setBlock(pos, state, Block.UPDATE_ALL | Block.UPDATE_IMMEDIATE);
     }
 
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if (!player.getAbilities().mayBuild) {
-           return InteractionResult.PASS;
-        } else {
-            if (isCross(state) || isDot(state)) {
-                BlockState blockstate = isCross(state) ? this.defaultBlockState() : this.crossState;
-                blockstate = blockstate.setValue(POWER, state.getValue(POWER));
-                blockstate = this.getConnectionState(level, blockstate, pos);
-                if (blockstate != state) {
-                    level.setBlockAndUpdate(pos, blockstate);
-                    this.updatesOnShapeChange(level, pos, state, blockstate);
-                    return InteractionResult.SUCCESS;
-                }
-            }
-
-            return InteractionResult.PASS;
-        }
-    }
+    public abstract InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit);
 
     protected void updatesOnShapeChange(Level level, BlockPos pos, BlockState pOldState, BlockState pNewState) {
         for(Direction direction : Direction.Plane.HORIZONTAL) {

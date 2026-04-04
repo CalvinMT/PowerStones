@@ -31,12 +31,12 @@ public class GreenstoneWireBlock extends PowerstoneWireBlock {
     }
 
     @Override
-    protected int getPower(BlockState state) {
+    protected int getPower(BlockState state, World world, BlockPos pos) {
         if (state.isOf(this)) {
             return state.get(POWER);
         }
         if (state.isOf(PowerStones.MULTIPLE_WIRES) && state.get(PowerStones.POWER_PAIR) == PowerPair.GREEN_YELLOW) {
-            return state.get(POWER);
+            return MultipleWiresBlock.getPowerA(world, pos);
         }
         return 0;
     }
@@ -66,7 +66,7 @@ public class GreenstoneWireBlock extends PowerstoneWireBlock {
             if (state.get(PowerStones.POWER_PAIR) != PowerPair.GREEN_YELLOW) {
                 return 0;
             }
-            i = state.get(POWER);
+            i = MultipleWiresBlock.getPowerA(world, pos);
         }
         if (i == 0) {
             return 0;

@@ -7,9 +7,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -17,6 +16,9 @@ import com.calvinmt.powerstones.PowerPair;
 import com.calvinmt.powerstones.PowerStones;
 import com.calvinmt.powerstones.RedstoneWireBlockInterface;
 import com.calvinmt.powerstones.block.MultipleWiresBlock;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -128,12 +130,26 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
         return result;
     }
 
-    @ModifyConstant(method = "getWireSignal(Lnet/minecraft/world/level/block/state/BlockState;)I", constant = @Constant(intValue = 0))
-    private int getWireSignalMultipleWires(int oldResult, BlockState state) {
+    @WrapOperation(method = "calculateTargetStrength(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)I", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/RedStoneWireBlock;getWireSignal(Lnet/minecraft/world/level/block/state/BlockState;)I", ordinal = 0))
+    private int getIncreasePower(RedStoneWireBlock self, BlockState state, Operation<Integer> original, Level level, BlockPos pos, @Local(name = "blockpos") BlockPos blockPos) {
+        return this.increasePower(level, blockPos, state);
+    }
+
+    @WrapOperation( method = "calculateTargetStrength(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)I", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/RedStoneWireBlock;getWireSignal(Lnet/minecraft/world/level/block/state/BlockState;)I", ordinal = 1))
+    private int getIncreasePowerUp(RedStoneWireBlock self, BlockState state, Operation<Integer> original, Level level, BlockPos pos, @Local(name = "blockpos") BlockPos blockPos) {
+        return this.increasePower(level, blockPos.above(), state);
+    }
+
+    @WrapOperation(method = "calculateTargetStrength(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)I", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/RedStoneWireBlock;getWireSignal(Lnet/minecraft/world/level/block/state/BlockState;)I", ordinal = 2))
+    private int getIncreasePowerDown(RedStoneWireBlock self, BlockState state, Operation<Integer> original, Level level, BlockPos pos, @Local(name = "blockpos") BlockPos blockPos) {
+        return this.increasePower(level, blockPos.below(), state);
+    }
+
+    private int increasePower(Level level, BlockPos pos, BlockState state) {
         if (state.is(PowerStones.MULTIPLE_WIRES.get()) && state.getValue(PowerStones.POWER_PAIR) == PowerPair.RED_BLUE) {
-            return state.getValue(POWER);
+            return MultipleWiresBlock.getPowerA(level, pos);
         }
-        return oldResult;
+        return state.is(this) ? (Integer)state.getValue(POWER) : 0;
     }
 
     @Inject(method = "use(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/InteractionResult;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/RedStoneWireBlock;isCross(Lnet/minecraft/world/level/block/state/BlockState;)Z", ordinal = 0), cancellable = true)
@@ -146,6 +162,17 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
 
     public void setShouldSignal(boolean shouldSignal) {
         this.shouldSignal = shouldSignal;
+    }
+
+    @ModifyVariable(method = "getSignal(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;)I", at = @At(value = "STORE"), ordinal = 0)
+    public int modifyWeakRedstonePower(int original, BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
+        if (state.is(PowerStones.MULTIPLE_WIRES.get())) {
+            if (state.getValue(PowerStones.POWER_PAIR) != PowerPair.RED_BLUE) {
+                return 0;
+            }
+            return MultipleWiresBlock.getPowerA((Level) level, pos);
+        }
+        return original;
     }
 
     public int getDirectSignalBlue(BlockState blockState, BlockGetter blockAccess, BlockPos pos, Direction side) {
@@ -190,7 +217,11 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
         if (player == null || !player.getAbilities().instabuild) {
             player.getMainHandItem().shrink(1);
         }
-        state = PowerStones.MULTIPLE_WIRES.get().defaultBlockState().setValue(NORTH, state.getValue(NORTH)).setValue(EAST, state.getValue(EAST)).setValue(SOUTH, state.getValue(SOUTH)).setValue(WEST, state.getValue(WEST)).setValue(POWER, state.getValue(POWER)).setValue(PowerStones.POWER_B, 0).setValue(PowerStones.POWER_PAIR, PowerPair.RED_BLUE);
+        int powerA = state.getValue(POWER);
+        int powerB = 0;
+        state = PowerStones.MULTIPLE_WIRES.get().defaultBlockState().setValue(NORTH, state.getValue(NORTH)).setValue(EAST, state.getValue(EAST)).setValue(SOUTH, state.getValue(SOUTH)).setValue(WEST, state.getValue(WEST)).setValue(PowerStones.POWER_PAIR, PowerPair.RED_BLUE);
+        MultipleWiresBlock.setPowerA(level, pos, powerA);
+        MultipleWiresBlock.setPowerB(level, pos, powerB);
         level.setBlock(pos, state, Block.UPDATE_ALL | Block.UPDATE_IMMEDIATE);
         ((MultipleWiresBlock)state.getBlock()).updateAll(state, level, pos);
     }
