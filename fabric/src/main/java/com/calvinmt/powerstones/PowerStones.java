@@ -6,10 +6,12 @@ import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
+import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.MapColor;
 import net.minecraft.block.Material;
+import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.AliasedBlockItem;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemGroups;
@@ -34,6 +36,7 @@ import com.calvinmt.powerstones.block.GreenstoneBlock;
 import com.calvinmt.powerstones.block.GreenstoneTorchBlock;
 import com.calvinmt.powerstones.block.GreenstoneWireBlock;
 import com.calvinmt.powerstones.block.MultipleWiresBlock;
+import com.calvinmt.powerstones.block.MultipleWiresBlockEntity;
 import com.calvinmt.powerstones.block.PowerstoneWireBlock;
 import com.calvinmt.powerstones.block.WallBluestoneTorchBlock;
 import com.calvinmt.powerstones.block.WallGreenstoneTorchBlock;
@@ -64,6 +67,8 @@ public class PowerStones implements ModInitializer   {
 	public static final Block GREENSTONE_BLOCK = new GreenstoneBlock(FabricBlockSettings.of(Material.METAL, MapColor.EMERALD_GREEN).requiresTool().strength(5.0f, 6.0f).sounds(BlockSoundGroup.METAL));
 	public static final Block YELLOWSTONE_BLOCK = new YellowstoneBlock(FabricBlockSettings.of(Material.METAL, MapColor.PALE_YELLOW).requiresTool().strength(5.0f, 6.0f).sounds(BlockSoundGroup.METAL));
 
+	public static final BlockEntityType<MultipleWiresBlockEntity> MULTIPLE_WIRES_BE_TYPE = FabricBlockEntityTypeBuilder.create(MultipleWiresBlockEntity::new, MULTIPLE_WIRES).build();
+
 	public static final BlockItem BLUESTONE = new AliasedBlockItem(BLUESTONE_WIRE, new FabricItemSettings());
 	public static final BlockItem GREENSTONE = new AliasedBlockItem(GREENSTONE_WIRE, new FabricItemSettings());
 	public static final BlockItem YELLOWSTONE = new AliasedBlockItem(YELLOWSTONE_WIRE, new FabricItemSettings());
@@ -77,6 +82,7 @@ public class PowerStones implements ModInitializer   {
 	@Override
 	public void onInitialize() {
 		this.registerItems();
+		this.registerBlockEntities();
 		this.registerBlocks();
 		this.registerToGroups();
 		registerPlayerEvents();
@@ -92,6 +98,10 @@ public class PowerStones implements ModInitializer   {
 		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "bluestone_block"), BLUESTONE_BLOCK_ITEM);
 		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "greenstone_block"), GREENSTONE_BLOCK_ITEM);
 		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "yellowstone_block"), YELLOWSTONE_BLOCK_ITEM);
+	}
+
+	private void registerBlockEntities() {
+		Registry.register(Registries.BLOCK_ENTITY_TYPE, new Identifier(NAMESPACE, "multiple_wires_be"), MULTIPLE_WIRES_BE_TYPE);
 	}
 
 	private void registerBlocks() {
