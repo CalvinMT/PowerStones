@@ -21,7 +21,6 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.state.property.EnumProperty;
-import net.minecraft.state.property.IntProperty;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
@@ -50,7 +49,6 @@ public class PowerStones implements ModInitializer   {
 	public static final String NAMESPACE = "powerstones";
 	public static final Logger LOGGER = LoggerFactory.getLogger("PowerStones");
 
-    public static final IntProperty POWER_B = IntProperty.of("power_b", 0, 15);
     public static final EnumProperty<PowerPair> POWER_PAIR = EnumProperty.of("power_pair", PowerPair.class);
 
 	public static final Block BLUESTONE_WIRE = new BluestoneWireBlock(FabricBlockSettings.copy(Blocks.REDSTONE_WIRE));
