@@ -24,6 +24,8 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -34,7 +36,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
-public class MultipleWiresBlock extends PowerstoneWireBlockBase {
+public class MultipleWiresBlock extends PowerstoneWireBlockBase implements EntityBlock {
 
     public static final IntegerProperty POWER_B = PowerStones.POWER_B;
     public static final EnumProperty<PowerPair> POWER_PAIR = PowerStones.POWER_PAIR;
@@ -42,6 +44,10 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase {
     public MultipleWiresBlock(BlockBehaviour.Properties pProperties) {
         super(pProperties);
         this.registerDefaultState(this.stateDefinition.any().setValue(NORTH, RedstoneSide.NONE).setValue(EAST, RedstoneSide.NONE).setValue(SOUTH, RedstoneSide.NONE).setValue(WEST, RedstoneSide.NONE).setValue(POWER, Integer.valueOf(0)).setValue(POWER_B, Integer.valueOf(0)));
+
+    @Override
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new MultipleWiresBlockEntity(pos, state);
     }
 
     @Override
