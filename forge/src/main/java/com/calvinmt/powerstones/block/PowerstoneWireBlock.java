@@ -30,6 +30,8 @@ import net.minecraft.world.level.block.state.properties.RedstoneSide;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
 
@@ -82,6 +84,11 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
         super(properties);
         COLORS = colors;
         this.registerDefaultState(this.stateDefinition.any().setValue(NORTH, RedstoneSide.NONE).setValue(EAST, RedstoneSide.NONE).setValue(SOUTH, RedstoneSide.NONE).setValue(WEST, RedstoneSide.NONE).setValue(POWER, Integer.valueOf(0)));
+    }
+
+    @Override
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return (VoxelShape)SHAPES_CACHE.get(state.setValue(POWER, 0));
     }
 
     @Override
