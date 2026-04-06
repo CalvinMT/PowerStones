@@ -74,3 +74,13 @@ The colours blue, green and yellow were chosen around the year 2012, when this p
 Each new powerstone colour comes from a combination of the redstone's colour and the resource's colour used in the powerstone's recipe. First, the powerstone texture was coloured with the resource's colour. Then, the redstone's texture was layered above it before finally applying to the redstone layer a colour dodge blending filter with ~30% opacity (75/255).
 
 <img src="./docs/colour_choices.png" style="image-rendering: pixelated;">
+
+## Contributions
+
+### Contributors
+
+- [CalvinMT] (Author)
+- [AtronixMH48] (Refactor `MultipleWiresBlock` to a Block Entity)
+
+[CalvinMT]: https://github.com/CalvinMT
+[AtronixMH48]: https://github.com/MokkaHornisse48
