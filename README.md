@@ -14,11 +14,9 @@ Mods needed to be installed in order for PowerStones to function correctly:
 
 | Mod           | Version          | Reason |
 | ------------- | ---------------- | ------ |
-| [Fabric API]  | >=0.75.1+1.19.3  | Essential for Fabric mods to work. |
-| [FerriteCore] | >=5.1.0 (Fabric) | Enables Minecraft to load with the default 4GB of RAM, instead of 12GB which requires the addition of an argument (-Xmx12G). |
+| [Fabric API]  | >=0.75.3+1.19.4  | Essential for Fabric mods to work. |
 
 [Fabric API]: https://modrinth.com/mod/fabric-api
-[FerriteCore]: https://modrinth.com/mod/ferrite-core
 
 ## Compatibility
 
@@ -61,10 +59,13 @@ The idea of having overlappable powerstones still viewed as a goal, an attempt t
 
 Extending the mod with greenstone and yellowstone wires could not have been achieved through the addition of two more power properties for the same reason as stated in the initial idea (too many states). The choice had then been made to make wires overlappable by pairs. Redstone wires would be overlappable with bluestone wires, while greenstone wires would be overlappable with yellowstone wires. This was easily achievable through the addition of a single property with two states (one state per pair of powerstones), ending with a number of states for the redstone wire block of 46 818 (3x3x3x3x17x17x2). Adding this basic property rendered the game's startup slower (~1mn30s). However, with higher concern, the number of memory (RAM) needed in order for the game to load every state approximated 12GB. Even if asking users to add a simple Java argument in the Minecraft's launcher to extend the maximum amount of allocated memory to the game is done for other mods, 12GB of memory is huge in comparison to the small addition this mod would have brought to the game.
 
-As the powerstone pair property seemed like a good settle point to bring the project as close to the initial goal as it could have after six weeks of learning and developping, the decision was taken to find a mod which could considerably reduce the amount of memory allocated to run the game with PowerStones. After a quick search, FerriteCore seemed adequate and, against all expectations, made it possible for the game to run with PowerStones wihtout changing the maximum amount of allocated memory (<4GB). Although PowerStones has become dependent of a performance mod, users can benefit from it without worrying about memory consumption.
+As the powerstone pair property seemed like a good settle point to bring the project as close to the initial goal as it could have after six weeks of learning and developping, the decision was taken to find a mod which could considerably reduce the amount of memory allocated to run the game with PowerStones. After a quick search, [FerriteCore] seemed adequate and, against all expectations, made it possible for the game to run with PowerStones wihtout changing the maximum amount of allocated memory (<4GB). Although PowerStones has become dependent of a performance mod, users can benefit from it without worrying about memory consumption.
 
 PowerStones was initially developed to be used with Fabric and largely relied on mixins. After a sufficiently successful start of the mod and wanting to make it useable with Forge, help was sought on the Forge Discord. However, asking mixin related questions only brought criticism towards the [O-So-Cursed-Mixin] reliance of PowerStones. Although the suggestions were helpful in their depth, their arrogant form and suppositions could have been left behind. In spite of this unpleasant experience with some of Forge's community, time and rational reasoning proved to show that using each mod loader's API and separate powerstone classes instead of overrelying on mixins would be best, not only to make it available through Forge, but also to minimise bugs and maximise mod compatibility. An overhaul of the mod then took place to apply these necessary changes.
 
+With the high number of states introduced by the implementation, the dependency on FerriteCore became a necessary compromise rather than an optional optimisation. However, it also highlighted the need for a more sustainable architectural approach. A logical next step for PowerStones was therefore to refactor the MultipleWires system into a BlockEntity-based implementation, an approach that several users had already identified as essential for reducing state complexity while improving overall performance and extensibility. In this context, a contributor from the community, [AtronixMH48], offered valuable assistance by providing a modified version of the mod featuring a BlockEntity-driven solution. This contribution was carefully reviewed to ensure full understanding of its mechanics and was partially refined before being integrated into the project, ultimately removing PowerStones’ dependency on FerriteCore.
+
+[FerriteCore]: https://modrinth.com/mod/ferrite-core
 [O-So-Cursed-Mixin]: https://discord.com/channels/313125603924639766/983834532904042537/1093992576211763241
 
 ## Colour choices
@@ -76,6 +77,12 @@ Each new powerstone colour comes from a combination of the redstone's colour and
 <img src="./docs/colour_choices.png" style="image-rendering: pixelated;">
 
 ## Contributions
+
+Please discuss substantial features before implementing them.
+
+Unsolicited feature pull requests may be declined even if they are technically correct.
+
+Bug fixes, small compatibility fixes, and well-scoped improvements are generally more likely to be accepted.
 
 ### Contributors
 
