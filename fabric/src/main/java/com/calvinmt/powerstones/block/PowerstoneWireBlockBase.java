@@ -3,6 +3,7 @@ package com.calvinmt.powerstones.block;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import java.util.Map;
+import java.util.Random;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -37,7 +38,6 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
-import net.minecraft.world.gen.random.AbstractRandom;
 
 public abstract class PowerstoneWireBlockBase extends Block {
 
@@ -329,7 +329,7 @@ public abstract class PowerstoneWireBlockBase extends Block {
         return this.wiresGivePower;
     }
 
-    private void addPoweredParticles(World world, AbstractRandom random, BlockPos pos, Vec3d color, Direction direction, Direction direction2, float f, float g) {
+    private void addPoweredParticles(World world, Random random, BlockPos pos, Vec3d color, Direction direction, Direction direction2, float f, float g) {
         float h = g - f;
         if (!(random.nextFloat() >= 0.2F * h)) {
             float j = f + h * random.nextFloat();
@@ -340,7 +340,8 @@ public abstract class PowerstoneWireBlockBase extends Block {
         }
     }
 
-    public void randomDisplayTick(BlockState state, World world, BlockPos pos, AbstractRandom random) {
+    @Override
+    public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
         if (this.hasPowerOn(world, pos)) {
 
         for(Direction direction : Type.HORIZONTAL) {
@@ -362,7 +363,7 @@ public abstract class PowerstoneWireBlockBase extends Block {
 
     protected abstract boolean hasPowerOn(World world, BlockPos pos);
 
-    protected abstract Vec3d getPowerstoneColor(BlockState state, World world, BlockPos pos, AbstractRandom random);
+    protected abstract Vec3d getPowerstoneColor(BlockState state, World world, BlockPos pos, Random random);
 
     public BlockState rotate(BlockState state, BlockRotation rotation) {
         switch (rotation) {

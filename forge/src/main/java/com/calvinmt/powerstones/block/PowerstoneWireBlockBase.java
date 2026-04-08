@@ -1,6 +1,7 @@
 package com.calvinmt.powerstones.block;
 
 import java.util.Map;
+import java.util.Random;
 
 import com.calvinmt.powerstones.BlockBehaviourInterface;
 import com.google.common.collect.ImmutableMap;
@@ -27,7 +28,6 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.RedstoneSide;
-import net.minecraft.world.level.levelgen.RandomSource;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -301,7 +301,7 @@ public abstract class PowerstoneWireBlockBase extends Block implements BlockBeha
         return shouldSignal;
     }
 
-    private void spawnParticlesAlongLine(Level level, RandomSource random, BlockPos pos, Vec3 particleVec, Direction xDirection, Direction zDirection, float min, float max) {
+    private void spawnParticlesAlongLine(Level level, Random random, BlockPos pos, Vec3 particleVec, Direction xDirection, Direction zDirection, float min, float max) {
         float f = max - min;
         if (!(random.nextFloat() >= 0.2F * f)) {
             float f2 = min + f * random.nextFloat();
@@ -312,7 +312,7 @@ public abstract class PowerstoneWireBlockBase extends Block implements BlockBeha
         }
     }
 
-    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+    public void animateTick(BlockState state, Level level, BlockPos pos, Random random) {
         if (this.hasPowerOn(state, level, pos)) {
             for(Direction direction : Direction.Plane.HORIZONTAL) {
                 RedstoneSide redstoneside = state.getValue(PROPERTY_BY_DIRECTION.get(direction));
@@ -333,7 +333,7 @@ public abstract class PowerstoneWireBlockBase extends Block implements BlockBeha
 
     protected abstract boolean hasPowerOn(BlockState state, Level level, BlockPos pos);
 
-    protected abstract Vec3 getPowerstoneColor(BlockState state, Level level, BlockPos pos, RandomSource random);
+    protected abstract Vec3 getPowerstoneColor(BlockState state, Level level, BlockPos pos, Random random);
 
     public BlockState rotate(BlockState state, Rotation rotation) {
         switch (rotation) {

@@ -4,6 +4,7 @@ import com.calvinmt.powerstones.PowerPair;
 import com.calvinmt.powerstones.PowerStones;
 import com.google.common.collect.Sets;
 
+import java.util.Random;
 import java.util.Set;
 
 import net.minecraft.Util;
@@ -26,7 +27,6 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.properties.RedstoneSide;
-import net.minecraft.world.level.levelgen.RandomSource;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -203,7 +203,7 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
     }
 
     @Override
-    protected Vec3 getPowerstoneColor(BlockState state, Level level, BlockPos pos, RandomSource random) {
+    protected Vec3 getPowerstoneColor(BlockState state, Level level, BlockPos pos, Random random) {
         return COLORS[state.getValue(POWER)];
     }
 

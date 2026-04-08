@@ -1,5 +1,6 @@
 package com.calvinmt.powerstones.block;
 
+import java.util.Random;
 import java.util.Set;
 
 import com.calvinmt.powerstones.PowerPair;
@@ -30,7 +31,6 @@ import net.minecraft.util.math.Direction.Type;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
-import net.minecraft.world.gen.random.AbstractRandom;
 
 public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
 
@@ -202,7 +202,7 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
     }
 
     @Override
-    protected Vec3d getPowerstoneColor(BlockState state, World world, BlockPos pos, AbstractRandom random) {
+    protected Vec3d getPowerstoneColor(BlockState state, World world, BlockPos pos, Random random) {
         return COLORS[state.get(POWER)];
     }
 

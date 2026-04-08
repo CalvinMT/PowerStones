@@ -32,11 +32,11 @@ import net.minecraft.util.math.Direction.Type;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
-import net.minecraft.world.gen.random.AbstractRandom;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 
 public class MultipleWiresBlock extends PowerstoneWireBlockBase implements BlockEntityProvider {
 
@@ -463,7 +463,7 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Block
     }
 
     @Override
-    protected Vec3d getPowerstoneColor(BlockState state, World world, BlockPos pos, AbstractRandom random) {
+    protected Vec3d getPowerstoneColor(BlockState state, World world, BlockPos pos, Random random) {
         List<Vec3d[]> colorsList = new ArrayList<>();
         List<Integer> powerList = new ArrayList<>();
         int powerA = getPowerA(world, pos);

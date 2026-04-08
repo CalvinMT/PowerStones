@@ -10,6 +10,7 @@ import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -31,7 +32,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.RedstoneSide;
-import net.minecraft.world.level.levelgen.RandomSource;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -463,7 +463,7 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
     }
 
     @Override
-    protected Vec3 getPowerstoneColor(BlockState state, Level level, BlockPos pos, RandomSource random) {
+    protected Vec3 getPowerstoneColor(BlockState state, Level level, BlockPos pos, Random random) {
         List<Vec3[]> colorsList = new ArrayList<>();
         List<Integer> powerList = new ArrayList<>();
         int powerA = getPowerA(level, pos);
