@@ -459,7 +459,7 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
 
     @Override
     protected boolean hasPowerOn(BlockState state, Level level, BlockPos pos) {
-        return getPowerA(level, pos) > 0 && getPowerB(level, pos) > 0;
+        return getPowerA(level, pos) > 0 || getPowerB(level, pos) > 0;
     }
 
     @Override
