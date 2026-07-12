@@ -69,6 +69,11 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
         super(settings);
     }
 
+    @Override
+    public BlockState getPlacementState(BlockGetter level, BlockPos pos) {
+        return this.getConnectionState(level, Blocks.REDSTONE_WIRE.defaultBlockState(), pos);
+    }
+
     @Overwrite
     public void updateIndirectNeighbourShapes(BlockState state, LevelAccessor level, BlockPos pos, int pFlags, int pRecursionLeft) {
         BlockPos.MutableBlockPos blockpos$mutableblockpos = new BlockPos.MutableBlockPos();
