@@ -243,9 +243,9 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
             player.getMainHandItem().shrink(1);
         }
         state = PowerStones.MULTIPLE_WIRES.get().defaultBlockState().setValue(NORTH, state.getValue(NORTH)).setValue(EAST, state.getValue(EAST)).setValue(SOUTH, state.getValue(SOUTH)).setValue(WEST, state.getValue(WEST)).setValue(PowerStones.POWER_PAIR, powerPair);
+        level.setBlock(pos, state, Block.UPDATE_ALL | Block.UPDATE_IMMEDIATE);
         MultipleWiresBlock.setPowerA(level, pos, powerA);
         MultipleWiresBlock.setPowerB(level, pos, powerB);
-        level.setBlock(pos, state, Block.UPDATE_ALL | Block.UPDATE_IMMEDIATE);
         ((MultipleWiresBlock)state.getBlock()).updateAll(state, level, pos);
     }
 

@@ -220,9 +220,9 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
         int powerA = state.getValue(POWER);
         int powerB = 0;
         state = PowerStones.MULTIPLE_WIRES.get().defaultBlockState().setValue(NORTH, state.getValue(NORTH)).setValue(EAST, state.getValue(EAST)).setValue(SOUTH, state.getValue(SOUTH)).setValue(WEST, state.getValue(WEST)).setValue(PowerStones.POWER_PAIR, PowerPair.RED_BLUE);
+        level.setBlock(pos, state, Block.UPDATE_ALL | Block.UPDATE_IMMEDIATE);
         MultipleWiresBlock.setPowerA(level, pos, powerA);
         MultipleWiresBlock.setPowerB(level, pos, powerB);
-        level.setBlock(pos, state, Block.UPDATE_ALL | Block.UPDATE_IMMEDIATE);
         ((MultipleWiresBlock)state.getBlock()).updateAll(state, level, pos);
     }
 
