@@ -15,7 +15,9 @@ import com.calvinmt.powerstones.block.YellowstoneBlock;
 import com.calvinmt.powerstones.block.YellowstoneTorchBlock;
 import com.calvinmt.powerstones.block.YellowstoneWallTorchBlock;
 import com.calvinmt.powerstones.block.YellowstoneWireBlock;
+import com.calvinmt.powerstones.client.model.MultipleWiresModel;
 import com.mojang.logging.LogUtils;
+
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
@@ -29,6 +31,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.Material;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -120,6 +123,14 @@ public class PowerStones {
             event.register((state, blockAndTintGetter, pos, tintIndex) -> {
                 return MultipleWiresBlock.getColorForTintIndex(state, blockAndTintGetter, pos, tintIndex);
             }, MULTIPLE_WIRES.get());
+        }
+
+        @SubscribeEvent
+        public static void registerGeometryLoaders(ModelEvent.RegisterGeometryLoaders event) {
+            event.register(
+                    "multiple_wires",
+                    MultipleWiresModel.Loader.INSTANCE
+            );
         }
     }
 

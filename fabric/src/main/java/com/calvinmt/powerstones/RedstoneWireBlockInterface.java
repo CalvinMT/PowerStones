@@ -4,9 +4,12 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
 public interface RedstoneWireBlockInterface {
+
+    BlockState getConnectionState(BlockView world, BlockPos pos);
 
     default void updateAll(BlockState state, World world, BlockPos pos) {}
 
