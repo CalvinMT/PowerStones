@@ -223,9 +223,9 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
         int powerA = state.get(POWER);
         int powerB = 0;
         state = PowerStones.MULTIPLE_WIRES.getDefaultState().with(WIRE_CONNECTION_NORTH, state.get(WIRE_CONNECTION_NORTH)).with(WIRE_CONNECTION_EAST, state.get(WIRE_CONNECTION_EAST)).with(WIRE_CONNECTION_SOUTH, state.get(WIRE_CONNECTION_SOUTH)).with(WIRE_CONNECTION_WEST, state.get(WIRE_CONNECTION_WEST)).with(PowerStones.POWER_PAIR, PowerPair.RED_BLUE);
+        world.setBlockState(pos, state, Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
         MultipleWiresBlock.setPowerA(world, pos, powerA);
         MultipleWiresBlock.setPowerB(world, pos, powerB);
-        world.setBlockState(pos, state, Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
         ((MultipleWiresBlock)state.getBlock()).updateAll(state, world, pos);
     }
 
