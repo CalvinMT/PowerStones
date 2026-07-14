@@ -63,6 +63,11 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
         super(settings);
     }
 
+    @Override
+    public BlockState getPlacementState(BlockGetter level, BlockPos pos) {
+        return this.getConnectionState(level, Blocks.REDSTONE_WIRE.defaultBlockState(), pos);
+    }
+
     @Redirect(method = "updateIndirectNeighbourShapes(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/core/BlockPos;II)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z"))
     private boolean updateIndirectNeighbourShapesIs(BlockState state, Block block) {
         return state.is(block) || (state.is(PowerStones.MULTIPLE_WIRES.get()) && state.getValue(PowerStones.POWER_PAIR) == PowerPair.RED_BLUE);

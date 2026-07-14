@@ -1,6 +1,7 @@
 package com.calvinmt.powerstones.block;
 
 import com.calvinmt.powerstones.AbstractBlockStateInterface;
+import com.calvinmt.powerstones.PowerChannel;
 import com.calvinmt.powerstones.WorldInterface;
 import com.calvinmt.powerstones.PowerPair;
 import com.calvinmt.powerstones.PowerStones;
@@ -50,6 +51,54 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Block
     @Override
     public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
         return (VoxelShape)SHAPES.get(state);
+    }
+
+    private BlockState getChannelConnectionState(BlockView world, BlockPos pos, BlockState multipleWiresState, PowerChannel channel) {
+        PowerPair pair = multipleWiresState.get(POWER_PAIR);
+
+        if (pair == PowerPair.RED_BLUE) {
+            if (channel == PowerChannel.A) {
+                return ((RedstoneWireBlockInterface) Blocks.REDSTONE_WIRE).getConnectionState(world, pos);
+            }
+
+            return ((PowerstoneWireBlock) PowerStones.BLUESTONE_WIRE).getConnectionState(world, pos);
+        }
+
+        if (pair == PowerPair.GREEN_YELLOW) {
+            if (channel == PowerChannel.A) {
+                return ((PowerstoneWireBlock) PowerStones.GREENSTONE_WIRE).getConnectionState(world, pos);
+            }
+
+            return ((PowerstoneWireBlock) PowerStones.YELLOWSTONE_WIRE).getConnectionState(world, pos);
+        }
+
+        throw new IllegalStateException("Unsupported power pair: " + pair);
+    }
+
+    private void refreshChannelConnections(World world, BlockPos pos) {
+        if (world.isClient) {
+            return;
+        }
+
+        BlockState multipleWiresState = world.getBlockState(pos);
+
+        // Prevents potential issues if the block state has changed to a different type of block.
+        if (!multipleWiresState.isOf(this)) {
+            return;
+        }
+
+        BlockEntity blockEntity = world.getBlockEntity(pos);
+
+        if (!(blockEntity instanceof MultipleWiresBlockEntity)) {
+            return;
+        }
+
+        MultipleWiresBlockEntity multipleWiresBlockEntity = (MultipleWiresBlockEntity) blockEntity;
+
+        BlockState channelAState = this.getChannelConnectionState(world, pos, multipleWiresState, PowerChannel.A);
+        BlockState channelBState = this.getChannelConnectionState(world, pos, multipleWiresState, PowerChannel.B);
+
+        multipleWiresBlockEntity.setConnectionStates(channelAState, channelBState);
     }
 
     @Override
@@ -118,6 +167,10 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Block
 
     @Override
     protected void updatePowerStrength(World world, BlockPos pos, BlockState state) {
+        // Refresh the connection states for each channel before calculating the power strengths.
+        // Ensures that the power strengths are calculated based on the most up-to-date connection information.
+        this.refreshChannelConnections(world, pos);
+
         int powerA = getPowerA(world, pos);
         int powerB = getPowerB(world, pos);
         int r = this.calculateTargetStrengthRed(world, pos);

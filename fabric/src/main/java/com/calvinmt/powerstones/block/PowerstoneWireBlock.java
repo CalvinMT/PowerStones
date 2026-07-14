@@ -90,6 +90,16 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
         return (VoxelShape)SHAPES.get(state.with(POWER, 0));
     }
 
+    /**
+     * Calculates how this wire colour would connect at the given position in the world.
+     *
+     * The returned state is only a temporary connection state. It must not be
+     * placed into the world when the position contains a MultipleWiresBlock.
+     */
+    public BlockState getConnectionState(BlockView world, BlockPos pos) {
+        return this.getPlacementState(world, this.getDefaultState(), pos);
+    }
+
     @Override
     protected BlockState getDefaultBlockStateWithPowerProperties(BlockState state) {
         return this.getDefaultState().with(POWER, (Integer)state.get(POWER));
