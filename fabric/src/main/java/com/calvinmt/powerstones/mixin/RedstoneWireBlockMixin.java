@@ -129,6 +129,11 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
         }
     }
 
+    @Redirect(method = "getRenderConnectionType(Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;Z)Lnet/minecraft/block/enums/WireConnection;", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/RedstoneWireBlock;connectsTo(Lnet/minecraft/block/BlockState;)Z"))
+    private boolean checkConnectsToStateWithoutDirection(BlockState state) {
+        return this.checkConnectsToState(state, null);
+    }
+
     @Redirect(method = "getReceivedRedstonePower(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;)I", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;getReceivedRedstonePower(Lnet/minecraft/util/math/BlockPos;)I"))
     private int calculateTargetStrengthMultipleWiresShouldSignal(World world, BlockPos pos) {
         int result = 0;
