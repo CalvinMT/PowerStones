@@ -217,11 +217,11 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Block
                 BlockState blockstate = world.getBlockState(blockpos);
                 j = Math.max(j, this.getWireSignalRed(blockstate, world, blockpos));
                 BlockPos blockpos1 = pos.up();
-                if (blockstate.isSolidBlock(world, blockpos) && !world.getBlockState(blockpos1).isSolidBlock(world, blockpos1)) {
+                if (this.canRunOnTop(world, blockpos, blockstate) && !world.getBlockState(blockpos1).isSolidBlock(world, blockpos1)) {
                     BlockPos blockPosUp = blockpos.up();
                     BlockState blockStateUp = world.getBlockState(blockPosUp);
                     j = Math.max(j, this.getWireSignalRed(blockStateUp, world, blockPosUp));
-                } else if (!blockstate.isSolidBlock(world, blockpos)) {
+                } else if (!this.canRunOnTop(world, blockpos, blockstate)) {
                     BlockPos blockPosDown = blockpos.down();
                     BlockState blockStateDown = world.getBlockState(blockPosDown);
                     j = Math.max(j, this.getWireSignalRed(blockStateDown, world, blockPosDown));
@@ -244,13 +244,13 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Block
                 BlockState blockState = world.getBlockState(blockPos);
                 j = Math.max(j, this.getWireSignalBlue(blockState, world, blockPos));
                 BlockPos blockPos2 = pos.up();
-                if (blockState.isSolidBlock(world, blockPos) && !world.getBlockState(blockPos2).isSolidBlock(world, blockPos2)) {
+                if (this.canRunOnTop(world, blockPos, blockState) && !world.getBlockState(blockPos2).isSolidBlock(world, blockPos2)) {
                     BlockPos blockPosUp = blockPos.up();
                     BlockState blockStateUp = world.getBlockState(blockPosUp);
                     j = Math.max(j, this.getWireSignalBlue(blockStateUp, world, blockPosUp));
                     continue;
                 }
-                if (blockState.isSolidBlock(world, blockPos)) continue;
+                if (this.canRunOnTop(world, blockPos, blockState)) continue;
                 BlockPos blockPosDown = blockPos.down();
                 BlockState blockStateDown = world.getBlockState(blockPosDown);
                 j = Math.max(j, this.getWireSignalBlue(blockStateDown, world, blockPosDown));
@@ -272,13 +272,13 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Block
                 BlockState blockState = world.getBlockState(blockPos);
                 j = Math.max(j, this.getWireSignalGreen(blockState, world, blockPos));
                 BlockPos blockPos2 = pos.up();
-                if (blockState.isSolidBlock(world, blockPos) && !world.getBlockState(blockPos2).isSolidBlock(world, blockPos2)) {
+                if (this.canRunOnTop(world, blockPos, blockState) && !world.getBlockState(blockPos2).isSolidBlock(world, blockPos2)) {
                     BlockPos blockPosUp = blockPos.up();
                     BlockState blockStateUp = world.getBlockState(blockPosUp);
                     j = Math.max(j, this.getWireSignalGreen(blockStateUp, world, blockPosUp));
                     continue;
                 }
-                if (blockState.isSolidBlock(world, blockPos)) continue;
+                if (this.canRunOnTop(world, blockPos, blockState)) continue;
                 BlockPos blockPosDown = blockPos.down();
                 BlockState blockStateDown = world.getBlockState(blockPosDown);
                 j = Math.max(j, this.getWireSignalGreen(blockStateDown, world, blockPosDown));
@@ -300,13 +300,13 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Block
                 BlockState blockState = world.getBlockState(blockPos);
                 j = Math.max(j, this.getWireSignalYellow(blockState, world, blockPos));
                 BlockPos blockPos2 = pos.up();
-                if (blockState.isSolidBlock(world, blockPos) && !world.getBlockState(blockPos2).isSolidBlock(world, blockPos2)) {
+                if (this.canRunOnTop(world, blockPos, blockState) && !world.getBlockState(blockPos2).isSolidBlock(world, blockPos2)) {
                     BlockPos blockPosUp = blockPos.up();
                     BlockState blockStateUp = world.getBlockState(blockPosUp);
                     j = Math.max(j, this.getWireSignalYellow(blockStateUp, world, blockPosUp));
                     continue;
                 }
-                if (blockState.isSolidBlock(world, blockPos)) continue;
+                if (this.canRunOnTop(world, blockPos, blockState)) continue;
                 BlockPos blockPosDown = blockPos.down();
                 BlockState blockStateDown = world.getBlockState(blockPosDown);
                 j = Math.max(j, this.getWireSignalYellow(blockStateDown, world, blockPosDown));
