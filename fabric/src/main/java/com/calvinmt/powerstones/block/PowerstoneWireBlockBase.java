@@ -221,7 +221,7 @@ public abstract class PowerstoneWireBlockBase extends Block {
         return this.canRunOnTop(world, blockPos, blockState);
     }
 
-    private boolean canRunOnTop(BlockView world, BlockPos pos, BlockState floor) {
+    protected boolean canRunOnTop(BlockView world, BlockPos pos, BlockState floor) {
         return floor.isSideSolidFullSquare(world, pos, Direction.UP) || floor.isOf(Blocks.HOPPER);
     }
 

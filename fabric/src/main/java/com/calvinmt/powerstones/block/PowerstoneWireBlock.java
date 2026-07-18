@@ -154,13 +154,13 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
                 BlockState blockState = world.getBlockState(blockPos);
                 j = Math.max(j, this.getPower(blockState, world, blockPos));
                 BlockPos blockPos2 = pos.up();
-                if (blockState.isSolidBlock(world, blockPos) && !world.getBlockState(blockPos2).isSolidBlock(world, blockPos2)) {
+                if (this.canRunOnTop(world, blockPos, blockState) && !world.getBlockState(blockPos2).isSolidBlock(world, blockPos2)) {
                     BlockPos blockPosUp = blockPos.up();
                     BlockState blockStateUp = world.getBlockState(blockPosUp);
                     j = Math.max(j, this.getPower(blockStateUp, world, blockPosUp));
                     continue;
                 }
-                if (blockState.isSolidBlock(world, blockPos)) continue;
+                if (this.canRunOnTop(world, blockPos, blockState)) continue;
                 BlockPos blockPosDown = blockPos.down();
                 BlockState blockStateDown = world.getBlockState(blockPosDown);
                 j = Math.max(j, this.getPower(blockStateDown, world, blockPosDown));
