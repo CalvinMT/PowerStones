@@ -155,13 +155,13 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
                 BlockState blockState = level.getBlockState(blockPos);
                 j = Math.max(j, this.getWireSignal(blockState, level, blockPos));
                 BlockPos blockPos2 = pos.above();
-                if (blockState.isRedstoneConductor(level, blockPos) && !level.getBlockState(blockPos2).isRedstoneConductor(level, blockPos2)) {
+                if (this.canSurviveOn(level, blockPos, blockState) && !level.getBlockState(blockPos2).isRedstoneConductor(level, blockPos2)) {
                     BlockPos blockPosAbove = blockPos.above();
                     BlockState blockStateAbove = level.getBlockState(blockPosAbove);
                     j = Math.max(j, this.getWireSignal(blockStateAbove, level, blockPosAbove));
                     continue;
                 }
-                if (blockState.isRedstoneConductor(level, blockPos)) continue;
+                if (this.canSurviveOn(level, blockPos, blockState)) continue;
                 BlockPos blockPosBelow = blockPos.below();
                 BlockState blockStateBelow = level.getBlockState(blockPosBelow);
                 j = Math.max(j, this.getWireSignal(blockStateBelow, level, blockPosBelow));

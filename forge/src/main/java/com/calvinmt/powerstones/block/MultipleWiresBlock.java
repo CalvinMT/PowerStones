@@ -217,11 +217,11 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
                 BlockState blockstate = level.getBlockState(blockpos);
                 j = Math.max(j, this.getWireSignalRed(blockstate,level, blockpos));
                 BlockPos blockpos1 = pos.above();
-                if (blockstate.isRedstoneConductor(level, blockpos) && !level.getBlockState(blockpos1).isRedstoneConductor(level, blockpos1)) {
+                if (this.canSurviveOn(level, blockpos, blockstate) && !level.getBlockState(blockpos1).isRedstoneConductor(level, blockpos1)) {
                     BlockPos blockPosAbove = blockpos.above();
                     BlockState blockStateAbove = level.getBlockState(blockPosAbove);
                     j = Math.max(j, this.getWireSignalRed(blockStateAbove, level, blockPosAbove));
-                } else if (!blockstate.isRedstoneConductor(level, blockpos)) {
+                } else if (!this.canSurviveOn(level, blockpos, blockstate)) {
                     BlockPos blockPosBelow = blockpos.below();
                     BlockState blockStateBelow = level.getBlockState(blockPosBelow);
                     j = Math.max(j, this.getWireSignalRed(blockStateBelow, level, blockPosBelow));
@@ -244,13 +244,13 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
                 BlockState blockState = level.getBlockState(blockPos);
                 j = Math.max(j, this.getWireSignalBlue(blockState, level, blockPos));
                 BlockPos blockPos2 = pos.above();
-                if (blockState.isRedstoneConductor(level, blockPos) && !level.getBlockState(blockPos2).isRedstoneConductor(level, blockPos2)) {
+                if (this.canSurviveOn(level, blockPos, blockState) && !level.getBlockState(blockPos2).isRedstoneConductor(level, blockPos2)) {
                     BlockPos blockPosAbove = blockPos.above();
                     BlockState blockStateAbove = level.getBlockState(blockPosAbove);
                     j = Math.max(j, this.getWireSignalBlue(blockStateAbove, level, blockPosAbove));
                     continue;
                 }
-                if (blockState.isRedstoneConductor(level, blockPos)) continue;
+                if (this.canSurviveOn(level, blockPos, blockState)) continue;
                 BlockPos blockPosBelow = blockPos.below();
                 BlockState blockStateBelow = level.getBlockState(blockPosBelow);
                 j = Math.max(j, this.getWireSignalBlue(blockStateBelow, level, blockPosBelow));
@@ -272,13 +272,13 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
                 BlockState blockState = level.getBlockState(blockPos);
                 j = Math.max(j, this.getWireSignalGreen(blockState, level, blockPos));
                 BlockPos blockPos2 = pos.above();
-                if (blockState.isRedstoneConductor(level, blockPos) && !level.getBlockState(blockPos2).isRedstoneConductor(level, blockPos2)) {
+                if (this.canSurviveOn(level, blockPos, blockState) && !level.getBlockState(blockPos2).isRedstoneConductor(level, blockPos2)) {
                     BlockPos blockPosAbove = blockPos.above();
                     BlockState blockStateAbove = level.getBlockState(blockPosAbove);
                     j = Math.max(j, this.getWireSignalGreen(blockStateAbove, level, blockPosAbove));
                     continue;
                 }
-                if (blockState.isRedstoneConductor(level, blockPos)) continue;
+                if (this.canSurviveOn(level, blockPos, blockState)) continue;
                 BlockPos blockPosBelow = blockPos.below();
                 BlockState blockStateBelow = level.getBlockState(blockPosBelow);
                 j = Math.max(j, this.getWireSignalGreen(blockStateBelow, level, blockPosBelow));
@@ -300,13 +300,13 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
                 BlockState blockState = level.getBlockState(blockPos);
                 j = Math.max(j, this.getWireSignalYellow(blockState, level, blockPos));
                 BlockPos blockPos2 = pos.above();
-                if (blockState.isRedstoneConductor(level, blockPos) && !level.getBlockState(blockPos2).isRedstoneConductor(level, blockPos2)) {
+                if (this.canSurviveOn(level, blockPos, blockState) && !level.getBlockState(blockPos2).isRedstoneConductor(level, blockPos2)) {
                     BlockPos blockPosAbove = blockPos.above();
                     BlockState blockStateAbove = level.getBlockState(blockPosAbove);
                     j = Math.max(j, this.getWireSignalYellow(blockStateAbove, level, blockPosAbove));
                     continue;
                 }
-                if (blockState.isRedstoneConductor(level, blockPos)) continue;
+                if (this.canSurviveOn(level, blockPos, blockState)) continue;
                 BlockPos blockPosBelow = blockPos.below();
                 BlockState blockStateBelow = level.getBlockState(blockPosBelow);
                 j = Math.max(j, this.getWireSignalYellow(blockStateBelow, level, blockPosBelow));
