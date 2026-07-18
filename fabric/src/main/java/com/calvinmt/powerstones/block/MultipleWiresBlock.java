@@ -387,7 +387,12 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Block
         if (i == 0) {
             return 0;
         }
-        if (direction == Direction.UP || ((WireConnection)this.getPlacementState(world, state, pos).get(DIRECTION_TO_WIRE_CONNECTION_PROPERTY.get(direction.getOpposite()))).isConnected()) {
+        if (direction == Direction.UP) {
+            return i;
+        }
+        BlockState stateChannelA = this.getChannelConnectionState(world, pos, state, PowerChannel.A);
+        WireConnection connectionA = (WireConnection) stateChannelA.get(DIRECTION_TO_WIRE_CONNECTION_PROPERTY.get(direction.getOpposite()));
+        if (connectionA.isConnected()) {
             return i;
         }
         return 0;
@@ -405,7 +410,12 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Block
         if (i == 0) {
             return 0;
         }
-        if (direction == Direction.UP || ((WireConnection)this.getPlacementState(world, state, pos).get(DIRECTION_TO_WIRE_CONNECTION_PROPERTY.get(direction.getOpposite()))).isConnected()) {
+        if (direction == Direction.UP) {
+            return i;
+        }
+        BlockState stateChannelB = this.getChannelConnectionState(world, pos, state, PowerChannel.B);
+        WireConnection connectionB = (WireConnection) stateChannelB.get(DIRECTION_TO_WIRE_CONNECTION_PROPERTY.get(direction.getOpposite()));
+        if (connectionB.isConnected()) {
             return i;
         }
         return 0;
@@ -423,7 +433,12 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Block
         if (i == 0) {
             return 0;
         }
-        if (direction == Direction.UP || ((WireConnection)this.getPlacementState(world, state, pos).get(DIRECTION_TO_WIRE_CONNECTION_PROPERTY.get(direction.getOpposite()))).isConnected()) {
+        if (direction == Direction.UP) {
+            return i;
+        }
+        BlockState stateChannelA = this.getChannelConnectionState(world, pos, state, PowerChannel.A);
+        WireConnection connectionA = (WireConnection) stateChannelA.get(DIRECTION_TO_WIRE_CONNECTION_PROPERTY.get(direction.getOpposite()));
+        if (connectionA.isConnected()) {
             return i;
         }
         return 0;
@@ -441,7 +456,12 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Block
         if (i == 0) {
             return 0;
         }
-        if (direction == Direction.UP || ((WireConnection)this.getPlacementState(world, state, pos).get(DIRECTION_TO_WIRE_CONNECTION_PROPERTY.get(direction.getOpposite()))).isConnected()) {
+        if (direction == Direction.UP) {
+            return i;
+        }
+        BlockState stateChannelB = this.getChannelConnectionState(world, pos, state, PowerChannel.B);
+        WireConnection connectionB = (WireConnection) stateChannelB.get(DIRECTION_TO_WIRE_CONNECTION_PROPERTY.get(direction.getOpposite()));
+        if (connectionB.isConnected()) {
             return i;
         }
         return 0;

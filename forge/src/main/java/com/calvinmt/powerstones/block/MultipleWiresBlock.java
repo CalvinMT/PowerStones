@@ -387,7 +387,12 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
         if (i == 0) {
             return 0;
         }
-        if (direction == Direction.UP || ((RedstoneSide)this.getConnectionState(level, state, pos).getValue(PROPERTY_BY_DIRECTION.get(direction.getOpposite()))).isConnected()) {
+        if (direction == Direction.UP) {
+            return i;
+        }
+        BlockState stateChannelA = this.getChannelConnectionState(level, pos, state, PowerChannel.A);
+        RedstoneSide connectionA = (RedstoneSide) stateChannelA.getValue(PROPERTY_BY_DIRECTION.get(direction.getOpposite()));
+        if (connectionA.isConnected()) {
             return i;
         }
         return 0;
@@ -405,7 +410,12 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
         if (i == 0) {
             return 0;
         }
-        if (direction == Direction.UP || ((RedstoneSide)this.getConnectionState(level, state, pos).getValue(PROPERTY_BY_DIRECTION.get(direction.getOpposite()))).isConnected()) {
+        if (direction == Direction.UP) {
+            return i;
+        }
+        BlockState stateChannelB = this.getChannelConnectionState(level, pos, state, PowerChannel.B);
+        RedstoneSide connectionB = (RedstoneSide) stateChannelB.getValue(PROPERTY_BY_DIRECTION.get(direction.getOpposite()));
+        if (connectionB.isConnected()) {
             return i;
         }
         return 0;
@@ -423,7 +433,12 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
         if (i == 0) {
             return 0;
         }
-        if (direction == Direction.UP || ((RedstoneSide)this.getConnectionState(level, state, pos).getValue(PROPERTY_BY_DIRECTION.get(direction.getOpposite()))).isConnected()) {
+        if (direction == Direction.UP) {
+            return i;
+        }
+        BlockState stateChannelA = this.getChannelConnectionState(level, pos, state, PowerChannel.A);
+        RedstoneSide connectionA = (RedstoneSide) stateChannelA.getValue(PROPERTY_BY_DIRECTION.get(direction.getOpposite()));
+        if (connectionA.isConnected()) {
             return i;
         }
         return 0;
@@ -441,7 +456,12 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
         if (i == 0) {
             return 0;
         }
-        if (direction == Direction.UP || ((RedstoneSide)this.getConnectionState(level, state, pos).getValue(PROPERTY_BY_DIRECTION.get(direction.getOpposite()))).isConnected()) {
+        if (direction == Direction.UP) {
+            return i;
+        }
+        BlockState stateChannelB = this.getChannelConnectionState(level, pos, state, PowerChannel.B);
+        RedstoneSide connectionB = (RedstoneSide) stateChannelB.getValue(PROPERTY_BY_DIRECTION.get(direction.getOpposite()));
+        if (connectionB.isConnected()) {
             return i;
         }
         return 0;
