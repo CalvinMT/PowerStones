@@ -284,7 +284,7 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
         }
     }
 
-    public static boolean canBreakFromHeldItem(BlockState state, ItemStack heldItemStack) {
+    public static boolean shouldBreakBlock(BlockState state, ItemStack heldItemStack) {
         if ((state.isOf(PowerStones.BLUESTONE_WIRE) && (heldItemStack.isOf(Items.REDSTONE) || heldItemStack.isOf(PowerStones.GREENSTONE) || heldItemStack.isOf(PowerStones.YELLOWSTONE)))
          || (state.isOf(PowerStones.GREENSTONE_WIRE) && (heldItemStack.isOf(Items.REDSTONE) || heldItemStack.isOf(PowerStones.BLUESTONE) || heldItemStack.isOf(PowerStones.YELLOWSTONE)))
          || (state.isOf(PowerStones.YELLOWSTONE_WIRE)) && (heldItemStack.isOf(Items.REDSTONE) || heldItemStack.isOf(PowerStones.BLUESTONE) || heldItemStack.isOf(PowerStones.GREENSTONE))) {
