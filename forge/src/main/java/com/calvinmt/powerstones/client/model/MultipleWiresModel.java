@@ -18,9 +18,11 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.UnbakedModel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RedstoneSide;
 import net.minecraftforge.api.distmarker.Dist;
@@ -30,6 +32,7 @@ import net.minecraftforge.client.model.IModelLoader;
 import net.minecraftforge.client.model.data.EmptyModelData;
 import net.minecraftforge.client.model.data.IDynamicBakedModel;
 import net.minecraftforge.client.model.data.IModelData;
+import net.minecraftforge.client.model.data.ModelDataMap;
 import net.minecraftforge.client.model.geometry.IModelGeometry;
 
 import javax.annotation.Nonnull;
@@ -190,6 +193,20 @@ public final class MultipleWiresModel implements IModelGeometry<MultipleWiresMod
 
         @Nonnull
         @Override
+        public IModelData getModelData(@Nonnull BlockAndTintGetter level, @Nonnull BlockPos pos, @Nonnull BlockState state, @Nonnull IModelData modelData) {
+            // When a single wire is converted, the block-state packet can arrive before the block-entity packet.
+            // Use the locally calculated render data during that short interval.
+            MultipleWiresBlockEntity.RenderData predictedData = MultipleWiresBlockEntity.getPredictedRenderData(pos);
+
+            if (predictedData != null) {
+                return new ModelDataMap.Builder().withInitial(MultipleWiresBlockEntity.RENDER_DATA, predictedData).build();
+            }
+
+            return modelData;
+        }
+
+        @Nonnull
+        @Override
         public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction face, @Nonnull Random random, @Nonnull IModelData extraData) {
             List<BakedQuad> quads = new ArrayList<>();
 
@@ -204,8 +221,7 @@ public final class MultipleWiresModel implements IModelGeometry<MultipleWiresMod
 
             if (data == null) {
                 // Fallback for when the block entity is not available,
-                // such as when the block is being rendered in the inventory,
-                // or pushed by a piston.
+                // such as when the block is being rendered in the inventory, or pushed by a piston.
                 data = getFallbackRenderData(state);
             }
 

@@ -10,7 +10,6 @@ import java.util.Set;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -20,7 +19,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -223,60 +221,37 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
         builder.add(POWER);
     }
 
-    protected void placeOnUse(BlockState state, Level level, BlockPos pos, Player player) {
-        SoundType soundType = state.getSoundType();
-        level.playSound(player, pos, state.getSoundType().getPlaceSound(), SoundSource.BLOCKS, (soundType.getVolume() + 1.0f) / 2.0f, soundType.getPitch() * 0.8f);
-        PowerPair powerPair = null;
-        int powerA = 0;
-        int powerB = 0;
-        if (player.getMainHandItem().is(Items.REDSTONE)) {
-            powerPair = PowerPair.RED_BLUE;
-            powerA = 0;
-            powerB = state.getValue(POWER);
-        }
-        else if (player.getMainHandItem().is(PowerStones.BLUESTONE.get())) {
-            powerPair = PowerPair.RED_BLUE;
-            powerA = state.getValue(POWER);
-            powerB = 0;
-        }
-        else if (player.getMainHandItem().is(PowerStones.GREENSTONE.get())) {
-            powerPair = PowerPair.GREEN_YELLOW;
-            powerA = 0;
-            powerB = state.getValue(POWER);
-        }
-        else if (player.getMainHandItem().is(PowerStones.YELLOWSTONE.get())) {
-            powerPair = PowerPair.GREEN_YELLOW;
-            powerA = state.getValue(POWER);
-            powerB = 0;
-        }
-        if (player == null || !player.getAbilities().instabuild) {
-            player.getMainHandItem().shrink(1);
-        }
-        state = PowerStones.MULTIPLE_WIRES.get().defaultBlockState().setValue(NORTH, state.getValue(NORTH)).setValue(EAST, state.getValue(EAST)).setValue(SOUTH, state.getValue(SOUTH)).setValue(WEST, state.getValue(WEST)).setValue(PowerStones.POWER_PAIR, powerPair);
-        level.setBlock(pos, state, Block.UPDATE_ALL | Block.UPDATE_IMMEDIATE);
-        MultipleWiresBlock.setPowerA(level, pos, powerA);
-        MultipleWiresBlock.setPowerB(level, pos, powerB);
-        ((MultipleWiresBlock)state.getBlock()).updateAll(state, level, pos);
+    protected void placeOnUse(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand) {
+        ((MultipleWiresBlock) PowerStones.MULTIPLE_WIRES.get()).convertFromSingleWire(level, pos, state, player, hand);
     }
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (!player.getAbilities().mayBuild) {
            return InteractionResult.PASS;
-        } else {
-            if ((state.is(PowerStones.BLUESTONE_WIRE.get()) && player.getMainHandItem().is(Items.REDSTONE))
-             || (state.is(PowerStones.GREENSTONE_WIRE.get()) && player.getMainHandItem().is(PowerStones.YELLOWSTONE.get()))
-             || (state.is(PowerStones.YELLOWSTONE_WIRE.get()) && player.getMainHandItem().is(PowerStones.GREENSTONE.get()))) {
-                this.placeOnUse(state, level, pos, player);
+        }
+        else {
+            ItemStack heldItemStack = player.getMainHandItem();
+
+            if ((state.is(PowerStones.BLUESTONE_WIRE.get()) && heldItemStack.is(Items.REDSTONE))
+             || (state.is(PowerStones.GREENSTONE_WIRE.get()) && heldItemStack.is(PowerStones.YELLOWSTONE.get()))
+             || (state.is(PowerStones.YELLOWSTONE_WIRE.get()) && heldItemStack.is(PowerStones.GREENSTONE.get()))) {
+                // The player is holding a different dust item.
+                // Convert this wire into a MultipleWiresBlock.
+                this.placeOnUse(state, level, pos, player, hand);
+
                 return InteractionResult.SUCCESS;
             }
+
             if (isCross(state) || isDot(state)) {
                 BlockState blockstate = isCross(state) ? this.defaultBlockState() : this.crossState;
                 blockstate = blockstate.setValue(POWER, state.getValue(POWER));
                 blockstate = this.getConnectionState(level, blockstate, pos);
+
                 if (blockstate != state) {
                     level.setBlockAndUpdate(pos, blockstate);
                     this.updatesOnShapeChange(level, pos, state, blockstate);
+
                     return InteractionResult.SUCCESS;
                 }
             }

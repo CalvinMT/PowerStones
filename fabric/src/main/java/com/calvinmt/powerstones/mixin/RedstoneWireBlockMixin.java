@@ -28,8 +28,6 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.RedstoneWireBlock;
 import net.minecraft.block.enums.WireConnection;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.sound.BlockSoundGroup;
-import net.minecraft.sound.SoundCategory;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.util.ActionResult;
@@ -168,7 +166,10 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
     @Inject(method = "onUse(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;Lnet/minecraft/util/hit/BlockHitResult;)Lnet/minecraft/util/ActionResult;", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/RedstoneWireBlock;isFullyConnected(Lnet/minecraft/block/BlockState;)Z", ordinal = 0), cancellable = true)
     public void useAddColor(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit, CallbackInfoReturnable<ActionResult> callbackInfo) {
         if (player.getMainHandStack().isOf(PowerStones.BLUESTONE)) {
-            this.placeOnUse(state, world, pos, player);
+            // The player is holding a different dust item.
+            // Convert this wire into a MultipleWiresBlock.
+            this.placeOnUse(state, world, pos, player, hand);
+
             callbackInfo.setReturnValue(ActionResult.SUCCESS);
         }
     }
@@ -224,19 +225,8 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
         world.setBlockState(pos, state,  Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
     }
 
-    private void placeOnUse(BlockState state, World world, BlockPos pos, PlayerEntity player) {
-        BlockSoundGroup soundType = state.getSoundGroup();
-        world.playSound(player, pos, state.getSoundGroup().getPlaceSound(), SoundCategory.BLOCKS, (soundType.getVolume() + 1.0f) / 2.0f, soundType.getPitch() * 0.8f);
-        if (player == null || !player.getAbilities().creativeMode) {
-            player.getMainHandStack().decrement(1);
-        }
-        int powerA = state.get(POWER);
-        int powerB = 0;
-        state = PowerStones.MULTIPLE_WIRES.getDefaultState().with(WIRE_CONNECTION_NORTH, state.get(WIRE_CONNECTION_NORTH)).with(WIRE_CONNECTION_EAST, state.get(WIRE_CONNECTION_EAST)).with(WIRE_CONNECTION_SOUTH, state.get(WIRE_CONNECTION_SOUTH)).with(WIRE_CONNECTION_WEST, state.get(WIRE_CONNECTION_WEST)).with(PowerStones.POWER_PAIR, PowerPair.RED_BLUE);
-        world.setBlockState(pos, state, Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
-        MultipleWiresBlock.setPowerA(world, pos, powerA);
-        MultipleWiresBlock.setPowerB(world, pos, powerB);
-        ((MultipleWiresBlock)state.getBlock()).updateAll(state, world, pos);
+    private void placeOnUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand) {
+        ((MultipleWiresBlock) PowerStones.MULTIPLE_WIRES).convertFromSingleWire(world, pos, state, player, hand);
     }
 
 }
