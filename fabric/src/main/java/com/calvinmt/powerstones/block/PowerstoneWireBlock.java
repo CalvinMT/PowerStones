@@ -13,8 +13,6 @@ import net.minecraft.block.enums.WireConnection;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.sound.BlockSoundGroup;
-import net.minecraft.sound.SoundCategory;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
@@ -222,60 +220,37 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
         builder.add(POWER);
     }
 
-    protected void placeOnUse(BlockState state, World world, BlockPos pos, PlayerEntity player) {
-        BlockSoundGroup soundType = state.getSoundGroup();
-        world.playSound(player, pos, state.getSoundGroup().getPlaceSound(), SoundCategory.BLOCKS, (soundType.getVolume() + 1.0f) / 2.0f, soundType.getPitch() * 0.8f);
-        PowerPair powerPair = null;
-        int powerA = 0;
-        int powerB = 0;
-        if (player.getMainHandStack().isOf(Items.REDSTONE)) {
-            powerPair = PowerPair.RED_BLUE;
-            powerA = 0;
-            powerB = state.get(POWER);
-        }
-        else if (player.getMainHandStack().isOf(PowerStones.BLUESTONE)) {
-            powerPair = PowerPair.RED_BLUE;
-            powerA = state.get(POWER);
-            powerB = 0;
-        }
-        else if (player.getMainHandStack().isOf(PowerStones.GREENSTONE)) {
-            powerPair = PowerPair.GREEN_YELLOW;
-            powerA = 0;
-            powerB = state.get(POWER);
-        }
-        else if (player.getMainHandStack().isOf(PowerStones.YELLOWSTONE)) {
-            powerPair = PowerPair.GREEN_YELLOW;
-            powerA = state.get(POWER);
-            powerB = 0;
-        }
-        if (player == null || !player.getAbilities().creativeMode) {
-            player.getMainHandStack().decrement(1);
-        }
-        state = PowerStones.MULTIPLE_WIRES.getDefaultState().with(WIRE_CONNECTION_NORTH, state.get(WIRE_CONNECTION_NORTH)).with(WIRE_CONNECTION_EAST, state.get(WIRE_CONNECTION_EAST)).with(WIRE_CONNECTION_SOUTH, state.get(WIRE_CONNECTION_SOUTH)).with(WIRE_CONNECTION_WEST, state.get(WIRE_CONNECTION_WEST)).with(MultipleWiresBlock.POWER_PAIR, powerPair);
-        world.setBlockState(pos, state, Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
-        MultipleWiresBlock.setPowerA(world, pos, powerA);
-        MultipleWiresBlock.setPowerB(world, pos, powerB);
-        ((MultipleWiresBlock)state.getBlock()).updateAll(state, world, pos);
+    protected void placeOnUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand) {
+        ((MultipleWiresBlock) PowerStones.MULTIPLE_WIRES).convertFromSingleWire(world, pos, state, player, hand);
     }
 
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         if (!player.getAbilities().allowModifyWorld) {
            return ActionResult.PASS;
-        } else {
-            if ((state.isOf(PowerStones.BLUESTONE_WIRE) && player.getMainHandStack().isOf(Items.REDSTONE))
-             || (state.isOf(PowerStones.GREENSTONE_WIRE) && player.getMainHandStack().isOf(PowerStones.YELLOWSTONE))
-             || (state.isOf(PowerStones.YELLOWSTONE_WIRE) && player.getMainHandStack().isOf(PowerStones.GREENSTONE))) {
-                this.placeOnUse(state, world, pos, player);
+        }
+        else {
+            ItemStack heldItemStack = player.getMainHandStack();
+
+            if ((state.isOf(PowerStones.BLUESTONE_WIRE) && heldItemStack.isOf(Items.REDSTONE))
+             || (state.isOf(PowerStones.GREENSTONE_WIRE) && heldItemStack.isOf(PowerStones.YELLOWSTONE))
+             || (state.isOf(PowerStones.YELLOWSTONE_WIRE) && heldItemStack.isOf(PowerStones.GREENSTONE))) {
+                // The player is holding a different dust item.
+                // Convert this wire into a MultipleWiresBlock.
+                this.placeOnUse(state, world, pos, player, hand);
+
                 return ActionResult.SUCCESS;
             }
+
             if (isFullyConnected(state) || isNotConnected(state)) {
                 BlockState blockstate = isFullyConnected(state) ? this.getDefaultState() : this.dotState;
                 blockstate = blockstate.with(POWER, state.get(POWER));
                 blockstate = this.getPlacementState(world, blockstate, pos);
+
                 if (blockstate != state) {
                     world.setBlockState(pos, blockstate);
                     this.updateForNewState(world, pos, state, blockstate);
+
                     return ActionResult.SUCCESS;
                 }
             }

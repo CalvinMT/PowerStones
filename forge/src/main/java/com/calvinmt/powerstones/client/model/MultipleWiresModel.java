@@ -20,9 +20,11 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.UnbakedModel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RedstoneSide;
 import net.minecraftforge.api.distmarker.Dist;
@@ -192,6 +194,20 @@ public final class MultipleWiresModel implements IUnbakedGeometry<MultipleWiresM
 
         @Nonnull
         @Override
+        public ModelData getModelData(@Nonnull BlockAndTintGetter level, @Nonnull BlockPos pos, @Nonnull BlockState state, @Nonnull ModelData modelData) {
+            // When a single wire is converted, the block-state packet can arrive before the block-entity packet.
+            // Use the locally calculated render data during that short interval.
+            MultipleWiresBlockEntity.RenderData predictedData = MultipleWiresBlockEntity.getPredictedRenderData(pos);
+
+            if (predictedData != null) {
+                return ModelData.builder().with(MultipleWiresBlockEntity.RENDER_DATA, predictedData).build();
+            }
+
+            return modelData;
+        }
+
+        @Nonnull
+        @Override
         public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction face, @Nonnull RandomSource random, @Nonnull ModelData extraData, @Nullable RenderType renderType) {
             List<BakedQuad> quads = new ArrayList<>();
 
@@ -206,8 +222,7 @@ public final class MultipleWiresModel implements IUnbakedGeometry<MultipleWiresM
 
             if (data == null) {
                 // Fallback for when the block entity is not available,
-                // such as when the block is being rendered in the inventory,
-                // or pushed by a piston.
+                // such as when the block is being rendered in the inventory, or pushed by a piston.
                 data = getFallbackRenderData(state);
             }
 
