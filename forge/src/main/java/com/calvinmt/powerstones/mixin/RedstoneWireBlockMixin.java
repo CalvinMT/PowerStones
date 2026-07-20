@@ -200,7 +200,7 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
 
     @Override
     public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, boolean willHarvest, FluidState fluid) {
-        if (! RedstoneWireBlockInterface.canBreakFromHeldItem(state, player.getMainHandItem())) {
+        if (! RedstoneWireBlockInterface.shouldBreakBlock(state, player.getMainHandItem())) {
             return false;
         }
         return super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);

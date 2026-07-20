@@ -21,6 +21,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.util.ActionResult;
@@ -593,42 +595,76 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Block
         }
     }
 
-    public static boolean canBreakFromHeldItem(BlockState state, ItemStack heldItemStack) {
-        if ((state.isOf(PowerStones.MULTIPLE_WIRES) && state.get(POWER_PAIR) == PowerPair.RED_BLUE && (heldItemStack.isOf(PowerStones.GREENSTONE) || heldItemStack.isOf(PowerStones.YELLOWSTONE)))
-         || (state.isOf(PowerStones.MULTIPLE_WIRES) && state.get(POWER_PAIR) == PowerPair.GREEN_YELLOW && (heldItemStack.isOf(Items.REDSTONE) || heldItemStack.isOf(PowerStones.BLUESTONE)))) {
+    public static boolean shouldBreakBlock(BlockState state, ItemStack heldItemStack) {
+        if (!state.isOf(PowerStones.MULTIPLE_WIRES)) {
+            return true;
+        }
+
+        PowerPair powerPair = state.get(POWER_PAIR);
+
+        return !(powerPair == PowerPair.RED_BLUE && (heldItemStack.isOf(PowerStones.GREENSTONE) || heldItemStack.isOf(PowerStones.YELLOWSTONE)))
+            && !(powerPair == PowerPair.GREEN_YELLOW && (heldItemStack.isOf(Items.REDSTONE) || heldItemStack.isOf(PowerStones.BLUESTONE)));
+    }
+
+    public static boolean shouldBreakIntoSingle(BlockState state, ItemStack heldItemStack) {
+        if (!state.isOf(PowerStones.MULTIPLE_WIRES)) {
             return false;
         }
-        return true;
+
+        PowerPair powerPair = state.get(POWER_PAIR);
+
+        return powerPair == PowerPair.RED_BLUE && (heldItemStack.isOf(Items.REDSTONE) || heldItemStack.isOf(PowerStones.BLUESTONE))
+            || powerPair == PowerPair.GREEN_YELLOW && (heldItemStack.isOf(PowerStones.GREENSTONE) || heldItemStack.isOf(PowerStones.YELLOWSTONE));
     }
 
     public void breakSingle(World world, BlockPos pos, BlockState state, PlayerEntity player) {
-        if (canBreakFromHeldItem(state, player.getMainHandStack())) {
-            if (state.get(POWER_PAIR) == PowerPair.RED_BLUE) {
-                if (player.getMainHandStack().isOf(Items.REDSTONE)) {
-                    state = PowerStones.BLUESTONE_WIRE.getDefaultState().with(WIRE_CONNECTION_NORTH, state.get(WIRE_CONNECTION_NORTH)).with(WIRE_CONNECTION_EAST, state.get(WIRE_CONNECTION_EAST)).with(WIRE_CONNECTION_SOUTH, state.get(WIRE_CONNECTION_SOUTH)).with(WIRE_CONNECTION_WEST, state.get(WIRE_CONNECTION_WEST)).with(RedstoneWireBlock.POWER, getPowerB(world, pos));
-                    world.setBlockState(pos, state, Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
-                    ((PowerstoneWireBlock)state.getBlock()).updateAll(state, world, pos);
-                }
-                else if (player.getMainHandStack().isOf(PowerStones.BLUESTONE)) {
-                    state = Blocks.REDSTONE_WIRE.getDefaultState().with(WIRE_CONNECTION_NORTH, state.get(WIRE_CONNECTION_NORTH)).with(WIRE_CONNECTION_EAST, state.get(WIRE_CONNECTION_EAST)).with(WIRE_CONNECTION_SOUTH, state.get(WIRE_CONNECTION_SOUTH)).with(WIRE_CONNECTION_WEST, state.get(WIRE_CONNECTION_WEST)).with(PowerstoneWireBlock.POWER, getPowerA(world, pos));
-                    world.setBlockState(pos, state, Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
-                    ((RedstoneWireBlockInterface)state.getBlock()).updateAll(state, world, pos);
-                }
+        ItemStack heldItemStack = player.getMainHandStack();
+
+        if (!shouldBreakIntoSingle(state, heldItemStack)) {
+            return;
+        }
+
+        // Get the current power levels for both channels and the connection states for each channel
+        // while the block is still in the world.
+        int powerA = getPowerA(world, pos);
+        int powerB = getPowerB(world, pos);
+        BlockState stateChannelA = this.getChannelConnectionState(world, pos, state, PowerChannel.A);
+        BlockState stateChannelB = this.getChannelConnectionState(world, pos, state, PowerChannel.B);
+
+        BlockState remainingState = state;
+
+        if (state.get(POWER_PAIR) == PowerPair.RED_BLUE) {
+            if (heldItemStack.isOf(Items.REDSTONE)) {
+                remainingState = stateChannelB.with(PowerstoneWireBlock.POWER, powerB);
             }
-            else if (state.get(POWER_PAIR) == PowerPair.GREEN_YELLOW) {
-                if (player.getMainHandStack().isOf(PowerStones.GREENSTONE)) {
-                    state = PowerStones.YELLOWSTONE_WIRE.getDefaultState().with(WIRE_CONNECTION_NORTH, state.get(WIRE_CONNECTION_NORTH)).with(WIRE_CONNECTION_EAST, state.get(WIRE_CONNECTION_EAST)).with(WIRE_CONNECTION_SOUTH, state.get(WIRE_CONNECTION_SOUTH)).with(WIRE_CONNECTION_WEST, state.get(WIRE_CONNECTION_WEST)).with(PowerstoneWireBlock.POWER, getPowerB(world, pos));
-                    world.setBlockState(pos, state, Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
-                    ((PowerstoneWireBlock)state.getBlock()).updateAll(state, world, pos);
-                }
-                else if (player.getMainHandStack().isOf(PowerStones.YELLOWSTONE)) {
-                    state = PowerStones.GREENSTONE_WIRE.getDefaultState().with(WIRE_CONNECTION_NORTH, state.get(WIRE_CONNECTION_NORTH)).with(WIRE_CONNECTION_EAST, state.get(WIRE_CONNECTION_EAST)).with(WIRE_CONNECTION_SOUTH, state.get(WIRE_CONNECTION_SOUTH)).with(WIRE_CONNECTION_WEST, state.get(WIRE_CONNECTION_WEST)).with(PowerstoneWireBlock.POWER, getPowerA(world, pos));
-                    world.setBlockState(pos, state, Block.NOTIFY_ALL | Block.REDRAW_ON_MAIN_THREAD);
-                    ((PowerstoneWireBlock)state.getBlock()).updateAll(state, world, pos);
-                }
+            else {
+                remainingState = stateChannelA.with(PowerstoneWireBlock.POWER, powerA);
             }
+        }
+        else if (state.get(POWER_PAIR) == PowerPair.GREEN_YELLOW) {
+            if (heldItemStack.isOf(PowerStones.GREENSTONE)) {
+                remainingState = stateChannelB.with(PowerstoneWireBlock.POWER, powerB);
+            }
+            else {
+                remainingState = stateChannelA.with(PowerstoneWireBlock.POWER, powerA);
+            }
+        }
+
+        // Vanilla breaking is cancelled for a partial break,
+        // so play the block's breaking sound manually.
+        BlockSoundGroup soundGroup = state.getSoundGroup();
+        world.playSound(null, pos, soundGroup.getBreakSound(), SoundCategory.BLOCKS, (soundGroup.getVolume() + 1.0F) / 2.0F, soundGroup.getPitch() * 0.8F);
+
+        // The first state sent to the client already has the surviving channel's correct connections.
+        // Do not force an additional synchronous redraw here.
+        world.setBlockState(pos, remainingState, Block.NOTIFY_ALL);
+
+        if (remainingState.isOf(Blocks.REDSTONE_WIRE)) {
+            ((RedstoneWireBlockInterface) remainingState.getBlock()).updateAll(remainingState, world, pos);
+        }
+        else {
+            ((PowerstoneWireBlock) remainingState.getBlock()).updateAll(remainingState, world, pos);
         }
     }
 
 }
-

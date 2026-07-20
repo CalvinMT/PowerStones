@@ -15,7 +15,7 @@ public interface RedstoneWireBlockInterface {
 
     default void setShouldSignal(boolean shouldSignal) {}
 
-    static boolean canBreakFromHeldItem(BlockState state, ItemStack heldItemStack) {
+    static boolean shouldBreakBlock(BlockState state, ItemStack heldItemStack) {
         if (state.isOf(Blocks.REDSTONE_WIRE) && (heldItemStack.isOf(PowerStones.BLUESTONE) || heldItemStack.isOf(PowerStones.GREENSTONE) || heldItemStack.isOf(PowerStones.YELLOWSTONE))) {
             return false;
         }

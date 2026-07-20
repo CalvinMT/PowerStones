@@ -285,7 +285,7 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
         }
     }
 
-    public static boolean canBreakFromHeldItem(BlockState state, ItemStack heldItemStack) {
+    public static boolean shouldBreakBlock(BlockState state, ItemStack heldItemStack) {
         if ((state.is(PowerStones.BLUESTONE_WIRE.get()) && (heldItemStack.is(Items.REDSTONE) || heldItemStack.is(PowerStones.GREENSTONE.get()) || heldItemStack.is(PowerStones.YELLOWSTONE.get())))
          || (state.is(PowerStones.GREENSTONE_WIRE.get()) && (heldItemStack.is(Items.REDSTONE) || heldItemStack.is(PowerStones.BLUESTONE.get()) || heldItemStack.is(PowerStones.YELLOWSTONE.get())))
          || (state.is(PowerStones.YELLOWSTONE_WIRE.get())) && (heldItemStack.is(Items.REDSTONE) || heldItemStack.is(PowerStones.BLUESTONE.get()) || heldItemStack.is(PowerStones.GREENSTONE.get()))) {
@@ -296,7 +296,7 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
 
     @Override
     public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, boolean willHarvest, FluidState fluid) {
-        if (! canBreakFromHeldItem(state, player.getMainHandItem())) {
+        if (! shouldBreakBlock(state, player.getMainHandItem())) {
             return false;
         }
         return super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);

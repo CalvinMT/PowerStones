@@ -17,17 +17,23 @@ import com.calvinmt.powerstones.block.YellowstoneWallTorchBlock;
 import com.calvinmt.powerstones.block.YellowstoneWireBlock;
 import com.calvinmt.powerstones.client.model.MultipleWiresModel;
 import com.mojang.logging.LogUtils;
+
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemNameBlockItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.StandingAndWallBlockItem;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.Material;
 import net.minecraftforge.api.distmarker.Dist;
@@ -35,8 +41,7 @@ import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.CreativeModeTabEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.level.BlockEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -151,26 +156,44 @@ public class PowerStones {
         }
     }
 
-    @Mod.EventBusSubscriber(modid = MODID, value = Dist.CLIENT)
-    public static class GameEvents {
-        @SubscribeEvent
-        public static void breakEvent(PlayerEvent.BreakSpeed event) {
-            if (! RedstoneWireBlockInterface.canBreakFromHeldItem(event.getState(), event.getEntity().getMainHandItem())
-             || ! PowerstoneWireBlock.canBreakFromHeldItem(event.getState(), event.getEntity().getMainHandItem())
-             || ! MultipleWiresBlock.canBreakFromHeldItem(event.getState(), event.getEntity().getMainHandItem())) {
-                event.setCanceled(true);
-            }
-        }
-    }
-
-    @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
+    @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
     public static class ForgeGameEvents {
+
         @SubscribeEvent
-        public static void breakEvent(BlockEvent.BreakEvent event) {
-            if (! RedstoneWireBlockInterface.canBreakFromHeldItem(event.getState(), event.getPlayer().getMainHandItem())
-             || ! PowerstoneWireBlock.canBreakFromHeldItem(event.getState(), event.getPlayer().getMainHandItem())
-             || ! MultipleWiresBlock.canBreakFromHeldItem(event.getState(), event.getPlayer().getMainHandItem())) {
+        public static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
+            Player player = event.getEntity();
+
+            if (player.isSpectator()) {
+                return;
+            }
+
+            Level level = event.getLevel();
+            BlockPos pos = event.getPos();
+
+            BlockState state = level.getBlockState(pos);
+            ItemStack heldItemStack = player.getMainHandItem();
+
+            if (MultipleWiresBlock.shouldBreakIntoSingle(state, heldItemStack)) {
+                if (!level.isClientSide) {
+					// Vanilla breaking will be cancelled, so produce the selected wire's normal loot manually.
+					// 'multiple_wires' loot table can still inspect the held dust item.
+                    if (!player.getAbilities().instabuild) {
+                        Block.dropResources(state, level, pos, level.getBlockEntity(pos), player, heldItemStack);
+                    }
+
+                    ((MultipleWiresBlock) state.getBlock()).breakSingle(level, pos, state, player);
+                }
+
+				// Prevents vanilla from breaking the replacement wire.
                 event.setCanceled(true);
+                return;
+            }
+
+            if (!RedstoneWireBlockInterface.shouldBreakBlock(state, heldItemStack)
+             || !PowerstoneWireBlock.shouldBreakBlock(state, heldItemStack)
+             || !MultipleWiresBlock.shouldBreakBlock(state, heldItemStack)) {
+                event.setCanceled(true);
+                return;
             }
         }
     }

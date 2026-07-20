@@ -2,12 +2,12 @@ package com.calvinmt.powerstones;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
-import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.MapColor;
 import net.minecraft.block.Material;
@@ -15,6 +15,7 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.AliasedBlockItem;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemGroups;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.VerticallyAttachableBlockItem;
 import net.minecraft.registry.Registries;
@@ -126,19 +127,35 @@ public class PowerStones implements ModInitializer   {
 
     public static void registerPlayerEvents() {
         AttackBlockCallback.EVENT.register((player, world, hand, pos, direction) -> {
-            if (! RedstoneWireBlockInterface.canBreakFromHeldItem(world.getBlockState(pos), player.getMainHandStack())
-             || ! PowerstoneWireBlock.canBreakFromHeldItem(world.getBlockState(pos), player.getMainHandStack())
-             || ! MultipleWiresBlock.canBreakFromHeldItem(world.getBlockState(pos), player.getMainHandStack())) {
+			if (player.isSpectator()) {
+				return ActionResult.PASS;
+			}
+
+			BlockState state = world.getBlockState(pos);
+        	ItemStack heldItemStack = player.getMainHandStack();
+
+			if (MultipleWiresBlock.shouldBreakIntoSingle(state, heldItemStack)) {
+				if (!world.isClient) {
+					// Vanilla breaking will be cancelled, so produce the selected wire's normal loot manually.
+					// 'multiple_wires' loot table can still inspect the held dust item.
+					if (!player.getAbilities().creativeMode) {
+						Block.dropStacks(state, world, pos, world.getBlockEntity(pos), player, heldItemStack);
+					}
+
+					((MultipleWiresBlock) state.getBlock()).breakSingle(world, pos, state, player);
+				}
+				// Prevents vanilla from breaking the replacement wire.
+				return ActionResult.SUCCESS;
+			}
+
+            if (!RedstoneWireBlockInterface.shouldBreakBlock(state, heldItemStack)
+             || !PowerstoneWireBlock.shouldBreakBlock(state, heldItemStack)
+			 || !MultipleWiresBlock.shouldBreakBlock(state, heldItemStack)) {
                 return ActionResult.FAIL;
             }
+
             return ActionResult.PASS;
         });
-
-		PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, blockEntity) -> {
-			if (state.isOf(PowerStones.MULTIPLE_WIRES)) {
-				((MultipleWiresBlock) state.getBlock()).breakSingle(world, pos, state, player);
-			}
-		});
-    }
+	}
 
 }
