@@ -514,17 +514,30 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
     }
 
     public static int getColorForTintIndex(BlockState state, BlockGetter level, BlockPos pos, int tintIndex) {
+        int powerA = getPowerA(level, pos);
+        int powerB = getPowerB(level, pos);
+
+        // The blockstate packet can arrive before the completed block entity packet.
+        // Use the same prediction as the custom model so powered wires
+        // do not briefly use power level zero during that interval.
+        MultipleWiresBlockEntity.RenderData predictedData = MultipleWiresBlockEntity.getPredictedRenderData(pos);
+
+        if (predictedData != null && predictedData.powerPair() == state.getValue(POWER_PAIR)) {
+            powerA = predictedData.powerA();
+            powerB = predictedData.powerB();
+        }
+
         if (state.getValue(POWER_PAIR) == PowerPair.RED_BLUE && tintIndex == 0) {
-			return PowerstoneWireBlock.getWireColorRed(getPowerA(level, pos));
+			return PowerstoneWireBlock.getWireColorRed(powerA);
 		}
 		else if (state.getValue(POWER_PAIR) == PowerPair.RED_BLUE && tintIndex == 1) {
-			return PowerstoneWireBlock.getWireColorBlue(getPowerB(level, pos));
+			return PowerstoneWireBlock.getWireColorBlue(powerB);
 		}
 		else if (state.getValue(POWER_PAIR) == PowerPair.GREEN_YELLOW && tintIndex == 2) {
-			return PowerstoneWireBlock.getWireColorGreen(getPowerA(level, pos));
+			return PowerstoneWireBlock.getWireColorGreen(powerA);
 		}
 		else if (state.getValue(POWER_PAIR) == PowerPair.GREEN_YELLOW && tintIndex == 3) {
-			return PowerstoneWireBlock.getWireColorYellow(getPowerB(level, pos));
+			return PowerstoneWireBlock.getWireColorYellow(powerB);
 		}
 		else {
 			return PowerstoneWireBlock.getWireColorWhite();
@@ -592,6 +605,140 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
 
             return InteractionResult.PASS;
         }
+    }
+
+    public boolean convertFromSingleWire(Level level, BlockPos pos, BlockState singleWireState, Player player, InteractionHand hand) {
+        ItemStack heldItemStack = player.getItemInHand(hand);
+
+        PowerPair powerPair;
+        int powerA;
+        int powerB;
+
+        BlockState channelAState;
+        BlockState channelBState;
+
+        // Calculate both channels while the original single wire is still in the world.
+        // The original channel therefore retains its exact current shape.
+        if (singleWireState.is(Blocks.REDSTONE_WIRE) && heldItemStack.is(PowerStones.BLUESTONE.get())) {
+            powerPair = PowerPair.RED_BLUE;
+            powerA = singleWireState.getValue(RedStoneWireBlock.POWER);
+            powerB = 0;
+            channelAState = singleWireState;
+            channelBState = ((PowerstoneWireBlock) PowerStones.BLUESTONE_WIRE.get()).getPlacementState(level, pos);
+        }
+        else if (singleWireState.is(PowerStones.BLUESTONE_WIRE.get()) && heldItemStack.is(Items.REDSTONE)) {
+            powerPair = PowerPair.RED_BLUE;
+            powerA = 0;
+            powerB = singleWireState.getValue(PowerstoneWireBlock.POWER);
+            channelAState = ((RedstoneWireBlockInterface) Blocks.REDSTONE_WIRE).getPlacementState(level, pos);
+            channelBState = singleWireState;
+        }
+        else if (singleWireState.is(PowerStones.GREENSTONE_WIRE.get()) && heldItemStack.is(PowerStones.YELLOWSTONE.get())) {
+            powerPair = PowerPair.GREEN_YELLOW;
+            powerA = singleWireState.getValue(PowerstoneWireBlock.POWER);
+            powerB = 0;
+            channelAState = singleWireState;
+            channelBState = ((PowerstoneWireBlock) PowerStones.YELLOWSTONE_WIRE.get()).getPlacementState(level, pos);
+        }
+        else if (singleWireState.is(PowerStones.YELLOWSTONE_WIRE.get()) && heldItemStack.is(PowerStones.GREENSTONE.get())) {
+            powerPair = PowerPair.GREEN_YELLOW;
+            powerA = 0;
+            powerB = singleWireState.getValue(PowerstoneWireBlock.POWER);
+            channelAState = ((PowerstoneWireBlock) PowerStones.GREENSTONE_WIRE.get()).getPlacementState(level, pos);
+            channelBState = singleWireState;
+        }
+        else {
+            return false;
+        }
+
+        MultipleWiresBlockEntity.RenderData initialRenderData = MultipleWiresBlockEntity.createRenderData(powerPair, powerA, powerB, channelAState, channelBState);
+
+        // 'onUse' runs on both the client and server.
+        // On the client, only store the expected render data.
+        // Do not replace the block or notify neighbours on the client.
+        if (level.isClientSide) {
+            MultipleWiresBlockEntity.setPredictedRenderData(pos, initialRenderData);
+
+            return true;
+        }
+
+        // Preserve the current connection state of the original single wire
+        // when initially creating the MultipleWiresBlock.
+        BlockState stateMultipleWires = this.defaultBlockState()
+            .setValue(NORTH, singleWireState.getValue(NORTH))
+            .setValue(EAST, singleWireState.getValue(EAST))
+            .setValue(SOUTH, singleWireState.getValue(SOUTH))
+            .setValue(WEST, singleWireState.getValue(WEST))
+            .setValue(POWER_PAIR, powerPair);
+
+        // Mark this conversion before replacing the block.
+        // The new block entity is constructed synchronously inside 'setBlockState',
+        // allowing it to suppress incomplete update packets during its callbacks.
+        MultipleWiresBlockEntity.beginConversionInitialisation(pos, initialRenderData);
+
+        boolean placed;
+
+        try {
+            // Install the new block silently on the server.
+            //
+            // UPDATE_ALL would notify neighbouring wires before the new block
+            // entity has received powerA and powerB. Those neighbours would
+            // therefore observe a real zero-power MultipleWiresBlock and
+            // briefly recalculate the network down to zero.
+            //
+            // UPDATE_KNOWN_SHAPE also prevents onBlockAdded from running during this
+            // incomplete state. The normal wire update process is invoked
+            // explicitly below, after setInitialData has completed.
+            placed = level.setBlock(pos, stateMultipleWires, Block.UPDATE_KNOWN_SHAPE);
+        }
+        finally {
+            MultipleWiresBlockEntity.endConversionInitialisation(pos);
+        }
+
+        if (!placed) {
+            return false;
+        }
+
+        // Get the block entity for the new MultipleWiresBlock.
+        // It should be present because the block was just placed.
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+
+        if (!(blockEntity instanceof MultipleWiresBlockEntity)) {
+            // This should not normally happen, but restore the original block
+            // rather than leaving an invalid MultipleWiresBlock.
+            level.setBlock(pos, singleWireState, Block.UPDATE_ALL);
+
+            return false;
+        }
+
+        MultipleWiresBlockEntity multipleWiresBlockEntity = (MultipleWiresBlockEntity) blockEntity;
+
+        // Initialise both powers and both independent channel connection states together.
+        multipleWiresBlockEntity.setInitialData(powerA, powerB, channelAState, channelBState);
+
+        // Keep the normal wire update process.
+        // This updates direct wires, offset wires, power strengths
+        // and the final shared connection state.
+        this.updateAll(level.getBlockState(pos), level, pos);
+
+        // Permit update packets only after powers and both channel states have been fully established.
+        // This makes the first block entity packet received by the client a complete snapshot.
+        multipleWiresBlockEntity.finishConversionInitialisation();
+
+        // Send the final block state and completed block entity to the client.
+        // This also replaces the temporary predicted render data.
+        BlockState finalState = level.getBlockState(pos);
+        level.sendBlockUpdated(pos, singleWireState, finalState, Block.UPDATE_CLIENTS);
+
+        SoundType soundType = singleWireState.getSoundType();
+        level.playSound(null, pos, soundType.getPlaceSound(), SoundSource.BLOCKS, (soundType.getVolume() + 1.0F) / 2.0F, soundType.getPitch() * 0.8F);
+
+        // Decrement the held item stack if the player is not in creative mode.
+        if (!player.getAbilities().instabuild) {
+            heldItemStack.shrink(1);
+        }
+
+        return true;
     }
 
     public static boolean shouldBreakBlock(BlockState state, ItemStack heldItemStack) {

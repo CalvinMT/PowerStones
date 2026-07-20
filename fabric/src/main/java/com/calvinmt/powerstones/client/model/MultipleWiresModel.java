@@ -202,6 +202,14 @@ public final class MultipleWiresModel implements UnbakedModel {
         }
 
         private static MultipleWiresBlockEntity.RenderData getRenderData(BlockRenderView blockView, BlockState state, BlockPos pos) {
+            // When a single wire is converted, the block-state packet can arrive before the block-entity packet.
+            // Use the locally calculated render data during that short interval.
+            MultipleWiresBlockEntity.RenderData predictedData = MultipleWiresBlockEntity.getPredictedRenderData(pos);
+
+            if (predictedData != null) {
+                return predictedData;
+            }
+
             if (blockView instanceof RenderAttachedBlockView) {
                 RenderAttachedBlockView attachedView = (RenderAttachedBlockView) blockView;
 
@@ -213,8 +221,7 @@ public final class MultipleWiresModel implements UnbakedModel {
             }
 
             // Fallback for when the block entity is not available,
-            // such as when the block is being rendered in the inventory,
-            // or pushed by a piston.
+            // such as when the block is being rendered in the inventory, or pushed by a piston.
             return getFallbackRenderData(state);
         }
 

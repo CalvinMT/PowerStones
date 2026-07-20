@@ -19,7 +19,6 @@ import com.llamalad7.mixinextras.sugar.Local;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -28,7 +27,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RedStoneWireBlock;
-import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
@@ -127,7 +125,10 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
     @Inject(method = "use(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/InteractionResult;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/RedStoneWireBlock;isCross(Lnet/minecraft/world/level/block/state/BlockState;)Z", ordinal = 0), cancellable = true)
     public void useAddColor(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit, CallbackInfoReturnable<InteractionResult> callbackInfo) {
         if (player.getMainHandItem().is(PowerStones.BLUESTONE.get())) {
-            this.placeOnUse(state, level, pos, player);
+            // The player is holding a different dust item.
+            // Convert this wire into a MultipleWiresBlock.
+            this.placeOnUse(state, level, pos, player, hand);
+
             callbackInfo.setReturnValue(InteractionResult.SUCCESS);
         }
     }
@@ -183,19 +184,8 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
         level.setBlock(pos, state,  Block.UPDATE_ALL | Block.UPDATE_IMMEDIATE);
     }
 
-    private void placeOnUse(BlockState state, Level level, BlockPos pos, Player player) {
-        SoundType soundType = state.getSoundType();
-        level.playSound(player, pos, state.getSoundType().getPlaceSound(), SoundSource.BLOCKS, (soundType.getVolume() + 1.0f) / 2.0f, soundType.getPitch() * 0.8f);
-        if (player == null || !player.getAbilities().instabuild) {
-            player.getMainHandItem().shrink(1);
-        }
-        int powerA = state.getValue(POWER);
-        int powerB = 0;
-        state = PowerStones.MULTIPLE_WIRES.get().defaultBlockState().setValue(NORTH, state.getValue(NORTH)).setValue(EAST, state.getValue(EAST)).setValue(SOUTH, state.getValue(SOUTH)).setValue(WEST, state.getValue(WEST)).setValue(PowerStones.POWER_PAIR, PowerPair.RED_BLUE);
-        level.setBlock(pos, state, Block.UPDATE_ALL | Block.UPDATE_IMMEDIATE);
-        MultipleWiresBlock.setPowerA(level, pos, powerA);
-        MultipleWiresBlock.setPowerB(level, pos, powerB);
-        ((MultipleWiresBlock)state.getBlock()).updateAll(state, level, pos);
+    private void placeOnUse(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand) {
+        ((MultipleWiresBlock) PowerStones.MULTIPLE_WIRES.get()).convertFromSingleWire(level, pos, state, player, hand);
     }
 
     @Override
