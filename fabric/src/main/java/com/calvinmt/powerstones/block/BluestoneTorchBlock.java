@@ -1,5 +1,6 @@
 package com.calvinmt.powerstones.block;
 
+import com.calvinmt.powerstones.PowerColour;
 import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +31,7 @@ extends TorchBlock {
    public static final int field_31229 = 160;
 
    public BluestoneTorchBlock(AbstractBlock.Settings settings) {
-       super(settings, new DustParticleEffect(new Vec3f(PowerstoneWireBlock.BLUE_COLORS[15]), 1.0f));
+       super(settings, new DustParticleEffect(new Vec3f(PowerColour.BLUE.getColour(15)), 1.0f));
        this.setDefaultState((BlockState)((BlockState)this.stateManager.getDefaultState()).with(LIT, true));
    }
 

@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import com.calvinmt.powerstones.PowerPair;
+import com.calvinmt.powerstones.PowerColour;
 import com.calvinmt.powerstones.PowerStones;
 import com.calvinmt.powerstones.RedstoneWireBlockInterface;
 import com.calvinmt.powerstones.block.MultipleWiresBlock;
@@ -104,7 +104,7 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
     }
 
     private boolean isOtherConnectablePowerstone(BlockState state) {
-        return state.isOf(PowerStones.MULTIPLE_WIRES) && state.get(PowerStones.POWER_PAIR) == PowerPair.RED_BLUE;
+        return state.isOf(PowerStones.MULTIPLE_WIRES) && state.get(PowerStones.POWER_PAIR).hasRed();
     }
 
     @Redirect(method = "getRenderConnectionType(Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;Z)Lnet/minecraft/block/enums/WireConnection;", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/RedstoneWireBlock;connectsTo(Lnet/minecraft/block/BlockState;Lnet/minecraft/util/math/Direction;)Z"))
@@ -113,7 +113,7 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
             return true;
         }
         else if (state.isOf(PowerStones.MULTIPLE_WIRES)) {
-            return state.get(PowerStones.POWER_PAIR) == PowerPair.RED_BLUE;
+            return state.get(PowerStones.POWER_PAIR).hasRed();
         }
         else if (state.isOf(PowerStones.BLUESTONE_WIRE) || state.isOf(PowerStones.GREENSTONE_WIRE) || state.isOf(PowerStones.YELLOWSTONE_WIRE)
          || state.isOf(PowerStones.BLUESTONE_BLOCK) || state.isOf(PowerStones.GREENSTONE_BLOCK) || state.isOf(PowerStones.YELLOWSTONE_BLOCK)
@@ -157,15 +157,16 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
     }
 
     private int increasePower(World world, BlockPos pos, BlockState state) {
-        if (state.isOf(PowerStones.MULTIPLE_WIRES) && state.get(PowerStones.POWER_PAIR) == PowerPair.RED_BLUE) {
-            return MultipleWiresBlock.getPowerA(world, pos);
+        if (state.isOf(PowerStones.MULTIPLE_WIRES)) {
+            return MultipleWiresBlock.getPowerForColour(state, world, pos, PowerColour.RED);
         }
-        return state.isOf(this) ? (Integer)state.get(POWER) : 0;
+
+        return state.isOf(this) ? state.get(POWER) : 0;
     }
 
     @Inject(method = "onUse(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;Lnet/minecraft/util/hit/BlockHitResult;)Lnet/minecraft/util/ActionResult;", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/RedstoneWireBlock;isFullyConnected(Lnet/minecraft/block/BlockState;)Z", ordinal = 0), cancellable = true)
     public void useAddColor(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit, CallbackInfoReturnable<ActionResult> callbackInfo) {
-        if (player.getMainHandStack().isOf(PowerStones.BLUESTONE)) {
+        if (player.getMainHandStack().isOf(PowerStones.BLUESTONE) || player.getMainHandStack().isOf(PowerStones.GREENSTONE) || player.getMainHandStack().isOf(PowerStones.YELLOWSTONE)) {
             // The player is holding a different dust item.
             // Convert this wire into a MultipleWiresBlock.
             this.placeOnUse(state, world, pos, player, hand);
@@ -181,11 +182,9 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
     @ModifyVariable(method = "getWeakRedstonePower(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/BlockView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;)I", at = @At(value = "STORE"), ordinal = 0)
     public int modifyWeakRedstonePower(int original, BlockState state, BlockView world, BlockPos pos, Direction direction) {
         if (state.isOf(PowerStones.MULTIPLE_WIRES)) {
-            if (state.get(PowerStones.POWER_PAIR) != PowerPair.RED_BLUE) {
-                return 0;
-            }
-            return MultipleWiresBlock.getPowerA(world, pos);
+            return MultipleWiresBlock.getPowerForColour(state, world, pos, PowerColour.RED);
         }
+
         return original;
     }
 

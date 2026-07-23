@@ -1,6 +1,9 @@
 package com.calvinmt.powerstones.block;
 
+import java.util.List;
+
 import com.calvinmt.powerstones.AbstractBlockStateInterface;
+import com.calvinmt.powerstones.PowerColour;
 import com.calvinmt.powerstones.PowerPair;
 import com.calvinmt.powerstones.PowerStones;
 import com.calvinmt.powerstones.WorldInterface;
@@ -17,12 +20,12 @@ import net.minecraft.world.World;
 public class BluestoneWireBlock extends PowerstoneWireBlock {
 
     public BluestoneWireBlock(AbstractBlock.Settings settings) {
-        super(settings, PowerstoneWireBlock.BLUE_COLORS);
+        super(settings, PowerColour.BLUE.getColours());
     }
 
     @Override
-    protected PowerPair getPowerPair() {
-        return PowerPair.RED_BLUE;
+    protected List<PowerPair> getPowerPairs() {
+        return PowerPair.getPairsFor(PowerColour.BLUE);
     }
 
     @Override
@@ -35,10 +38,8 @@ public class BluestoneWireBlock extends PowerstoneWireBlock {
         if (state.isOf(this)) {
             return state.get(POWER);
         }
-        if (state.isOf(PowerStones.MULTIPLE_WIRES) && state.get(PowerStones.POWER_PAIR) == PowerPair.RED_BLUE) {
-            return MultipleWiresBlock.getPowerB(world, pos);
-        }
-        return 0;
+
+        return MultipleWiresBlock.getPowerForColour(state, world, pos, PowerColour.BLUE);
     }
 
     @Override
@@ -47,7 +48,7 @@ public class BluestoneWireBlock extends PowerstoneWireBlock {
             return 0;
         }
         if (blockState.isOf(this)
-         || (blockState.isOf(PowerStones.MULTIPLE_WIRES) && blockState.get(PowerStones.POWER_PAIR) == PowerPair.RED_BLUE)) {
+         || (blockState.isOf(PowerStones.MULTIPLE_WIRES) && blockState.get(PowerStones.POWER_PAIR).hasBlue())) {
             return ((AbstractBlockStateInterface)blockState).getWeakBluestonePower(blockAccess, pos, side);
         }
         return 0;
@@ -63,10 +64,7 @@ public class BluestoneWireBlock extends PowerstoneWireBlock {
             i = state.get(POWER);
         }
         else if (state.isOf(PowerStones.MULTIPLE_WIRES)) {
-            if (state.get(PowerStones.POWER_PAIR) != PowerPair.RED_BLUE) {
-                return 0;
-            }
-            i = MultipleWiresBlock.getPowerB(world, pos);
+            i = MultipleWiresBlock.getPowerForColour(state, world, pos, PowerColour.BLUE);
         }
         if (i == 0) {
             return 0;

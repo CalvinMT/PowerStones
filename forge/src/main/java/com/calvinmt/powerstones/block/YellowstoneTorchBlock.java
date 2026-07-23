@@ -2,6 +2,7 @@ package com.calvinmt.powerstones.block;
 
 import com.calvinmt.powerstones.BlockStateBaseInterface;
 import com.calvinmt.powerstones.LevelInterface;
+import com.calvinmt.powerstones.PowerColour;
 import com.google.common.collect.Lists;
 import com.mojang.math.Vector3f;
 
@@ -32,7 +33,7 @@ public class YellowstoneTorchBlock extends TorchBlock {
    //private static final int TOGGLE_DELAY = 2;
 
    public YellowstoneTorchBlock(BlockBehaviour.Properties p_55678_) {
-      super(p_55678_, new DustParticleOptions(new Vector3f(PowerstoneWireBlock.YELLOW_COLORS[15]), 1.0f));
+      super(p_55678_, new DustParticleOptions(new Vector3f(PowerColour.YELLOW.getColour(15)), 1.0f));
       this.registerDefaultState(this.stateDefinition.any().setValue(LIT, Boolean.valueOf(true)));
    }
 
