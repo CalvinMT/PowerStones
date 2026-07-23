@@ -3,14 +3,15 @@ package com.calvinmt.powerstones.block;
 import com.calvinmt.powerstones.BlockStateBaseInterface;
 import com.calvinmt.powerstones.LevelInterface;
 import com.calvinmt.powerstones.PowerChannel;
+import com.calvinmt.powerstones.PowerColour;
 import com.calvinmt.powerstones.PowerPair;
 import com.calvinmt.powerstones.PowerStones;
 import com.calvinmt.powerstones.RedstoneWireBlockInterface;
 import com.google.common.collect.Sets;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
+
+import javax.annotation.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -27,7 +28,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.ObserverBlock;
 import net.minecraft.world.level.block.RedStoneWireBlock;
+import net.minecraft.world.level.block.RepeaterBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -57,23 +60,24 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
     private BlockState getChannelConnectionState(BlockGetter level, BlockPos pos, BlockState multipleWiresState, PowerChannel channel) {
         PowerPair pair = multipleWiresState.getValue(POWER_PAIR);
 
-        if (pair == PowerPair.RED_BLUE) {
-            if (channel == PowerChannel.A) {
-                return ((RedstoneWireBlockInterface) Blocks.REDSTONE_WIRE).getPlacementState(level, pos);
-            }
+        PowerColour colour = channel == PowerChannel.A ? pair.getColourA() : pair.getColourB();
 
-            return ((PowerstoneWireBlock) PowerStones.BLUESTONE_WIRE.get()).getPlacementState(level, pos);
+        return this.getConnectionStateForColour(colour, level, pos);
+    }
+
+    private BlockState getConnectionStateForColour(PowerColour colour, BlockGetter world, BlockPos pos) {
+        switch (colour) {
+            case RED:
+                return ((RedstoneWireBlockInterface) Blocks.REDSTONE_WIRE).getPlacementState(world, pos);
+            case BLUE:
+                return ((PowerstoneWireBlock) PowerStones.BLUESTONE_WIRE.get()).getPlacementState(world, pos);
+            case GREEN:
+                return ((PowerstoneWireBlock) PowerStones.GREENSTONE_WIRE.get()).getPlacementState(world, pos);
+            case YELLOW:
+                return ((PowerstoneWireBlock) PowerStones.YELLOWSTONE_WIRE.get()).getPlacementState(world, pos);
+            default:
+                throw new IllegalStateException("Unsupported power colour: " + colour);
         }
-
-        if (pair == PowerPair.GREEN_YELLOW) {
-            if (channel == PowerChannel.A) {
-                return ((PowerstoneWireBlock) PowerStones.GREENSTONE_WIRE.get()).getPlacementState(level, pos);
-            }
-
-            return ((PowerstoneWireBlock) PowerStones.YELLOWSTONE_WIRE.get()).getPlacementState(level, pos);
-        }
-
-        throw new IllegalStateException("Unsupported power pair: " + pair);
     }
 
     private void refreshChannelConnections(Level level, BlockPos pos) {
@@ -107,15 +111,39 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
         return new MultipleWiresBlockEntity(pos, state);
     }
 
+    private static PowerColour getPowerColour(ItemStack stack) {
+        if (stack.is(Items.REDSTONE)) return PowerColour.RED;
+        if (stack.is(PowerStones.BLUESTONE.get())) return PowerColour.BLUE;
+        if (stack.is(PowerStones.GREENSTONE.get())) return PowerColour.GREEN;
+        if (stack.is(PowerStones.YELLOWSTONE.get())) return PowerColour.YELLOW;
+
+        return null;
+    }
+
+    private PowerColour getWireColour(BlockState state) {
+        if (state.is(Blocks.REDSTONE_WIRE)) return PowerColour.RED;
+        if (state.is(PowerStones.BLUESTONE_WIRE.get())) return PowerColour.BLUE;
+        if (state.is(PowerStones.GREENSTONE_WIRE.get())) return PowerColour.GREEN;
+        if (state.is(PowerStones.YELLOWSTONE_WIRE.get())) return PowerColour.YELLOW;
+
+        return null;
+    }
+
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext pContext) {
-        if (pContext.getItemInHand().is(Items.REDSTONE) || pContext.getItemInHand().is(PowerStones.BLUESTONE.get())) {
-            this.registerDefaultState(this.defaultBlockState().setValue(POWER_PAIR, PowerPair.RED_BLUE));
-        }
-        if (pContext.getItemInHand().is(PowerStones.GREENSTONE.get()) || pContext.getItemInHand().is(PowerStones.YELLOWSTONE.get())) {
-            this.registerDefaultState(this.defaultBlockState().setValue(POWER_PAIR, PowerPair.GREEN_YELLOW));
-        }
-        return this.getConnectionState(pContext.getLevel(), this.crossState.setValue(POWER_PAIR, this.defaultBlockState().getValue(POWER_PAIR)), pContext.getClickedPos());
+        Level level = pContext.getLevel();
+        BlockPos pos = pContext.getClickedPos();
+
+        BlockState existingState = level.getBlockState(pos);
+
+        PowerColour existingColour = this.getWireColour(existingState);
+        PowerColour placedColour = getPowerColour(pContext.getItemInHand());
+
+        PowerPair pair = PowerPair.getPairFromColours(existingColour, placedColour);
+
+        BlockState placementState = this.crossState.setValue(POWER_PAIR, pair);
+
+        return this.getConnectionState(level, placementState, pos);
     }
 
     @Override
@@ -166,42 +194,71 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
         return 0;
     }
 
+    public static int getPowerForColour(BlockState state, BlockGetter level, BlockPos pos, PowerColour colour) {
+        if (!state.is(PowerStones.MULTIPLE_WIRES.get())) {
+            return 0;
+        }
+
+        PowerPair pair = state.getValue(POWER_PAIR);
+
+        if (!pair.contains(colour)) {
+            return 0;
+        }
+
+        return switch (pair.getChannel(colour)) {
+            case A -> getPowerA(level, pos);
+            case B -> getPowerB(level, pos);
+        };
+    }
+
+    private int calculateTargetStrengthColour(PowerColour colour, Level level, BlockPos pos) {
+        switch (colour) {
+            case RED:
+                return this.calculateTargetStrengthRed(level, pos);
+            case BLUE:
+                return this.calculateTargetStrengthBlue(level, pos);
+            case GREEN:
+                return this.calculateTargetStrengthGreen(level, pos);
+            case YELLOW:
+                return this.calculateTargetStrengthYellow(level, pos);
+            default:
+                throw new IllegalStateException("Unexpected power colour: " + colour);
+        }
+    }
+
     @Override
     protected void updatePowerStrength(Level level, BlockPos pos, BlockState state) {
-        // Refresh the connection states for each channel before calculating the power strengths.
-        // Ensures that the power strengths are calculated based on the most up-to-date connection information.
+        // Refresh the connection states before calculating each channel's power.
         this.refreshChannelConnections(level, pos);
 
         int powerA = getPowerA(level, pos);
         int powerB = getPowerB(level, pos);
-        int r = this.calculateTargetStrengthRed(level, pos);
-        int b = this.calculateTargetStrengthBlue(level, pos);
-        int g = this.calculateTargetStrengthGreen(level, pos);
-        int y = this.calculateTargetStrengthYellow(level, pos);
-        if ((state.getValue(POWER_PAIR) == PowerPair.RED_BLUE && powerA != r)
-            || (state.getValue(POWER_PAIR) == PowerPair.RED_BLUE && powerB != b)
-            || (state.getValue(POWER_PAIR) == PowerPair.GREEN_YELLOW && powerA != g)
-            || (state.getValue(POWER_PAIR) == PowerPair.GREEN_YELLOW && powerB != y)) {
-            if (level.getBlockState(pos) == state) {
-                if (state.getValue(POWER_PAIR) == PowerPair.RED_BLUE && powerA != r)
-                    powerA = r;
-                if (state.getValue(POWER_PAIR) == PowerPair.RED_BLUE && powerB != b)
-                    powerB = b;
-                if (state.getValue(POWER_PAIR) == PowerPair.GREEN_YELLOW && powerA != g)
-                    powerA = g;
-                if (state.getValue(POWER_PAIR) == PowerPair.GREEN_YELLOW && powerB != y)
-                    powerB = y;
-                setPowerA(level, pos, powerA);
-                setPowerB(level, pos, powerB);
-            }
-            HashSet<BlockPos> set = Sets.newHashSet();
-            set.add(pos);
-            for (Direction direction : Direction.values()) {
-                set.add(pos.relative(direction));
-            }
-            for (BlockPos blockPos : set) {
-                level.updateNeighborsAt(blockPos, this);
-            }
+
+        PowerPair powerPair = state.getValue(POWER_PAIR);
+
+        int targetPowerA = this.calculateTargetStrengthColour(powerPair.getColourA(), level, pos);
+        int targetPowerB = this.calculateTargetStrengthColour(powerPair.getColourB(), level, pos);
+
+        if (powerA == targetPowerA && powerB == targetPowerB) {
+            return;
+        }
+
+        if (level.getBlockState(pos) != state) {
+            return;
+        }
+
+        setPowerA(level, pos, targetPowerA);
+        setPowerB(level, pos, targetPowerB);
+
+        HashSet<BlockPos> positionsToUpdate = Sets.newHashSet();
+        positionsToUpdate.add(pos);
+
+        for (Direction direction : Direction.values()) {
+            positionsToUpdate.add(pos.relative(direction));
+        }
+
+        for (BlockPos blockPos : positionsToUpdate) {
+            level.updateNeighborsAt(blockPos, this);
         }
     }
 
@@ -316,44 +373,54 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
         return Math.max(i, j - 1);
     }
 
+    private int getMultipleWireSignal(BlockState state, Level level, BlockPos pos, PowerColour colour) {
+        if (!state.is(this)) {
+            return 0;
+        }
+
+        PowerPair pair = state.getValue(POWER_PAIR);
+
+        if (pair.getColourA() == colour) {
+            return getPowerA(level, pos);
+        }
+
+        if (pair.getColourB() == colour) {
+            return getPowerB(level, pos);
+        }
+
+        return 0;
+    }
+
     private int getWireSignalRed(BlockState state, Level level, BlockPos pos) {
         if (state.is(Blocks.REDSTONE_WIRE)) {
             return state.getValue(RedStoneWireBlock.POWER);
         }
-        if (state.is(this) && state.getValue(POWER_PAIR) == PowerPair.RED_BLUE) {
-            return getPowerA(level, pos);
-        }
-        return 0;
+
+        return this.getMultipleWireSignal(state, level, pos, PowerColour.RED);
     }
 
     private int getWireSignalBlue(BlockState state, Level level, BlockPos pos) {
         if (state.is(PowerStones.BLUESTONE_WIRE.get())) {
             return state.getValue(PowerstoneWireBlock.POWER);
         }
-        if (state.is(this) && state.getValue(POWER_PAIR) == PowerPair.RED_BLUE) {
-            return getPowerB(level, pos);
-        }
-        return 0;
+
+        return this.getMultipleWireSignal(state, level, pos, PowerColour.BLUE);
     }
 
     private int getWireSignalGreen(BlockState state, Level level, BlockPos pos) {
         if (state.is(PowerStones.GREENSTONE_WIRE.get())) {
             return state.getValue(PowerstoneWireBlock.POWER);
         }
-        if (state.is(this) && state.getValue(POWER_PAIR) == PowerPair.GREEN_YELLOW) {
-            return getPowerA(level, pos);
-        }
-        return 0;
+
+        return this.getMultipleWireSignal(state, level, pos, PowerColour.GREEN);
     }
 
     private int getWireSignalYellow(BlockState state, Level level, BlockPos pos) {
         if (state.is(PowerStones.YELLOWSTONE_WIRE.get())) {
             return state.getValue(PowerstoneWireBlock.POWER);
         }
-        if (state.is(this) && state.getValue(POWER_PAIR) == PowerPair.GREEN_YELLOW) {
-            return getPowerB(level, pos);
-        }
-        return 0;
+
+        return this.getMultipleWireSignal(state, level, pos, PowerColour.YELLOW);
     }
 
     @Override
@@ -376,96 +443,59 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
         return ! shouldSignal ? 0 : ((BlockStateBaseInterface)blockState).getSignalYellow(blockAccess, pos, side);
     }
 
+    private int getChannelPower(BlockGetter level, BlockPos pos, PowerChannel channel) {
+        return switch (channel) {
+            case A -> getPowerA(level, pos);
+            case B -> getPowerB(level, pos);
+        };
+    }
+
+    private int getWeakColourPower(BlockState state, BlockGetter level, BlockPos pos, Direction direction, PowerColour colour) {
+        if (!shouldSignal || direction == Direction.DOWN) {
+            return 0;
+        }
+
+        PowerPair pair = state.getValue(POWER_PAIR);
+
+        if (! pair.contains(colour)) {
+            return 0;
+        }
+
+        PowerChannel channel = pair.getChannel(colour);
+        int power = this.getChannelPower(level, pos, channel);
+
+        if (power == 0) {
+            return 0;
+        }
+
+        if (direction == Direction.UP) {
+            return power;
+        }
+
+        BlockState channelState = this.getChannelConnectionState(level, pos, state, channel);
+        RedstoneSide connection = channelState.getValue(PROPERTY_BY_DIRECTION.get(direction.getOpposite()));
+
+        return connection.isConnected() ? power : 0;
+    }
+
     @Override
     public int getSignal(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
-        if (! shouldSignal || direction == Direction.DOWN) {
-            return 0;
-        }
-        if (state.getValue(POWER_PAIR) != PowerPair.RED_BLUE) {
-            return 0;
-        }
-        int i = getPowerA((Level) level, pos);
-        if (i == 0) {
-            return 0;
-        }
-        if (direction == Direction.UP) {
-            return i;
-        }
-        BlockState stateChannelA = this.getChannelConnectionState(level, pos, state, PowerChannel.A);
-        RedstoneSide connectionA = (RedstoneSide) stateChannelA.getValue(PROPERTY_BY_DIRECTION.get(direction.getOpposite()));
-        if (connectionA.isConnected()) {
-            return i;
-        }
-        return 0;
+        return this.getWeakColourPower(state, level, pos, direction, PowerColour.RED);
     }
 
     @Override
     public int getSignalBlue(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
-        if (! shouldSignal || direction == Direction.DOWN) {
-            return 0;
-        }
-        if (state.getValue(POWER_PAIR) != PowerPair.RED_BLUE) {
-            return 0;
-        }
-        int i = getPowerB((Level) level, pos);
-        if (i == 0) {
-            return 0;
-        }
-        if (direction == Direction.UP) {
-            return i;
-        }
-        BlockState stateChannelB = this.getChannelConnectionState(level, pos, state, PowerChannel.B);
-        RedstoneSide connectionB = (RedstoneSide) stateChannelB.getValue(PROPERTY_BY_DIRECTION.get(direction.getOpposite()));
-        if (connectionB.isConnected()) {
-            return i;
-        }
-        return 0;
+        return this.getWeakColourPower(state, level, pos, direction, PowerColour.BLUE);
     }
 
     @Override
     public int getSignalGreen(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
-        if (! shouldSignal || direction == Direction.DOWN) {
-            return 0;
-        }
-        if (state.getValue(POWER_PAIR) != PowerPair.GREEN_YELLOW) {
-            return 0;
-        }
-        int i = getPowerA((Level) level, pos);
-        if (i == 0) {
-            return 0;
-        }
-        if (direction == Direction.UP) {
-            return i;
-        }
-        BlockState stateChannelA = this.getChannelConnectionState(level, pos, state, PowerChannel.A);
-        RedstoneSide connectionA = (RedstoneSide) stateChannelA.getValue(PROPERTY_BY_DIRECTION.get(direction.getOpposite()));
-        if (connectionA.isConnected()) {
-            return i;
-        }
-        return 0;
+        return this.getWeakColourPower(state, level, pos, direction, PowerColour.GREEN);
     }
 
     @Override
     public int getSignalYellow(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
-        if (! shouldSignal || direction == Direction.DOWN) {
-            return 0;
-        }
-        if (state.getValue(POWER_PAIR) != PowerPair.GREEN_YELLOW) {
-            return 0;
-        }
-        int i = getPowerB((Level) level, pos);
-        if (i == 0) {
-            return 0;
-        }
-        if (direction == Direction.UP) {
-            return i;
-        }
-        BlockState stateChannelB = this.getChannelConnectionState(level, pos, state, PowerChannel.B);
-        RedstoneSide connectionB = (RedstoneSide) stateChannelB.getValue(PROPERTY_BY_DIRECTION.get(direction.getOpposite()));
-        if (connectionB.isConnected()) {
-            return i;
-        }
-        return 0;
+        return this.getWeakColourPower(state, level, pos, direction, PowerColour.YELLOW);
     }
 
     @Override
@@ -486,34 +516,68 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
         return this.shouldConnectTo(originalState, level, pos, state, direction);
     }
 
+    private static boolean connectsTo(BlockState state, @Nullable Direction direction) {
+        if (state.is(Blocks.REDSTONE_WIRE)) {
+            return true;
+        }
+
+        if (state.is(Blocks.REPEATER)) {
+            Direction facing = state.getValue(RepeaterBlock.FACING);
+
+            return facing == direction || facing.getOpposite() == direction;
+        }
+
+        if (state.is(Blocks.OBSERVER)) {
+            return direction == state.getValue(ObserverBlock.FACING);
+        }
+
+        return direction != null && state.isSignalSource();
+    }
+
+    @Nullable
+    private PowerColour getPowerSourceColour(BlockState state) {
+        if (state.is(Blocks.REDSTONE_TORCH) || state.is(Blocks.REDSTONE_WALL_TORCH) || state.is(Blocks.REDSTONE_BLOCK)) {
+            return PowerColour.RED;
+        }
+        if (state.is(PowerStones.BLUESTONE_TORCH_BLOCK.get()) || state.is(PowerStones.BLUESTONE_WALL_TORCH.get()) || state.is(PowerStones.BLUESTONE_BLOCK.get())) {
+            return PowerColour.BLUE;
+        }
+        if (state.is(PowerStones.GREENSTONE_TORCH_BLOCK.get()) || state.is(PowerStones.GREENSTONE_WALL_TORCH.get()) || state.is(PowerStones.GREENSTONE_BLOCK.get())) {
+            return PowerColour.GREEN;
+        }
+        if (state.is(PowerStones.YELLOWSTONE_TORCH_BLOCK.get()) || state.is(PowerStones.YELLOWSTONE_WALL_TORCH.get()) || state.is(PowerStones.YELLOWSTONE_BLOCK.get())) {
+            return PowerColour.YELLOW;
+        }
+
+        return null;
+    }
+
     protected boolean shouldConnectTo(BlockState multipleWiresState, BlockGetter level, BlockPos pos, BlockState state, Direction direction) {
+        PowerPair pair = multipleWiresState.getValue(POWER_PAIR);
+
         if (state.is(PowerStones.MULTIPLE_WIRES.get())) {
-            return multipleWiresState.getValue(POWER_PAIR) == state.getValue(POWER_PAIR);
+            return pair.sharesColourWith(state.getValue(POWER_PAIR));
         }
-        else if (state.is(Blocks.REDSTONE_WIRE) || state.is(PowerStones.BLUESTONE_WIRE.get())) {
-            return multipleWiresState.getValue(POWER_PAIR) == PowerPair.RED_BLUE;
+
+        PowerColour wireColour = this.getWireColour(state);
+
+        if (wireColour != null) {
+            return pair.contains(wireColour);
         }
-        else if (state.is(PowerStones.GREENSTONE_WIRE.get()) || state.is(PowerStones.YELLOWSTONE_WIRE.get())) {
-            return multipleWiresState.getValue(POWER_PAIR) == PowerPair.GREEN_YELLOW;
+
+        if (direction != null) {
+            PowerColour sourceColour = this.getPowerSourceColour(state);
+
+            if (sourceColour != null) {
+                return pair.contains(sourceColour);
+            }
         }
-        else if (direction != null
-         && (state.is(Blocks.REDSTONE_TORCH) || state.is(Blocks.REDSTONE_WALL_TORCH)
-         || state.is(PowerStones.BLUESTONE_TORCH_BLOCK.get()) || state.is(PowerStones.BLUESTONE_WALL_TORCH.get())
-         || state.is(Blocks.REDSTONE_BLOCK) || state.is(PowerStones.BLUESTONE_BLOCK.get()))) {
-            return multipleWiresState.getValue(POWER_PAIR) == PowerPair.RED_BLUE;
-        }
-        else if (direction != null
-         && (state.is(PowerStones.GREENSTONE_TORCH_BLOCK.get()) || state.is(PowerStones.GREENSTONE_WALL_TORCH.get())
-         || state.is(PowerStones.YELLOWSTONE_TORCH_BLOCK.get()) || state.is(PowerStones.YELLOWSTONE_WALL_TORCH.get())
-         || state.is(PowerStones.GREENSTONE_BLOCK.get()) || state.is(PowerStones.YELLOWSTONE_BLOCK.get()))) {
-            return multipleWiresState.getValue(POWER_PAIR) == PowerPair.GREEN_YELLOW;
-        }
-        else {
-            return state.canRedstoneConnectTo(level, pos, direction);
-        }
+
+        return connectsTo(state, direction);
     }
 
     public static int getColorForTintIndex(BlockState state, BlockGetter level, BlockPos pos, int tintIndex) {
+        PowerPair powerPair = state.getValue(POWER_PAIR);
         int powerA = getPowerA(level, pos);
         int powerB = getPowerB(level, pos);
 
@@ -522,26 +586,23 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
         // do not briefly use power level zero during that interval.
         MultipleWiresBlockEntity.RenderData predictedData = MultipleWiresBlockEntity.getPredictedRenderData(pos);
 
-        if (predictedData != null && predictedData.powerPair() == state.getValue(POWER_PAIR)) {
+        if (predictedData != null && predictedData.powerPair() == powerPair) {
             powerA = predictedData.powerA();
             powerB = predictedData.powerB();
         }
 
-        if (state.getValue(POWER_PAIR) == PowerPair.RED_BLUE && tintIndex == 0) {
-			return PowerstoneWireBlock.getWireColorRed(powerA);
-		}
-		else if (state.getValue(POWER_PAIR) == PowerPair.RED_BLUE && tintIndex == 1) {
-			return PowerstoneWireBlock.getWireColorBlue(powerB);
-		}
-		else if (state.getValue(POWER_PAIR) == PowerPair.GREEN_YELLOW && tintIndex == 2) {
-			return PowerstoneWireBlock.getWireColorGreen(powerA);
-		}
-		else if (state.getValue(POWER_PAIR) == PowerPair.GREEN_YELLOW && tintIndex == 3) {
-			return PowerstoneWireBlock.getWireColorYellow(powerB);
-		}
-		else {
-			return PowerstoneWireBlock.getWireColorWhite();
-		}
+        PowerColour colourA = powerPair.getColourA();
+        PowerColour colourB = powerPair.getColourB();
+
+        if (tintIndex == colourA.getTintIndex()) {
+            return colourA.getWireColour(powerA);
+        }
+
+        if (tintIndex == colourB.getTintIndex()) {
+            return colourB.getWireColour(powerB);
+        }
+
+        return PowerColour.WHITE;
     }
 
     @Override
@@ -551,32 +612,24 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
 
     @Override
     protected Vec3 getPowerstoneColor(BlockState state, Level level, BlockPos pos, RandomSource random) {
-        List<Vec3[]> colorsList = new ArrayList<>();
-        List<Integer> powerList = new ArrayList<>();
+        PowerPair powerPair = state.getValue(POWER_PAIR);
         int powerA = getPowerA(level, pos);
         int powerB = getPowerB(level, pos);
-        if (state.getValue(POWER_PAIR) == PowerPair.RED_BLUE) {
-            if (powerA > 0) {
-                colorsList.add(PowerstoneWireBlock.RED_COLORS);
-                powerList.add(powerA);
-            }
-            if (powerB > 0) {
-                colorsList.add(PowerstoneWireBlock.BLUE_COLORS);
-                powerList.add(powerB);
-            }
+
+        boolean channelAPowered = powerA > 0;
+        boolean channelBPowered = powerB > 0;
+
+        if (channelAPowered && channelBPowered) {
+            return random.nextBoolean() ? powerPair.getColourA().getColour(powerA) : powerPair.getColourB().getColour(powerB);
         }
-        if (state.getValue(POWER_PAIR) == PowerPair.GREEN_YELLOW) {
-            if (powerA > 0) {
-                colorsList.add(PowerstoneWireBlock.GREEN_COLORS);
-                powerList.add(powerA);
-            }
-            if (powerB > 0) {
-                colorsList.add(PowerstoneWireBlock.YELLOW_COLORS);
-                powerList.add(powerB);
-            }
+        if (channelAPowered) {
+            return powerPair.getColourA().getColour(powerA);
         }
-        int i = random.nextInt(colorsList.size());
-        return colorsList.get(i)[powerList.get(i)];
+        if (channelBPowered) {
+            return powerPair.getColourB().getColour(powerB);
+        }
+
+        return Vec3.ZERO;
     }
 
     @Override
@@ -607,10 +660,32 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
         }
     }
 
+    private int getSingleWirePower(BlockState state) {
+        if (state.is(Blocks.REDSTONE_WIRE)) {
+            return state.getValue(RedStoneWireBlock.POWER);
+        }
+
+        if (state.is(PowerStones.BLUESTONE_WIRE.get()) || state.is(PowerStones.GREENSTONE_WIRE.get()) || state.is(PowerStones.YELLOWSTONE_WIRE.get())) {
+            return state.getValue(PowerstoneWireBlock.POWER);
+        }
+
+        throw new IllegalArgumentException("Unsupported single wire state: " + state);
+    }
+
     public boolean convertFromSingleWire(Level level, BlockPos pos, BlockState singleWireState, Player player, InteractionHand hand) {
         ItemStack heldItemStack = player.getItemInHand(hand);
 
-        PowerPair powerPair;
+        PowerColour existingColour = this.getWireColour(singleWireState);
+        PowerColour placedColour = getPowerColour(heldItemStack);
+
+        if (existingColour == null || placedColour == null || existingColour == placedColour) {
+            return false;
+        }
+
+        PowerPair powerPair = PowerPair.getPairFromColours(existingColour, placedColour);
+
+        int existingPower = this.getSingleWirePower(singleWireState);
+
         int powerA;
         int powerB;
 
@@ -619,36 +694,19 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
 
         // Calculate both channels while the original single wire is still in the world.
         // The original channel therefore retains its exact current shape.
-        if (singleWireState.is(Blocks.REDSTONE_WIRE) && heldItemStack.is(PowerStones.BLUESTONE.get())) {
-            powerPair = PowerPair.RED_BLUE;
-            powerA = singleWireState.getValue(RedStoneWireBlock.POWER);
+        if (powerPair.getColourA() == existingColour) {
+            powerA = existingPower;
             powerB = 0;
+
             channelAState = singleWireState;
-            channelBState = ((PowerstoneWireBlock) PowerStones.BLUESTONE_WIRE.get()).getPlacementState(level, pos);
-        }
-        else if (singleWireState.is(PowerStones.BLUESTONE_WIRE.get()) && heldItemStack.is(Items.REDSTONE)) {
-            powerPair = PowerPair.RED_BLUE;
-            powerA = 0;
-            powerB = singleWireState.getValue(PowerstoneWireBlock.POWER);
-            channelAState = ((RedstoneWireBlockInterface) Blocks.REDSTONE_WIRE).getPlacementState(level, pos);
-            channelBState = singleWireState;
-        }
-        else if (singleWireState.is(PowerStones.GREENSTONE_WIRE.get()) && heldItemStack.is(PowerStones.YELLOWSTONE.get())) {
-            powerPair = PowerPair.GREEN_YELLOW;
-            powerA = singleWireState.getValue(PowerstoneWireBlock.POWER);
-            powerB = 0;
-            channelAState = singleWireState;
-            channelBState = ((PowerstoneWireBlock) PowerStones.YELLOWSTONE_WIRE.get()).getPlacementState(level, pos);
-        }
-        else if (singleWireState.is(PowerStones.YELLOWSTONE_WIRE.get()) && heldItemStack.is(PowerStones.GREENSTONE.get())) {
-            powerPair = PowerPair.GREEN_YELLOW;
-            powerA = 0;
-            powerB = singleWireState.getValue(PowerstoneWireBlock.POWER);
-            channelAState = ((PowerstoneWireBlock) PowerStones.GREENSTONE_WIRE.get()).getPlacementState(level, pos);
-            channelBState = singleWireState;
+            channelBState = this.getConnectionStateForColour(powerPair.getColourB(), level, pos);
         }
         else {
-            return false;
+            powerA = 0;
+            powerB = existingPower;
+
+            channelAState = this.getConnectionStateForColour(powerPair.getColourA(), level, pos);
+            channelBState = singleWireState;
         }
 
         MultipleWiresBlockEntity.RenderData initialRenderData = MultipleWiresBlockEntity.createRenderData(powerPair, powerA, powerB, channelAState, channelBState);
@@ -741,26 +799,37 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
         return true;
     }
 
+    private static boolean heldColourIsInPair(BlockState state, ItemStack heldItemStack) {
+        if (!state.is(PowerStones.MULTIPLE_WIRES.get())) {
+            return false;
+        }
+
+        PowerColour heldColour = getPowerColour(heldItemStack);
+
+        return heldColour != null && state.getValue(POWER_PAIR).contains(heldColour);
+    }
+
     public static boolean shouldBreakBlock(BlockState state, ItemStack heldItemStack) {
         if (!state.is(PowerStones.MULTIPLE_WIRES.get())) {
             return true;
         }
 
-        PowerPair powerPair = state.getValue(POWER_PAIR);
+        PowerColour heldColour = getPowerColour(heldItemStack);
 
-        return !(powerPair == PowerPair.RED_BLUE && (heldItemStack.is(PowerStones.GREENSTONE.get()) || heldItemStack.is(PowerStones.YELLOWSTONE.get())))
-            && !(powerPair == PowerPair.GREEN_YELLOW && (heldItemStack.is(Items.REDSTONE) || heldItemStack.is(PowerStones.BLUESTONE.get())));
+        return heldColour == null || state.getValue(POWER_PAIR).contains(heldColour);
     }
 
     public static boolean shouldBreakIntoSingle(BlockState state, ItemStack heldItemStack) {
-        if (!state.is(PowerStones.MULTIPLE_WIRES.get())) {
-            return false;
+        return heldColourIsInPair(state, heldItemStack);
+    }
+
+    private BlockState withWirePower(BlockState state, PowerColour colour, int power) {
+        if (colour == PowerColour.RED) {
+            return state.setValue(RedStoneWireBlock.POWER, power);
         }
 
-        PowerPair powerPair = state.getValue(POWER_PAIR);
+        return state.setValue(PowerstoneWireBlock.POWER, power);
 
-        return (powerPair == PowerPair.RED_BLUE && (heldItemStack.is(Items.REDSTONE) || heldItemStack.is(PowerStones.BLUESTONE.get())))
-            || (powerPair == PowerPair.GREEN_YELLOW && (heldItemStack.is(PowerStones.GREENSTONE.get()) || heldItemStack.is(PowerStones.YELLOWSTONE.get())));
     }
 
     public void breakSingle(Level level, BlockPos pos, BlockState state, Player player) {
@@ -770,6 +839,15 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
             return;
         }
 
+        PowerColour removedColour = getPowerColour(heldItemStack);
+
+        if (removedColour == null) {
+            return;
+        }
+
+        PowerPair powerPair = state.getValue(POWER_PAIR);
+        PowerChannel removedChannel = powerPair.getChannel(removedColour);
+
         // Get the current power levels for both channels and the connection states for each channel
         // while the block is still in the world.
         int powerA = getPowerA(level, pos);
@@ -777,24 +855,22 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
         BlockState stateChannelA = this.getChannelConnectionState(level, pos, state, PowerChannel.A);
         BlockState stateChannelB = this.getChannelConnectionState(level, pos, state, PowerChannel.B);
 
-        BlockState remainingState = state;
+        PowerColour remainingColour;
+        BlockState remainingState;
+        int remainingPower;
 
-        if (state.getValue(POWER_PAIR) == PowerPair.RED_BLUE) {
-            if (heldItemStack.is(Items.REDSTONE)) {
-                remainingState = stateChannelB.setValue(PowerstoneWireBlock.POWER, powerB);
-            }
-            else {
-                remainingState = stateChannelA.setValue(PowerstoneWireBlock.POWER, powerA);
-            }
+        if (removedChannel == PowerChannel.A) {
+            remainingColour = powerPair.getColourB();
+            remainingState = stateChannelB;
+            remainingPower = powerB;
         }
-        else if (state.getValue(POWER_PAIR) == PowerPair.GREEN_YELLOW) {
-            if (heldItemStack.is(PowerStones.GREENSTONE.get())) {
-                remainingState = stateChannelB.setValue(PowerstoneWireBlock.POWER, powerB);
-            }
-            else {
-                remainingState = stateChannelA.setValue(PowerstoneWireBlock.POWER, powerA);
-            }
+        else {
+            remainingColour = powerPair.getColourA();
+            remainingState = stateChannelA;
+            remainingPower = powerA;
         }
+
+        remainingState = this.withWirePower(remainingState, remainingColour, remainingPower);
 
         // Vanilla breaking is cancelled for a partial break,
         // so play the block's breaking sound manually.
@@ -814,4 +890,3 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
     }
 
 }
-

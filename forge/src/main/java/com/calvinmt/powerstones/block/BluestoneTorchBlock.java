@@ -2,6 +2,7 @@ package com.calvinmt.powerstones.block;
 
 import com.calvinmt.powerstones.BlockStateBaseInterface;
 import com.calvinmt.powerstones.LevelInterface;
+import com.calvinmt.powerstones.PowerColour;
 import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +31,7 @@ public class BluestoneTorchBlock extends TorchBlock {
    //private static final int TOGGLE_DELAY = 2;
 
    public BluestoneTorchBlock(BlockBehaviour.Properties p_55678_) {
-      super(p_55678_, new DustParticleOptions(PowerstoneWireBlock.BLUE_COLORS[15].toVector3f(), 1.0f));
+      super(p_55678_, new DustParticleOptions(PowerColour.BLUE.getVectorColour(15), 1.0f));
       this.registerDefaultState(this.stateDefinition.any().setValue(LIT, Boolean.valueOf(true)));
    }
 

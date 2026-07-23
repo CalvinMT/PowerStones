@@ -1,5 +1,6 @@
 package com.calvinmt.powerstones.client.model;
 
+import com.calvinmt.powerstones.PowerColour;
 import com.calvinmt.powerstones.PowerPair;
 import com.calvinmt.powerstones.block.MultipleWiresBlock;
 import com.calvinmt.powerstones.block.MultipleWiresBlockEntity;
@@ -198,6 +199,15 @@ public final class MultipleWiresModel implements IUnbakedGeometry<MultipleWiresM
             return modelData;
         }
 
+        private WireModels getModelForColour(PowerColour colour) {
+            return switch (colour) {
+                case RED -> this.red;
+                case BLUE -> this.blue;
+                case GREEN -> this.green;
+                case YELLOW -> this.yellow;
+            };
+        }
+
         @Nonnull
         @Override
         public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction face, @Nonnull RandomSource random, @Nonnull ModelData extraData, @Nullable RenderType renderType) {
@@ -218,14 +228,10 @@ public final class MultipleWiresModel implements IUnbakedGeometry<MultipleWiresM
                 data = getFallbackRenderData(state);
             }
 
-            if (data.powerPair() == PowerPair.RED_BLUE) {
-                addChannelQuads(quads, state, face, random, renderType, data.northA(), data.eastA(), data.southA(), data.westA(), this.red);
-                addChannelQuads(quads, state, face, random, renderType, data.northB(), data.eastB(), data.southB(), data.westB(), this.blue);
-            }
-            else if (data.powerPair() == PowerPair.GREEN_YELLOW) {
-                addChannelQuads(quads, state, face, random, renderType, data.northA(), data.eastA(), data.southA(), data.westA(), this.green);
-                addChannelQuads(quads, state, face, random, renderType, data.northB(), data.eastB(), data.southB(), data.westB(), this.yellow);
-            }
+            PowerPair powerPair = data.powerPair();
+
+            addChannelQuads(quads, state, face, random, renderType, data.northA(), data.eastA(), data.southA(), data.westA(), this.getModelForColour(powerPair.getColourA()));
+            addChannelQuads(quads, state, face, random, renderType, data.northB(), data.eastB(), data.southB(), data.westB(), this.getModelForColour(powerPair.getColourB()));
 
             return quads;
         }

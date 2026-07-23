@@ -1,6 +1,9 @@
 package com.calvinmt.powerstones.block;
 
+import java.util.List;
+
 import com.calvinmt.powerstones.AbstractBlockStateInterface;
+import com.calvinmt.powerstones.PowerColour;
 import com.calvinmt.powerstones.PowerPair;
 import com.calvinmt.powerstones.PowerStones;
 import com.calvinmt.powerstones.WorldInterface;
@@ -17,12 +20,12 @@ import net.minecraft.world.World;
 public class GreenstoneWireBlock extends PowerstoneWireBlock {
 
     public GreenstoneWireBlock(AbstractBlock.Settings settings) {
-        super(settings, PowerstoneWireBlock.GREEN_COLORS);
+        super(settings, PowerColour.GREEN.getColours());
     }
 
     @Override
-    protected PowerPair getPowerPair() {
-        return PowerPair.GREEN_YELLOW;
+    protected List<PowerPair> getPowerPairs() {
+        return PowerPair.getPairsFor(PowerColour.GREEN);
     }
 
     @Override
@@ -35,10 +38,8 @@ public class GreenstoneWireBlock extends PowerstoneWireBlock {
         if (state.isOf(this)) {
             return state.get(POWER);
         }
-        if (state.isOf(PowerStones.MULTIPLE_WIRES) && state.get(PowerStones.POWER_PAIR) == PowerPair.GREEN_YELLOW) {
-            return MultipleWiresBlock.getPowerA(world, pos);
-        }
-        return 0;
+
+        return MultipleWiresBlock.getPowerForColour(state, world, pos, PowerColour.GREEN);
     }
 
     @Override
@@ -47,7 +48,7 @@ public class GreenstoneWireBlock extends PowerstoneWireBlock {
             return 0;
         }
         if (blockState.isOf(this)
-         || (blockState.isOf(PowerStones.MULTIPLE_WIRES) && blockState.get(PowerStones.POWER_PAIR) == PowerPair.GREEN_YELLOW)) {
+         || (blockState.isOf(PowerStones.MULTIPLE_WIRES) && blockState.get(PowerStones.POWER_PAIR).hasGreen())) {
             return ((AbstractBlockStateInterface)blockState).getWeakGreenstonePower(blockAccess, pos, side);
         }
         return 0;
@@ -63,10 +64,7 @@ public class GreenstoneWireBlock extends PowerstoneWireBlock {
             i = state.get(POWER);
         }
         else if (state.isOf(PowerStones.MULTIPLE_WIRES)) {
-            if (state.get(PowerStones.POWER_PAIR) != PowerPair.GREEN_YELLOW) {
-                return 0;
-            }
-            i = MultipleWiresBlock.getPowerA(world, pos);
+            i = MultipleWiresBlock.getPowerForColour(state, world, pos, PowerColour.GREEN);
         }
         if (i == 0) {
             return 0;
