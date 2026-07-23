@@ -3,6 +3,7 @@ package com.calvinmt.powerstones.client.model;
 import com.calvinmt.powerstones.block.MultipleWiresBlock;
 import com.calvinmt.powerstones.block.MultipleWiresBlockEntity;
 import com.calvinmt.powerstones.block.PowerstoneWireBlockBase;
+import com.calvinmt.powerstones.PowerColour;
 import com.calvinmt.powerstones.PowerPair;
 
 import net.fabricmc.api.EnvType;
@@ -187,18 +188,32 @@ public final class MultipleWiresModel implements UnbakedModel {
             return false;
         }
 
+        private WireModels getModelForColour(PowerColour colour) {
+            return switch (colour) {
+                case RED -> this.red;
+                case BLUE -> this.blue;
+                case GREEN -> this.green;
+                case YELLOW -> this.yellow;
+            };
+        }
+
         @Override
         public void emitBlockQuads(BlockRenderView blockView, BlockState state, BlockPos pos, Supplier<Random> randomSupplier, RenderContext context) {
+            Consumer<BakedModel> emit = model ->
+                model.emitBlockQuads(
+                    blockView,
+                    state,
+                    pos,
+                    randomSupplier,
+                    context
+            );
+
             MultipleWiresBlockEntity.RenderData data = getRenderData(blockView, state, pos);
 
-            if (data.powerPair() == PowerPair.RED_BLUE) {
-                emitChannel(data.northA(), data.eastA(), data.southA(), data.westA(), this.red, blockView, state, pos, randomSupplier, context);
-                emitChannel(data.northB(), data.eastB(), data.southB(), data.westB(), this.blue, blockView, state, pos, randomSupplier, context);
-            }
-            else if (data.powerPair() == PowerPair.GREEN_YELLOW) {
-                emitChannel(data.northA(), data.eastA(), data.southA(), data.westA(), this.green, blockView, state, pos, randomSupplier, context);
-                emitChannel(data.northB(), data.eastB(), data.southB(), data.westB(), this.yellow, blockView, state, pos, randomSupplier, context);
-            }
+            PowerPair powerPair = data.powerPair();
+
+            emitChannel(data.northA(), data.eastA(), data.southA(), data.westA(), this.getModelForColour(powerPair.getColourA()), emit);
+            emitChannel(data.northB(), data.eastB(), data.southB(), data.westB(), this.getModelForColour(powerPair.getColourB()), emit);
         }
 
         private static MultipleWiresBlockEntity.RenderData getRenderData(BlockRenderView blockView, BlockState state, BlockPos pos) {
@@ -248,15 +263,7 @@ public final class MultipleWiresModel implements UnbakedModel {
             );
         }
 
-        private static void emitChannel(WireConnection northConnection, WireConnection eastConnection, WireConnection southConnection, WireConnection westConnection, WireModels models, BlockRenderView blockView, BlockState state, BlockPos pos, Supplier<Random> randomSupplier, RenderContext context) {
-            Consumer<BakedModel> emit = model -> model.emitBlockQuads(
-                blockView,
-                state,
-                pos,
-                randomSupplier,
-                context
-            );
-
+        private static void emitChannel(WireConnection northConnection, WireConnection eastConnection, WireConnection southConnection, WireConnection westConnection, WireModels models, Consumer<BakedModel> emit) {
             boolean north = northConnection.isConnected();
             boolean east = eastConnection.isConnected();
             boolean south = southConnection.isConnected();
@@ -324,6 +331,10 @@ public final class MultipleWiresModel implements UnbakedModel {
             }
         }
 
+        private static void emit(RenderContext context, BakedModel model, BlockRenderView blockView, BlockState state, BlockPos pos, Supplier<Random> randomSupplier) {
+            model.emitBlockQuads(blockView, state, pos, randomSupplier, context);
+        }
+
         /**
          * The custom block output is supplied through emitBlockQuads,
          * so vanilla getQuads must not emit another copy.
@@ -374,8 +385,8 @@ public final class MultipleWiresModel implements UnbakedModel {
          */
         @Override
         public void emitItemQuads(ItemStack stack, Supplier<Random> randomSupplier, RenderContext context) {
-            this.red.dot().emitItemQuads(stack, randomSupplier, context);
-            this.blue.dot().emitItemQuads(stack, randomSupplier, context);
+            emit(context, this.red.dot(), null, null, null, randomSupplier);
+            emit(context, this.blue.dot(), null, null, null, randomSupplier);
         }
     }
 }
