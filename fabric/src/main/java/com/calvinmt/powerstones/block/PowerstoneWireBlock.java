@@ -1,5 +1,6 @@
 package com.calvinmt.powerstones.block;
 
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
@@ -19,7 +20,6 @@ import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Util;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -35,47 +35,6 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
     public static final IntProperty POWER = Properties.POWER;
 
     private Vec3d[] COLORS;
-
-    public static final Vec3d[] RED_COLORS = Util.make(new Vec3d[16], (colors) -> {
-        for(int i = 0; i <= 15; ++i) {
-            float f = (float)i / 15.0F;
-            float f1 = f * 0.6F + (f > 0.0F ? 0.4F : 0.3F);
-            float f2 = MathHelper.clamp(f * f * 0.7F - 0.5F, 0.0F, 1.0F);
-            float f3 = MathHelper.clamp(f * f * 0.6F - 0.7F, 0.0F, 1.0F);
-            colors[i] = new Vec3d((double)f1, (double)f2, (double)f3);
-        }
-    
-    });
-    public static final Vec3d[] BLUE_COLORS = (Util.make(new Vec3d[16], colors -> {
-        colors[0] = new Vec3d(0, 0, 0);
-        for (int i = 0; i <= 15; i++) {
-            float f = (float)i / 15.0f;
-            float a = f * 0.6f + (f > 0.0f ? 0.4f : 0.3f); // 0.3f - 1.0f
-            float b = MathHelper.clamp(f * f * 0.35f + 0.15f, 0.0f, 1.0f); // 0.15f - 0.5f
-            float c = MathHelper.clamp(f * f * 0.4f + 0.2f, 0.0f, 1.0f); // 0.2f - 0.6f
-            colors[i] = new Vec3d(b, c, a);
-        }
-    }));
-    public static final Vec3d[] GREEN_COLORS = (Util.make(new Vec3d[16], colors -> {
-        colors[0] = new Vec3d(0, 0, 0);
-        for (int i = 0; i <= 15; i++) {
-            float f = (float)i / 15.0f;
-            float a = f * 0.6f + (f > 0.0f ? 0.4f : 0.3f); // 0.3f - 1.0f
-            float b = MathHelper.clamp(f * f * 0.35f + 0.15f, 0.0f, 1.0f); // 0.15f - 0.5f
-            float c = MathHelper.clamp(f * f * 0.25f, 0.0f, 1.0f); // 0.0f - 0.25f
-            colors[i] = new Vec3d(c, a, b);
-        }
-    }));
-    public static final Vec3d[] YELLOW_COLORS = (Util.make(new Vec3d[16], colors -> {
-        colors[0] = new Vec3d(0, 0, 0);
-        for (int i = 0; i <= 15; i++) {
-            float f = (float)i / 15.0f;
-            float a = f * 0.6f + (f > 0.0f ? 0.4f : 0.3f); // 0.3f - 1.0f
-            float b = f * 0.5f + (f > 0.0f ? 0.3f : 0.2f); // 0.2f - 0.8f
-            float c = MathHelper.clamp(f * f * 0.4f + 0.2f, 0.0f, 1.0f); // 0.2f - 0.6f
-            colors[i] = new Vec3d(a, b, c);
-        }
-    }));
 
     public PowerstoneWireBlock(Settings settings, Vec3d[] colors) {
         super(settings);
@@ -110,13 +69,13 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
 
     @Override
     protected boolean isOtherConnectablePowerstone(BlockState state) {
-        if (state.isOf(PowerStones.MULTIPLE_WIRES) && state.get(PowerStones.POWER_PAIR) == this.getPowerPair()) {
+        if (state.isOf(PowerStones.MULTIPLE_WIRES) && this.getPowerPairs().contains(state.get(PowerStones.POWER_PAIR))) {
             return true;
         }
         return false;
     }
 
-    protected abstract PowerPair getPowerPair();
+    protected abstract List<PowerPair> getPowerPairs();
 
     @Override
     protected void updatePowerStrength(World world, BlockPos pos, BlockState state) {
@@ -187,7 +146,7 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
             return true;
         }
         else if (state.isOf(PowerStones.MULTIPLE_WIRES)) {
-            return state.get(PowerStones.POWER_PAIR) == this.getPowerPair();
+            return this.getPowerPairs().contains(state.get(PowerStones.POWER_PAIR));
         }
         else if (this.shouldNotConnectTo(state)) {
             return false;
@@ -232,9 +191,9 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
         else {
             ItemStack heldItemStack = player.getMainHandStack();
 
-            if ((state.isOf(PowerStones.BLUESTONE_WIRE) && heldItemStack.isOf(Items.REDSTONE))
-             || (state.isOf(PowerStones.GREENSTONE_WIRE) && heldItemStack.isOf(PowerStones.YELLOWSTONE))
-             || (state.isOf(PowerStones.YELLOWSTONE_WIRE) && heldItemStack.isOf(PowerStones.GREENSTONE))) {
+            if ((state.isOf(PowerStones.BLUESTONE_WIRE) && (heldItemStack.isOf(Items.REDSTONE) || heldItemStack.isOf(PowerStones.GREENSTONE) || heldItemStack.isOf(PowerStones.YELLOWSTONE)))
+             || (state.isOf(PowerStones.GREENSTONE_WIRE) && (heldItemStack.isOf(Items.REDSTONE) || heldItemStack.isOf(PowerStones.BLUESTONE) || heldItemStack.isOf(PowerStones.YELLOWSTONE)))
+             || (state.isOf(PowerStones.YELLOWSTONE_WIRE) && (heldItemStack.isOf(Items.REDSTONE) || heldItemStack.isOf(PowerStones.BLUESTONE) || heldItemStack.isOf(PowerStones.GREENSTONE)))) {
                 // The player is holding a different dust item.
                 // Convert this wire into a MultipleWiresBlock.
                 this.placeOnUse(state, world, pos, player, hand);
@@ -262,35 +221,10 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
     public static boolean shouldBreakBlock(BlockState state, ItemStack heldItemStack) {
         if ((state.isOf(PowerStones.BLUESTONE_WIRE) && (heldItemStack.isOf(Items.REDSTONE) || heldItemStack.isOf(PowerStones.GREENSTONE) || heldItemStack.isOf(PowerStones.YELLOWSTONE)))
          || (state.isOf(PowerStones.GREENSTONE_WIRE) && (heldItemStack.isOf(Items.REDSTONE) || heldItemStack.isOf(PowerStones.BLUESTONE) || heldItemStack.isOf(PowerStones.YELLOWSTONE)))
-         || (state.isOf(PowerStones.YELLOWSTONE_WIRE)) && (heldItemStack.isOf(Items.REDSTONE) || heldItemStack.isOf(PowerStones.BLUESTONE) || heldItemStack.isOf(PowerStones.GREENSTONE))) {
+         || (state.isOf(PowerStones.YELLOWSTONE_WIRE) && (heldItemStack.isOf(Items.REDSTONE) || heldItemStack.isOf(PowerStones.BLUESTONE) || heldItemStack.isOf(PowerStones.GREENSTONE)))) {
             return false;
         }
         return true;
-    }
-
-    public static int getWireColorRed(int powerLevel) {
-        Vec3d vec3d = RED_COLORS[powerLevel];
-        return MathHelper.packRgb((float)vec3d.getX(), (float)vec3d.getY(), (float)vec3d.getZ());
-    }
-
-    public static int getWireColorBlue(int powerLevel) {
-        Vec3d vec3d = BLUE_COLORS[powerLevel];
-        return MathHelper.packRgb((float)vec3d.getX(), (float)vec3d.getY(), (float)vec3d.getZ());
-    }
-
-    public static int getWireColorGreen(int powerLevel) {
-        Vec3d vec3d = GREEN_COLORS[powerLevel];
-        return MathHelper.packRgb((float)vec3d.getX(), (float)vec3d.getY(), (float)vec3d.getZ());
-    }
-
-    public static int getWireColorYellow(int powerLevel) {
-        Vec3d vec3d = YELLOW_COLORS[powerLevel];
-        return MathHelper.packRgb((float)vec3d.getX(), (float)vec3d.getY(), (float)vec3d.getZ());
-    }
-
-    public static int getWireColorWhite() {
-        Vec3d vec3d = new Vec3d(1, 1, 1);
-        return MathHelper.packRgb((float)vec3d.getX(), (float)vec3d.getY(), (float)vec3d.getZ());
     }
 
 }

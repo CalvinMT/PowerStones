@@ -76,13 +76,11 @@ public class PowerStonesClient implements ClientModInitializer {
 
     private int getMultipleWiresColour(BlockState state, @Nullable BlockRenderView blockRenderView, @Nullable BlockPos pos, int tintIndex) {
         PowerPair powerPair = state.get(MultipleWiresBlock.POWER_PAIR);
-
         int powerA = 0;
         int powerB = 0;
 
         if (blockRenderView instanceof RenderAttachedBlockView && pos != null) {
             RenderAttachedBlockView attachedView = (RenderAttachedBlockView) blockRenderView;
-
             Object attachment = attachedView.getBlockEntityRenderAttachment(pos);
 
             if (attachment instanceof MultipleWiresBlockEntity.RenderData) {
@@ -94,22 +92,17 @@ public class PowerStonesClient implements ClientModInitializer {
             }
         }
 
-        if (powerPair == PowerPair.RED_BLUE && tintIndex == 0) {
-            return PowerstoneWireBlock.getWireColorRed(powerA);
+        PowerColour colourA = powerPair.getColourA();
+        PowerColour colourB = powerPair.getColourB();
+
+        if (tintIndex == colourA.getTintIndex()) {
+            return colourA.getWireColour(powerA);
         }
 
-        if (powerPair == PowerPair.RED_BLUE && tintIndex == 1) {
-            return PowerstoneWireBlock.getWireColorBlue(powerB);
+        if (tintIndex == colourB.getTintIndex()) {
+            return colourB.getWireColour(powerB);
         }
 
-        if (powerPair == PowerPair.GREEN_YELLOW && tintIndex == 2) {
-            return PowerstoneWireBlock.getWireColorGreen(powerA);
-        }
-
-        if (powerPair == PowerPair.GREEN_YELLOW && tintIndex == 3) {
-            return PowerstoneWireBlock.getWireColorYellow(powerB);
-        }
-
-        return PowerstoneWireBlock.getWireColorWhite();
+        return PowerColour.WHITE;
     }
 }

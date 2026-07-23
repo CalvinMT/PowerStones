@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import com.calvinmt.powerstones.PowerPair;
+import com.calvinmt.powerstones.PowerColour;
 import com.calvinmt.powerstones.PowerStones;
 import com.calvinmt.powerstones.RedstoneWireBlockInterface;
 import com.calvinmt.powerstones.block.MultipleWiresBlock;
@@ -101,7 +101,7 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
     }
 
     private boolean isOtherConnectablePowerstone(BlockState state) {
-        return state.is(PowerStones.MULTIPLE_WIRES.get()) && state.getValue(PowerStones.POWER_PAIR) == PowerPair.RED_BLUE;
+        return state.is(PowerStones.MULTIPLE_WIRES.get()) && state.getValue(PowerStones.POWER_PAIR).hasRed();
     }
 
     @Redirect(method = "getConnectingSide(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;Z)Lnet/minecraft/world/level/block/state/properties/RedstoneSide;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;canRedstoneConnectTo(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;)Z"))
@@ -110,7 +110,7 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
             return true;
         }
         else if (state.is(PowerStones.MULTIPLE_WIRES.get())) {
-            return state.getValue(PowerStones.POWER_PAIR) == PowerPair.RED_BLUE;
+            return state.getValue(PowerStones.POWER_PAIR).hasRed();
         }
         else if (state.is(PowerStones.BLUESTONE_WIRE.get()) || state.is(PowerStones.GREENSTONE_WIRE.get()) || state.is(PowerStones.YELLOWSTONE_WIRE.get())
          || state.is(PowerStones.BLUESTONE_BLOCK.get()) || state.is(PowerStones.GREENSTONE_BLOCK.get()) || state.is(PowerStones.YELLOWSTONE_BLOCK.get())
@@ -149,15 +149,16 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
     }
 
     private int increasePower(Level level, BlockPos pos, BlockState state) {
-        if (state.is(PowerStones.MULTIPLE_WIRES.get()) && state.getValue(PowerStones.POWER_PAIR) == PowerPair.RED_BLUE) {
-            return MultipleWiresBlock.getPowerA(level, pos);
+        if (state.is(PowerStones.MULTIPLE_WIRES.get())) {
+            return MultipleWiresBlock.getPowerForColour(state, level, pos, PowerColour.RED);
         }
-        return state.is(this) ? (Integer)state.getValue(POWER) : 0;
+
+        return state.is(this) ? state.getValue(POWER) : 0;
     }
 
     @Inject(method = "use(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/InteractionResult;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/RedStoneWireBlock;isCross(Lnet/minecraft/world/level/block/state/BlockState;)Z", ordinal = 0), cancellable = true)
     public void useAddColor(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit, CallbackInfoReturnable<InteractionResult> callbackInfo) {
-        if (player.getMainHandItem().is(PowerStones.BLUESTONE.get())) {
+        if (player.getMainHandItem().is(PowerStones.BLUESTONE.get()) || player.getMainHandItem().is(PowerStones.GREENSTONE.get()) || player.getMainHandItem().is(PowerStones.YELLOWSTONE.get())) {
             // The player is holding a different dust item.
             // Convert this wire into a MultipleWiresBlock.
             this.placeOnUse(state, level, pos, player, hand);
@@ -173,11 +174,9 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
     @ModifyVariable(method = "getSignal(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;)I", at = @At(value = "STORE"), ordinal = 0)
     public int modifyWeakRedstonePower(int original, BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
         if (state.is(PowerStones.MULTIPLE_WIRES.get())) {
-            if (state.getValue(PowerStones.POWER_PAIR) != PowerPair.RED_BLUE) {
-                return 0;
-            }
-            return MultipleWiresBlock.getPowerA((Level) level, pos);
+            return MultipleWiresBlock.getPowerForColour(state, level, pos, PowerColour.RED);
         }
+
         return original;
     }
 

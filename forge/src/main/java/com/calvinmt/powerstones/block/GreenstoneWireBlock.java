@@ -1,7 +1,10 @@
 package com.calvinmt.powerstones.block;
 
+import java.util.List;
+
 import com.calvinmt.powerstones.BlockStateBaseInterface;
 import com.calvinmt.powerstones.LevelInterface;
+import com.calvinmt.powerstones.PowerColour;
 import com.calvinmt.powerstones.PowerPair;
 import com.calvinmt.powerstones.PowerStones;
 import net.minecraft.core.BlockPos;
@@ -15,12 +18,12 @@ import net.minecraft.world.level.block.state.properties.RedstoneSide;
 public class GreenstoneWireBlock extends PowerstoneWireBlock {
 
     public GreenstoneWireBlock(Properties properties) {
-        super(properties, PowerstoneWireBlock.GREEN_COLORS);
+        super(properties, PowerColour.GREEN.getColours());
     }
 
     @Override
-    protected PowerPair getPowerPair() {
-        return PowerPair.GREEN_YELLOW;
+    protected List<PowerPair> getPowerPairs() {
+        return PowerPair.getPairsFor(PowerColour.GREEN);
     }
 
     @Override
@@ -33,10 +36,8 @@ public class GreenstoneWireBlock extends PowerstoneWireBlock {
         if (state.is(this)) {
             return state.getValue(POWER);
         }
-        if (state.is(PowerStones.MULTIPLE_WIRES.get()) && state.getValue(PowerStones.POWER_PAIR) == PowerPair.GREEN_YELLOW) {
-            return MultipleWiresBlock.getPowerA(level, pos);
-        }
-        return 0;
+
+        return MultipleWiresBlock.getPowerForColour(state, level, pos, PowerColour.GREEN);
     }
 
     @Override
@@ -45,7 +46,7 @@ public class GreenstoneWireBlock extends PowerstoneWireBlock {
             return 0;
         }
         if (blockState.is(this)
-         || (blockState.is(PowerStones.MULTIPLE_WIRES.get()) && blockState.getValue(PowerStones.POWER_PAIR) == PowerPair.GREEN_YELLOW)) {
+         || (blockState.is(PowerStones.MULTIPLE_WIRES.get()) && blockState.getValue(PowerStones.POWER_PAIR).hasGreen())) {
             return ((BlockStateBaseInterface)blockState).getSignalGreen(blockAccess, pos, side);
         }
         return 0;
@@ -61,10 +62,7 @@ public class GreenstoneWireBlock extends PowerstoneWireBlock {
             i = state.getValue(POWER);
         }
         else if (state.is(PowerStones.MULTIPLE_WIRES.get())) {
-            if (state.getValue(PowerStones.POWER_PAIR) != PowerPair.GREEN_YELLOW) {
-                return 0;
-            }
-            i = MultipleWiresBlock.getPowerA((Level) level, pos);
+            i = MultipleWiresBlock.getPowerForColour(state, level, pos, PowerColour.GREEN);
         }
         if (i == 0) {
             return 0;
