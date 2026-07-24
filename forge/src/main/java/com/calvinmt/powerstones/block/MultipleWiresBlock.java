@@ -46,6 +46,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class MultipleWiresBlock extends PowerstoneWireBlockBase implements EntityBlock {
 
     public static final EnumProperty<PowerPair> POWER_PAIR = PowerStones.POWER_PAIR;
+
+    private static final int MULTIPLE_WIRE_TINT_A = 0;
+    private static final int MULTIPLE_WIRE_TINT_B = 1;
     
     public MultipleWiresBlock(BlockBehaviour.Properties pProperties) {
         super(pProperties);
@@ -581,25 +584,27 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
         int powerA = getPowerA(level, pos);
         int powerB = getPowerB(level, pos);
 
-        // The blockstate packet can arrive before the completed block entity packet.
-        // Use the same prediction as the custom model so powered wires
-        // do not briefly use power level zero during that interval.
-        MultipleWiresBlockEntity.RenderData predictedData = MultipleWiresBlockEntity.getPredictedRenderData(pos);
+        if (level != null && pos != null) {
+            powerA = getPowerA(level, pos);
+            powerB = getPowerB(level, pos);
 
-        if (predictedData != null && predictedData.powerPair() == powerPair) {
-            powerA = predictedData.powerA();
-            powerB = predictedData.powerB();
+            // The blockstate packet can arrive before the completed block entity packet.
+            // Use the same prediction as the custom model so powered wires
+            // do not briefly use power level zero during that interval.
+            MultipleWiresBlockEntity.RenderData predictedData = MultipleWiresBlockEntity.getPredictedRenderData(pos);
+
+            if (predictedData != null && predictedData.powerPair() == powerPair) {
+                powerA = predictedData.powerA();
+                powerB = predictedData.powerB();
+            }
         }
 
-        PowerColour colourA = powerPair.getColourA();
-        PowerColour colourB = powerPair.getColourB();
-
-        if (tintIndex == colourA.getTintIndex()) {
-            return colourA.getWireColour(powerA);
+        if (tintIndex == MULTIPLE_WIRE_TINT_A) {
+            return powerPair.getColourA().getWireColour(powerA);
         }
 
-        if (tintIndex == colourB.getTintIndex()) {
-            return colourB.getWireColour(powerB);
+        if (tintIndex == MULTIPLE_WIRE_TINT_B) {
+            return powerPair.getColourB().getWireColour(powerB);
         }
 
         return PowerColour.WHITE;

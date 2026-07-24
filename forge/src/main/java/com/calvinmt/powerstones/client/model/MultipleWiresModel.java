@@ -1,7 +1,5 @@
 package com.calvinmt.powerstones.client.model;
 
-import com.calvinmt.powerstones.PowerColour;
-import com.calvinmt.powerstones.PowerPair;
 import com.calvinmt.powerstones.block.MultipleWiresBlock;
 import com.calvinmt.powerstones.block.MultipleWiresBlockEntity;
 import com.calvinmt.powerstones.block.PowerstoneWireBlockBase;
@@ -54,11 +52,9 @@ public final class MultipleWiresModel implements IModelGeometry<MultipleWiresMod
 
     private static final String MOD_ID = "powerstones";
 
-    private static final List<String> COLOURS = List.of(
-            "redstone",
-            "bluestone",
-            "greenstone",
-            "yellowstone"
+    private static final List<String> CHANNELS = List.of(
+        "multiple_a",
+        "multiple_b"
     );
 
     private static final List<String> MODEL_PARTS = List.of(
@@ -81,17 +77,17 @@ public final class MultipleWiresModel implements IModelGeometry<MultipleWiresMod
     private static List<ResourceLocation> createModelDependencies() {
         List<ResourceLocation> dependencies = new ArrayList<>();
 
-        for (String colour : COLOURS) {
+        for (String channel : CHANNELS) {
             for (String part : MODEL_PARTS) {
-                dependencies.add(modelId(colour, part));
+                dependencies.add(modelId(channel, part));
             }
         }
 
         return Collections.unmodifiableList(dependencies);
     }
 
-    private static ResourceLocation modelId(String colour, String part) {
-        return new ResourceLocation(MOD_ID, "block/" + colour + "_dust_" + part);
+    private static ResourceLocation modelId(String channel, String part) {
+        return new ResourceLocation(MOD_ID, "block/" + channel + "_dust_" + part);
     }
 
     @Override
@@ -111,41 +107,39 @@ public final class MultipleWiresModel implements IModelGeometry<MultipleWiresMod
 
     @Override
     public BakedModel bake(IModelConfiguration owner, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelTransform, ItemOverrides overrides, ResourceLocation modelLocation) {
-        WireModels red = bakeWireModels(bakery, spriteGetter, "redstone");
-        WireModels blue = bakeWireModels(bakery, spriteGetter, "bluestone");
-        WireModels green = bakeWireModels(bakery, spriteGetter, "greenstone");
-        WireModels yellow = bakeWireModels(bakery, spriteGetter, "yellowstone");
+        WireModels channelA = bakeWireModels(bakery, spriteGetter, "multiple_a");
+        WireModels channelB = bakeWireModels(bakery, spriteGetter, "multiple_b");
 
-        return new Baked(red, blue, green, yellow, overrides);
+        return new Baked(channelA, channelB);
     }
 
-    private static WireModels bakeWireModels(ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, String colour) {
+    private static WireModels bakeWireModels(ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, String channel) {
         return new WireModels(
                 // Straight north-south line.
-                bakeRequired(bakery, spriteGetter, colour, "side0", BlockModelRotation.X0_Y0),
-                bakeRequired(bakery, spriteGetter, colour, "side_alt0", BlockModelRotation.X0_Y0),
+                bakeRequired(bakery, spriteGetter, channel, "side0", BlockModelRotation.X0_Y0),
+                bakeRequired(bakery, spriteGetter, channel, "side_alt0", BlockModelRotation.X0_Y0),
 
                 // Straight east-west line.
-                bakeRequired(bakery, spriteGetter, colour, "side_alt1", BlockModelRotation.X0_Y270),
-                bakeRequired(bakery, spriteGetter, colour, "side1", BlockModelRotation.X0_Y270),
+                bakeRequired(bakery, spriteGetter, channel, "side_alt1", BlockModelRotation.X0_Y270),
+                bakeRequired(bakery, spriteGetter, channel, "side1", BlockModelRotation.X0_Y270),
 
                 // Vertical wall sections.
-                bakeRequired(bakery, spriteGetter, colour, "up", BlockModelRotation.X0_Y0),
-                bakeRequired(bakery, spriteGetter, colour, "up", BlockModelRotation.X0_Y90),
-                bakeRequired(bakery, spriteGetter, colour, "up", BlockModelRotation.X0_Y180),
-                bakeRequired(bakery, spriteGetter, colour, "up", BlockModelRotation.X0_Y270),
+                bakeRequired(bakery, spriteGetter, channel, "up", BlockModelRotation.X0_Y0),
+                bakeRequired(bakery, spriteGetter, channel, "up", BlockModelRotation.X0_Y90),
+                bakeRequired(bakery, spriteGetter, channel, "up", BlockModelRotation.X0_Y180),
+                bakeRequired(bakery, spriteGetter, channel, "up", BlockModelRotation.X0_Y270),
 
                 // Centre and directional arms.
-                bakeRequired(bakery, spriteGetter, colour, "dot_duo", BlockModelRotation.X0_Y0),
-                bakeRequired(bakery, spriteGetter, colour, "side0_duo", BlockModelRotation.X0_Y0),
-                bakeRequired(bakery, spriteGetter, colour, "side_alt0_duo", BlockModelRotation.X0_Y0),
-                bakeRequired(bakery, spriteGetter, colour, "side_alt1_duo", BlockModelRotation.X0_Y270),
-                bakeRequired(bakery, spriteGetter, colour, "side1_duo", BlockModelRotation.X0_Y270)
+                bakeRequired(bakery, spriteGetter, channel, "dot_duo", BlockModelRotation.X0_Y0),
+                bakeRequired(bakery, spriteGetter, channel, "side0_duo", BlockModelRotation.X0_Y0),
+                bakeRequired(bakery, spriteGetter, channel, "side_alt0_duo", BlockModelRotation.X0_Y0),
+                bakeRequired(bakery, spriteGetter, channel, "side_alt1_duo", BlockModelRotation.X0_Y270),
+                bakeRequired(bakery, spriteGetter, channel, "side1_duo", BlockModelRotation.X0_Y270)
         );
     }
 
-    private static BakedModel bakeRequired(ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, String colour, String part, ModelState rotation) {
-        ResourceLocation id = modelId(colour, part);
+    private static BakedModel bakeRequired(ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, String channel, String part, ModelState rotation) {
+        ResourceLocation id = modelId(channel, part);
         UnbakedModel unbakedModel = bakery.getModel(id);
         BakedModel bakedModel = unbakedModel.bake(bakery, spriteGetter, rotation, id);
 
@@ -178,18 +172,12 @@ public final class MultipleWiresModel implements IModelGeometry<MultipleWiresMod
 
     private static final class Baked implements IDynamicBakedModel {
 
-        private final WireModels red;
-        private final WireModels blue;
-        private final WireModels green;
-        private final WireModels yellow;
-        private final ItemOverrides overrides;
+        private final WireModels channelA;
+        private final WireModels channelB;
 
-        private Baked(WireModels red, WireModels blue, WireModels green, WireModels yellow, ItemOverrides overrides) {
-            this.red = red;
-            this.blue = blue;
-            this.green = green;
-            this.yellow = yellow;
-            this.overrides = overrides;
+        private Baked(WireModels channelA, WireModels channelB) {
+            this.channelA = channelA;
+            this.channelB = channelB;
         }
 
         @Nonnull
@@ -206,15 +194,6 @@ public final class MultipleWiresModel implements IModelGeometry<MultipleWiresMod
             return modelData;
         }
 
-        private WireModels getModelForColour(PowerColour colour) {
-            return switch (colour) {
-                case RED -> this.red;
-                case BLUE -> this.blue;
-                case GREEN -> this.green;
-                case YELLOW -> this.yellow;
-            };
-        }
-
         @Nonnull
         @Override
         public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction face, @Nonnull Random random, @Nonnull IModelData extraData) {
@@ -222,8 +201,8 @@ public final class MultipleWiresModel implements IModelGeometry<MultipleWiresMod
 
             // Fallback for an item renderer that reaches this block model.
             if (state == null) {
-                addModelQuads(quads, this.red.dot(), null, face, random);
-                addModelQuads(quads, this.blue.dot(), null, face, random);
+                addModelQuads(quads, this.channelA.dot(), null, face, random);
+                addModelQuads(quads, this.channelB.dot(), null, face, random);
                 return quads;
             }
 
@@ -235,10 +214,8 @@ public final class MultipleWiresModel implements IModelGeometry<MultipleWiresMod
                 data = getFallbackRenderData(state);
             }
 
-            PowerPair powerPair = data.powerPair();
-
-            addChannelQuads(quads, state, face, random, data.northA(), data.eastA(), data.southA(), data.westA(), this.getModelForColour(powerPair.getColourA()));
-            addChannelQuads(quads, state, face, random, data.northB(), data.eastB(), data.southB(), data.westB(), this.getModelForColour(powerPair.getColourB()));
+            addChannelQuads(quads, state, face, random, data.northA(), data.eastA(), data.southA(), data.westA(), this.channelA);
+            addChannelQuads(quads, state, face, random, data.northB(), data.eastB(), data.southB(), data.westB(), this.channelB);
 
             return quads;
         }
@@ -340,37 +317,37 @@ public final class MultipleWiresModel implements IModelGeometry<MultipleWiresMod
 
         @Override
         public boolean useAmbientOcclusion() {
-            return this.red.dot().useAmbientOcclusion();
+            return this.channelA.dot().useAmbientOcclusion();
         }
 
         @Override
         public boolean isGui3d() {
-            return this.red.dot().isGui3d();
+            return this.channelA.dot().isGui3d();
         }
 
         @Override
         public boolean usesBlockLight() {
-            return this.red.dot().usesBlockLight();
+            return this.channelA.dot().usesBlockLight();
         }
 
         @Override
         public boolean isCustomRenderer() {
-            return this.red.dot().isCustomRenderer();
+            return this.channelA.dot().isCustomRenderer();
         }
 
         @Override
         public TextureAtlasSprite getParticleIcon() {
-            return this.red.dot().getParticleIcon();
+            return this.channelA.dot().getParticleIcon();
         }
 
         @Override
         public ItemTransforms getTransforms() {
-            return this.red.dot().getTransforms();
+            return this.channelA.dot().getTransforms();
         }
 
         @Override
         public ItemOverrides getOverrides() {
-            return this.overrides;
+            return this.channelA.dot().getOverrides();
         }
     }
 
