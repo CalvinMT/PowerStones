@@ -53,6 +53,12 @@ public final class MultipleWiresModel implements IUnbakedGeometry<MultipleWiresM
 
     private static final String MOD_ID = "powerstones";
 
+    private enum StraightLineOrientation {
+        NONE,
+        NORTH_SOUTH,
+        EAST_WEST
+    }
+
     private static final List<String> CHANNELS = List.of(
         "multiple_a",
         "multiple_b"
@@ -65,6 +71,8 @@ public final class MultipleWiresModel implements IUnbakedGeometry<MultipleWiresM
             "side1",
             "up",
             "dot_duo",
+            "dot_duo_line0",
+            "dot_duo_line1",
             "side0_duo",
             "side_alt0_duo",
             "side_alt1_duo",
@@ -116,26 +124,30 @@ public final class MultipleWiresModel implements IUnbakedGeometry<MultipleWiresM
 
     private static WireModels bakeWireModels(ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, String channel) {
         return new WireModels(
-                // Straight north-south line.
-                bakeRequired(bakery, spriteGetter, channel, "side0", BlockModelRotation.X0_Y0),
-                bakeRequired(bakery, spriteGetter, channel, "side_alt0", BlockModelRotation.X0_Y0),
+            // Straight north-south line.
+            bakeRequired(bakery, spriteGetter, channel, "side0", BlockModelRotation.X0_Y0),
+            bakeRequired(bakery, spriteGetter, channel, "side_alt0", BlockModelRotation.X0_Y0),
 
-                // Straight east-west line.
-                bakeRequired(bakery, spriteGetter, channel, "side_alt1", BlockModelRotation.X0_Y270),
-                bakeRequired(bakery, spriteGetter, channel, "side1", BlockModelRotation.X0_Y270),
+            // Straight east-west line.
+            bakeRequired(bakery, spriteGetter, channel, "side_alt1", BlockModelRotation.X0_Y270),
+            bakeRequired(bakery, spriteGetter, channel, "side1", BlockModelRotation.X0_Y270),
 
-                // Vertical wall sections.
-                bakeRequired(bakery, spriteGetter, channel, "up", BlockModelRotation.X0_Y0),
-                bakeRequired(bakery, spriteGetter, channel, "up", BlockModelRotation.X0_Y90),
-                bakeRequired(bakery, spriteGetter, channel, "up", BlockModelRotation.X0_Y180),
-                bakeRequired(bakery, spriteGetter, channel, "up", BlockModelRotation.X0_Y270),
+            // Vertical wall sections.
+            bakeRequired(bakery, spriteGetter, channel, "up", BlockModelRotation.X0_Y0),
+            bakeRequired(bakery, spriteGetter, channel, "up", BlockModelRotation.X0_Y90),
+            bakeRequired(bakery, spriteGetter, channel, "up", BlockModelRotation.X0_Y180),
+            bakeRequired(bakery, spriteGetter, channel, "up", BlockModelRotation.X0_Y270),
 
-                // Centre and directional arms.
-                bakeRequired(bakery, spriteGetter, channel, "dot_duo", BlockModelRotation.X0_Y0),
-                bakeRequired(bakery, spriteGetter, channel, "side0_duo", BlockModelRotation.X0_Y0),
-                bakeRequired(bakery, spriteGetter, channel, "side_alt0_duo", BlockModelRotation.X0_Y0),
-                bakeRequired(bakery, spriteGetter, channel, "side_alt1_duo", BlockModelRotation.X0_Y270),
-                bakeRequired(bakery, spriteGetter, channel, "side1_duo", BlockModelRotation.X0_Y270)
+            // Centre dots.
+            bakeRequired(bakery, spriteGetter, channel, "dot_duo", BlockModelRotation.X0_Y0),
+            bakeRequired(bakery, spriteGetter, channel, "dot_duo_line0", BlockModelRotation.X0_Y0),
+            bakeRequired(bakery, spriteGetter, channel, "dot_duo_line1", BlockModelRotation.X0_Y0),
+
+            // Directional arms.
+            bakeRequired(bakery, spriteGetter, channel, "side0_duo", BlockModelRotation.X0_Y0),
+            bakeRequired(bakery, spriteGetter, channel, "side_alt0_duo", BlockModelRotation.X0_Y0),
+            bakeRequired(bakery, spriteGetter, channel, "side_alt1_duo", BlockModelRotation.X0_Y270),
+            bakeRequired(bakery, spriteGetter, channel, "side1_duo", BlockModelRotation.X0_Y270)
         );
     }
 
@@ -164,6 +176,8 @@ public final class MultipleWiresModel implements IUnbakedGeometry<MultipleWiresM
             BakedModel upWest,
 
             BakedModel dot,
+            BakedModel dotLine0,
+            BakedModel dotLine1,
 
             BakedModel armNorth,
             BakedModel armSouth,
@@ -188,7 +202,7 @@ public final class MultipleWiresModel implements IUnbakedGeometry<MultipleWiresM
             // Use the locally calculated render data during that short interval.
             MultipleWiresBlockEntity.RenderData predictedData = MultipleWiresBlockEntity.getPredictedRenderData(pos);
 
-            if (predictedData != null) {
+            if (predictedData != null && predictedData.powerPair() == state.getValue(MultipleWiresBlock.POWER_PAIR)) {
                 return ModelData.builder().with(MultipleWiresBlockEntity.RENDER_DATA, predictedData).build();
             }
 
@@ -215,10 +229,33 @@ public final class MultipleWiresModel implements IUnbakedGeometry<MultipleWiresM
                 data = getFallbackRenderData(state);
             }
 
-            addChannelQuads(quads, state, face, random, renderType, data.northA(), data.eastA(), data.southA(), data.westA(), this.channelA);
-            addChannelQuads(quads, state, face, random, renderType, data.northB(), data.eastB(), data.southB(), data.westB(), this.channelB);
+            WireModels modelsForLogicalA = data.renderChannelsSwapped() ? this.channelB : this.channelA;
+            WireModels modelsForLogicalB = data.renderChannelsSwapped() ? this.channelA : this.channelB;
+
+            StraightLineOrientation logicalAOrientation = getStraightLineOrientation(data.northA(), data.eastA(), data.southA(), data.westA());
+            StraightLineOrientation logicalBOrientation = getStraightLineOrientation(data.northB(), data.eastB(), data.southB(), data.westB());
+
+            addChannelQuads(quads, state, face, random, renderType, data.northA(), data.eastA(), data.southA(), data.westA(), logicalBOrientation, modelsForLogicalA);
+            addChannelQuads(quads, state, face, random, renderType, data.northB(), data.eastB(), data.southB(), data.westB(), logicalAOrientation, modelsForLogicalB);
 
             return quads;
+        }
+
+        private static StraightLineOrientation getStraightLineOrientation(RedstoneSide northConnection, RedstoneSide eastConnection, RedstoneSide southConnection, RedstoneSide westConnection) {
+            boolean north = northConnection.isConnected();
+            boolean east = eastConnection.isConnected();
+            boolean south = southConnection.isConnected();
+            boolean west = westConnection.isConnected();
+
+            if (north && !east && south && !west) {
+                return StraightLineOrientation.NORTH_SOUTH;
+            }
+
+            if (!north && east && !south && west) {
+                return StraightLineOrientation.EAST_WEST;
+            }
+
+            return StraightLineOrientation.NONE;
         }
 
         @Nonnull
@@ -234,36 +271,42 @@ public final class MultipleWiresModel implements IUnbakedGeometry<MultipleWiresM
             RedstoneSide west = state.getValue(PowerstoneWireBlockBase.WEST);
 
             return new MultipleWiresBlockEntity.RenderData(
-                    state.getValue(MultipleWiresBlock.POWER_PAIR),
-                    0,
-                    0,
+                false,
 
-                    north,
-                    east,
-                    south,
-                    west,
+                state.getValue(MultipleWiresBlock.POWER_PAIR),
+                0,
+                0,
 
-                    north,
-                    east,
-                    south,
-                    west
+                north,
+                east,
+                south,
+                west,
+
+                north,
+                east,
+                south,
+                west
             );
         }
 
-        private static void addChannelQuads(List<BakedQuad> quads, BlockState state, @Nullable Direction face, RandomSource random, RenderType renderType, RedstoneSide northConnection, RedstoneSide eastConnection, RedstoneSide southConnection, RedstoneSide westConnection, WireModels models) {
+        private static void addChannelQuads(List<BakedQuad> quads, BlockState state, @Nullable Direction face, RandomSource random, RenderType renderType, RedstoneSide northConnection, RedstoneSide eastConnection, RedstoneSide southConnection, RedstoneSide westConnection, StraightLineOrientation otherChannelOrientation, WireModels models) {
             boolean north = northConnection.isConnected();
             boolean east = eastConnection.isConnected();
             boolean south = southConnection.isConnected();
             boolean west = westConnection.isConnected();
 
+            boolean straightNorthSouth = north && !east && south && !west;
+            boolean straightEastWest = !north && east && !south && west;
+            boolean noConnections = !north && !east && !south && !west;
+
             // Exact north-south straight line.
-            if (north && !east && south && !west) {
+            if (straightNorthSouth) {
                 addModelQuads(quads, models.straightNorthSouthFirst(), state, face, random, renderType);
                 addModelQuads(quads, models.straightNorthSouthSecond(), state, face, random, renderType);
             }
 
             // Exact east-west straight line.
-            if (!north && east && !south && west) {
+            if (straightEastWest) {
                 addModelQuads(quads, models.straightEastWestFirst(), state, face, random, renderType);
                 addModelQuads(quads, models.straightEastWestSecond(), state, face, random, renderType);
             }
@@ -285,19 +328,24 @@ public final class MultipleWiresModel implements IUnbakedGeometry<MultipleWiresM
                 addModelQuads(quads, models.upWest(), state, face, random, renderType);
             }
 
-            // Render a centre dot for:
-            // - an unconnected wire;
-            // - corners;
-            // - T-junctions;
-            // - crosses.
-            boolean renderDot = (!north && !east && !south && !west)
-                    || (north && east)
-                    || (north && west)
-                    || (south && east)
-                    || (south && west);
+            // An unconnected channel uses a direction-specific dot when the
+            // other channel is an exact straight line.
+            if (noConnections) {
+                if (otherChannelOrientation == StraightLineOrientation.NORTH_SOUTH) {
+                    addModelQuads(quads, models.dotLine0(), state, face, random, renderType);
+                } else if (otherChannelOrientation == StraightLineOrientation.EAST_WEST) {
+                    addModelQuads(quads, models.dotLine1(), state, face, random, renderType);
+                } else {
+                    addModelQuads(quads, models.dot(), state, face, random, renderType);
+                }
+            }
+            else {
+                // Corners, T-junctions and crosses use the ordinary centre dot.
+                boolean renderDot = (north && east) || (north && west) || (south && east) || (south && west);
 
-            if (renderDot) {
-                addModelQuads(quads, models.dot(), state, face, random, renderType);
+                if (renderDot) {
+                    addModelQuads(quads, models.dot(), state, face, random, renderType);
+                }
             }
 
             // Render each required arm around the centre.
