@@ -3,8 +3,6 @@ package com.calvinmt.powerstones.client.model;
 import com.calvinmt.powerstones.block.MultipleWiresBlock;
 import com.calvinmt.powerstones.block.MultipleWiresBlockEntity;
 import com.calvinmt.powerstones.block.PowerstoneWireBlockBase;
-import com.calvinmt.powerstones.PowerColour;
-import com.calvinmt.powerstones.PowerPair;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -45,11 +43,9 @@ public final class MultipleWiresModel implements UnbakedModel {
 
     private static final String MOD_ID = "powerstones";
 
-    private static final List<String> COLOURS = List.of(
-            "redstone",
-            "bluestone",
-            "greenstone",
-            "yellowstone"
+    private static final List<String> CHANNELS = List.of(
+        "multiple_a",
+        "multiple_b"
     );
 
     private static final List<String> MODEL_PARTS = List.of(
@@ -72,17 +68,17 @@ public final class MultipleWiresModel implements UnbakedModel {
     private static List<Identifier> createModelDependencies() {
         List<Identifier> dependencies = new ArrayList<>();
 
-        for (String colour : COLOURS) {
+        for (String channel : CHANNELS) {
             for (String part : MODEL_PARTS) {
-                dependencies.add(modelId(colour, part));
+                dependencies.add(modelId(channel, part));
             }
         }
 
         return Collections.unmodifiableList(dependencies);
     }
 
-    private static Identifier modelId(String colour, String part) {
-        return new Identifier(MOD_ID, "block/" + colour + "_dust_" + part);
+    private static Identifier modelId(String channel, String part) {
+        return new Identifier(MOD_ID, "block/" + channel + "_dust_" + part);
     }
 
     @Override
@@ -104,41 +100,39 @@ public final class MultipleWiresModel implements UnbakedModel {
     @Override
     @Nullable
     public BakedModel bake(Baker baker, Function<SpriteIdentifier, Sprite> textureGetter, ModelBakeSettings rotationContainer, Identifier modelId) {
-        WireModels red = bakeWireModels(baker, "redstone");
-        WireModels blue = bakeWireModels(baker, "bluestone");
-        WireModels green = bakeWireModels(baker, "greenstone");
-        WireModels yellow = bakeWireModels(baker, "yellowstone");
+        WireModels channelA = bakeWireModels(baker, "multiple_a");
+        WireModels channelB = bakeWireModels(baker, "multiple_b");
 
-        return new Baked(red, blue, green, yellow);
+        return new Baked(channelA, channelB);
     }
 
-    private static WireModels bakeWireModels(Baker baker, String colour) {
+    private static WireModels bakeWireModels(Baker baker, String channel) {
         return new WireModels(
-                // Straight north-south line.
-                bakeRequired(baker, colour, "side0", ModelRotation.X0_Y0),
-                bakeRequired(baker, colour, "side_alt0", ModelRotation.X0_Y0),
+            // Straight north-south line.
+            bakeRequired(baker, channel, "side0", ModelRotation.X0_Y0),
+            bakeRequired(baker, channel, "side_alt0", ModelRotation.X0_Y0),
 
-                // Straight east-west line.
-                bakeRequired(baker, colour, "side_alt1", ModelRotation.X0_Y270),
-                bakeRequired(baker, colour, "side1", ModelRotation.X0_Y270),
+            // Straight east-west line.
+            bakeRequired(baker, channel, "side_alt1", ModelRotation.X0_Y270),
+            bakeRequired(baker, channel, "side1", ModelRotation.X0_Y270),
 
-                // Vertical wall sections.
-                bakeRequired(baker, colour, "up", ModelRotation.X0_Y0),
-                bakeRequired(baker, colour, "up", ModelRotation.X0_Y90),
-                bakeRequired(baker, colour, "up", ModelRotation.X0_Y180),
-                bakeRequired(baker, colour, "up", ModelRotation.X0_Y270),
+            // Vertical wall sections.
+            bakeRequired(baker, channel, "up", ModelRotation.X0_Y0),
+            bakeRequired(baker, channel, "up", ModelRotation.X0_Y90),
+            bakeRequired(baker, channel, "up", ModelRotation.X0_Y180),
+            bakeRequired(baker, channel, "up", ModelRotation.X0_Y270),
 
-                // Centre and directional arms.
-                bakeRequired(baker, colour, "dot_duo", ModelRotation.X0_Y0),
-                bakeRequired(baker, colour, "side0_duo", ModelRotation.X0_Y0),
-                bakeRequired(baker, colour, "side_alt0_duo", ModelRotation.X0_Y0),
-                bakeRequired(baker, colour, "side_alt1_duo", ModelRotation.X0_Y270),
-                bakeRequired(baker, colour, "side1_duo", ModelRotation.X0_Y270)
+            // Centre and directional arms.
+            bakeRequired(baker, channel, "dot_duo", ModelRotation.X0_Y0),
+            bakeRequired(baker, channel, "side0_duo", ModelRotation.X0_Y0),
+            bakeRequired(baker, channel, "side_alt0_duo", ModelRotation.X0_Y0),
+            bakeRequired(baker, channel, "side_alt1_duo", ModelRotation.X0_Y270),
+            bakeRequired(baker, channel, "side1_duo", ModelRotation.X0_Y270)
         );
     }
 
-    private static BakedModel bakeRequired(Baker baker, String colour, String part, ModelRotation rotation) {
-        Identifier id = modelId(colour, part);
+    private static BakedModel bakeRequired(Baker baker, String channel, String part, ModelRotation rotation) {
+        Identifier id = modelId(channel, part);
 
         BakedModel model = baker.bake(id, rotation);
 
@@ -171,30 +165,17 @@ public final class MultipleWiresModel implements UnbakedModel {
 
     private static final class Baked implements BakedModel {
 
-        private final WireModels red;
-        private final WireModels blue;
-        private final WireModels green;
-        private final WireModels yellow;
+        private final WireModels channelA;
+        private final WireModels channelB;
 
-        private Baked(WireModels red, WireModels blue, WireModels green, WireModels yellow) {
-            this.red = red;
-            this.blue = blue;
-            this.green = green;
-            this.yellow = yellow;
+        private Baked(WireModels channelA, WireModels channelB) {
+            this.channelA = channelA;
+            this.channelB = channelB;
         }
 
         @Override
         public boolean isVanillaAdapter() {
             return false;
-        }
-
-        private WireModels getModelForColour(PowerColour colour) {
-            return switch (colour) {
-                case RED -> this.red;
-                case BLUE -> this.blue;
-                case GREEN -> this.green;
-                case YELLOW -> this.yellow;
-            };
         }
 
         @Override
@@ -210,10 +191,8 @@ public final class MultipleWiresModel implements UnbakedModel {
 
             MultipleWiresBlockEntity.RenderData data = getRenderData(blockView, state, pos);
 
-            PowerPair powerPair = data.powerPair();
-
-            emitChannel(data.northA(), data.eastA(), data.southA(), data.westA(), this.getModelForColour(powerPair.getColourA()), emit);
-            emitChannel(data.northB(), data.eastB(), data.southB(), data.westB(), this.getModelForColour(powerPair.getColourB()), emit);
+            emitChannel(data.northA(), data.eastA(), data.southA(), data.westA(), this.channelA, emit);
+            emitChannel(data.northB(), data.eastB(), data.southB(), data.westB(), this.channelB, emit);
         }
 
         private static MultipleWiresBlockEntity.RenderData getRenderData(BlockRenderView blockView, BlockState state, BlockPos pos) {
@@ -346,37 +325,37 @@ public final class MultipleWiresModel implements UnbakedModel {
 
         @Override
         public boolean useAmbientOcclusion() {
-            return this.red.dot().useAmbientOcclusion();
+            return this.channelA.dot().useAmbientOcclusion();
         }
 
         @Override
         public boolean hasDepth() {
-            return this.red.dot().hasDepth();
+            return this.channelA.dot().hasDepth();
         }
 
         @Override
         public boolean isSideLit() {
-            return this.red.dot().isSideLit();
+            return this.channelA.dot().isSideLit();
         }
 
         @Override
         public boolean isBuiltin() {
-            return this.red.dot().isBuiltin();
+            return this.channelA.dot().isBuiltin();
         }
 
         @Override
         public Sprite getParticleSprite() {
-            return this.red.dot().getParticleSprite();
+            return this.channelA.dot().getParticleSprite();
         }
 
         @Override
         public ModelTransformation getTransformation() {
-            return this.red.dot().getTransformation();
+            return this.channelA.dot().getTransformation();
         }
 
         @Override
         public ModelOverrideList getOverrides() {
-            return this.red.dot().getOverrides();
+            return this.channelA.dot().getOverrides();
         }
 
         /**
@@ -385,8 +364,8 @@ public final class MultipleWiresModel implements UnbakedModel {
          */
         @Override
         public void emitItemQuads(ItemStack stack, Supplier<Random> randomSupplier, RenderContext context) {
-            emit(context, this.red.dot(), null, null, null, randomSupplier);
-            emit(context, this.blue.dot(), null, null, null, randomSupplier);
+            emit(context, this.channelA.dot(), null, null, null, randomSupplier);
+            emit(context, this.channelB.dot(), null, null, null, randomSupplier);
         }
     }
 }
