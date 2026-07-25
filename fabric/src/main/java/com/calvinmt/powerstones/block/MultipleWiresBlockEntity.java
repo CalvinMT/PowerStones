@@ -39,6 +39,15 @@ public class MultipleWiresBlockEntity extends BlockEntity implements RenderAttac
     private static final ThreadLocal<Map<Long, RenderData>> CONVERSION_INITIAL_DATA  = new ThreadLocal<>();
     private boolean suppressUpdatePackets;
 
+    /*
+    * Preserves the visual position of the original single wire when it is
+    * converted into a multiple wire.
+    *
+    * The logical A/B channels are unchanged. This only swaps which channel
+    * is rendered using the A/B model family.
+    */
+    private boolean renderChannelsSwapped = false;
+
     private int powerA = 0;
     private int powerB = 0;
 
@@ -53,6 +62,8 @@ public class MultipleWiresBlockEntity extends BlockEntity implements RenderAttac
     private WireConnection westB = WireConnection.NONE;
 
     public record RenderData(
+            boolean renderChannelsSwapped,
+
             PowerPair powerPair,
             int powerA,
             int powerB,
@@ -129,6 +140,8 @@ public class MultipleWiresBlockEntity extends BlockEntity implements RenderAttac
     }
 
     private void applyRenderData(RenderData data) {
+        this.renderChannelsSwapped = data.renderChannelsSwapped();
+
         this.powerA = data.powerA();
         this.powerB = data.powerB();
 
@@ -156,8 +169,10 @@ public class MultipleWiresBlockEntity extends BlockEntity implements RenderAttac
         PREDICTED_RENDER_DATA.remove(pos.asLong());
     }
 
-    public static RenderData createRenderData(PowerPair powerPair, int powerA, int powerB, BlockState channelAState, BlockState channelBState) {
+    public static RenderData createRenderData(boolean renderChannelsSwapped, PowerPair powerPair, int powerA, int powerB, BlockState channelAState, BlockState channelBState) {
         return new RenderData(
+            renderChannelsSwapped,
+
             powerPair,
             powerA,
             powerB,
@@ -188,19 +203,21 @@ public class MultipleWiresBlockEntity extends BlockEntity implements RenderAttac
 
     private RenderData createRenderData() {
         return new RenderData(
-                this.getCachedState().get(MultipleWiresBlock.POWER_PAIR),
-                this.powerA,
-                this.powerB,
+            this.renderChannelsSwapped,
 
-                this.northA,
-                this.eastA,
-                this.southA,
-                this.westA,
+            this.getCachedState().get(MultipleWiresBlock.POWER_PAIR),
+            this.powerA,
+            this.powerB,
 
-                this.northB,
-                this.eastB,
-                this.southB,
-                this.westB
+            this.northA,
+            this.eastA,
+            this.southA,
+            this.westA,
+
+            this.northB,
+            this.eastB,
+            this.southB,
+            this.westB
         );
     }
 
@@ -243,6 +260,8 @@ public class MultipleWiresBlockEntity extends BlockEntity implements RenderAttac
     protected void writeNbt(NbtCompound nbt) {
         super.writeNbt(nbt);
 
+        nbt.putBoolean("render_channels_swapped", this.renderChannelsSwapped);
+
         nbt.putInt("a", powerA);
         nbt.putInt("b", powerB);
 
@@ -262,16 +281,17 @@ public class MultipleWiresBlockEntity extends BlockEntity implements RenderAttac
         super.readNbt(nbt);
 
         boolean hasCompleteRenderData =
-                nbt.contains("a")
-                && nbt.contains("b")
-                && nbt.contains("north_a")
-                && nbt.contains("east_a")
-                && nbt.contains("south_a")
-                && nbt.contains("west_a")
-                && nbt.contains("north_b")
-                && nbt.contains("east_b")
-                && nbt.contains("south_b")
-                && nbt.contains("west_b");
+            nbt.contains("render_channels_swapped")
+            && nbt.contains("a")
+            && nbt.contains("b")
+            && nbt.contains("north_a")
+            && nbt.contains("east_a")
+            && nbt.contains("south_a")
+            && nbt.contains("west_a")
+            && nbt.contains("north_b")
+            && nbt.contains("east_b")
+            && nbt.contains("south_b")
+            && nbt.contains("west_b");
 
         // Do not overwrite a correct prediction with implicit zero values
         // from an incomplete client-side NBT compound.
@@ -286,6 +306,8 @@ public class MultipleWiresBlockEntity extends BlockEntity implements RenderAttac
                 return;
             }
         }
+
+        this.renderChannelsSwapped = nbt.getBoolean("render_channels_swapped");
 
         this.powerA = nbt.getInt("a");
         this.powerB = nbt.getInt("b");
@@ -314,7 +336,9 @@ public class MultipleWiresBlockEntity extends BlockEntity implements RenderAttac
      * Sets all initial render and power data without sending several incomplete
      * updates to the client.
      */
-    public void setInitialData(int powerA, int powerB, BlockState channelAState, BlockState channelBState) {
+    public void setInitialData(boolean renderChannelsSwapped, int powerA, int powerB, BlockState channelAState, BlockState channelBState) {
+        this.renderChannelsSwapped = renderChannelsSwapped;
+
         this.powerA = powerA;
         this.powerB = powerB;
 
