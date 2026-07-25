@@ -22,6 +22,9 @@ import org.jetbrains.annotations.Nullable;
 
 public class PowerStonesClient implements ClientModInitializer {
 
+    private static final int MULTIPLE_WIRE_TINT_A = 0;
+    private static final int MULTIPLE_WIRE_TINT_B = 1;
+
     @Override
     public void onInitializeClient() {
         this.registerModels();
@@ -97,15 +100,12 @@ public class PowerStonesClient implements ClientModInitializer {
             }
         }
 
-        PowerColour colourA = powerPair.getColourA();
-        PowerColour colourB = powerPair.getColourB();
-
-        if (tintIndex == colourA.getTintIndex()) {
-            return colourA.getWireColour(powerA);
+        if (tintIndex == MULTIPLE_WIRE_TINT_A) {
+            return powerPair.getColourA().getWireColour(powerA);
         }
 
-        if (tintIndex == colourB.getTintIndex()) {
-            return colourB.getWireColour(powerB);
+        if (tintIndex == MULTIPLE_WIRE_TINT_B) {
+            return powerPair.getColourB().getWireColour(powerB);
         }
 
         return PowerColour.WHITE;
