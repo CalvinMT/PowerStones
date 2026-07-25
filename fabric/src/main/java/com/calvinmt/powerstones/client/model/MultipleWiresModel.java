@@ -46,6 +46,12 @@ public final class MultipleWiresModel implements UnbakedModel {
 
     private static final String MOD_ID = "powerstones";
 
+    private enum StraightLineOrientation {
+        NONE,
+        NORTH_SOUTH,
+        EAST_WEST
+    }
+
     private static final List<String> CHANNELS = List.of(
         "multiple_a",
         "multiple_b"
@@ -58,6 +64,8 @@ public final class MultipleWiresModel implements UnbakedModel {
             "side1",
             "up",
             "dot_duo",
+            "dot_duo_line0",
+            "dot_duo_line1",
             "side0_duo",
             "side_alt0_duo",
             "side_alt1_duo",
@@ -129,8 +137,12 @@ public final class MultipleWiresModel implements UnbakedModel {
             bakeRequired(loader, channel, "up", ModelRotation.X0_Y180),
             bakeRequired(loader, channel, "up", ModelRotation.X0_Y270),
 
-            // Centre and directional arms.
+            // Centre dots.
             bakeRequired(loader, channel, "dot_duo", ModelRotation.X0_Y0),
+            bakeRequired(loader, channel, "dot_duo_line0", ModelRotation.X0_Y0),
+            bakeRequired(loader, channel, "dot_duo_line1", ModelRotation.X0_Y0),
+
+            // Directional arms.
             bakeRequired(loader, channel, "side0_duo", ModelRotation.X0_Y0),
             bakeRequired(loader, channel, "side_alt0_duo", ModelRotation.X0_Y0),
             bakeRequired(loader, channel, "side_alt1_duo", ModelRotation.X0_Y270),
@@ -163,6 +175,8 @@ public final class MultipleWiresModel implements UnbakedModel {
             BakedModel upWest,
 
             BakedModel dot,
+            BakedModel dotLine0,
+            BakedModel dotLine1,
 
             BakedModel armNorth,
             BakedModel armSouth,
@@ -189,8 +203,31 @@ public final class MultipleWiresModel implements UnbakedModel {
         public void emitBlockQuads(BlockRenderView blockView, BlockState state, BlockPos pos, Supplier<Random> randomSupplier, RenderContext context) {
             MultipleWiresBlockEntity.RenderData data = getRenderData(blockView, state, pos);
 
-            emitChannel(data.northA(), data.eastA(), data.southA(), data.westA(), this.channelA, context);
-            emitChannel(data.northB(), data.eastB(), data.southB(), data.westB(), this.channelB, context);
+            WireModels modelsForLogicalA = data.renderChannelsSwapped() ? this.channelB : this.channelA;
+            WireModels modelsForLogicalB = data.renderChannelsSwapped() ? this.channelA : this.channelB;
+
+            StraightLineOrientation logicalAOrientation = getStraightLineOrientation(data.northA(), data.eastA(), data.southA(), data.westA());
+            StraightLineOrientation logicalBOrientation = getStraightLineOrientation(data.northB(), data.eastB(), data.southB(), data.westB());
+
+            emitChannel(data.northA(), data.eastA(), data.southA(), data.westA(), logicalBOrientation, modelsForLogicalA, context);
+            emitChannel(data.northB(), data.eastB(), data.southB(), data.westB(), logicalAOrientation, modelsForLogicalB, context);
+        }
+
+        private static StraightLineOrientation getStraightLineOrientation(WireConnection northConnection, WireConnection eastConnection, WireConnection southConnection, WireConnection westConnection) {
+            boolean north = northConnection.isConnected();
+            boolean east = eastConnection.isConnected();
+            boolean south = southConnection.isConnected();
+            boolean west = westConnection.isConnected();
+
+            if (north && !east && south && !west) {
+                return StraightLineOrientation.NORTH_SOUTH;
+            }
+
+            if (!north && east && !south && west) {
+                return StraightLineOrientation.EAST_WEST;
+            }
+
+            return StraightLineOrientation.NONE;
         }
 
         private static MultipleWiresBlockEntity.RenderData getRenderData(BlockRenderView blockView, BlockState state, BlockPos pos) {
@@ -198,7 +235,7 @@ public final class MultipleWiresModel implements UnbakedModel {
             // Use the locally calculated render data during that short interval.
             MultipleWiresBlockEntity.RenderData predictedData = MultipleWiresBlockEntity.getPredictedRenderData(pos);
 
-            if (predictedData != null) {
+            if (predictedData != null && predictedData.powerPair() == state.get(MultipleWiresBlock.POWER_PAIR)) {
                 return predictedData;
             }
 
@@ -224,36 +261,41 @@ public final class MultipleWiresModel implements UnbakedModel {
             WireConnection west = state.get(PowerstoneWireBlockBase.WIRE_CONNECTION_WEST);
 
             return new MultipleWiresBlockEntity.RenderData(
-                    state.get(MultipleWiresBlock.POWER_PAIR),
-                    0,
-                    0,
+                false,
+                state.get(MultipleWiresBlock.POWER_PAIR),
+                0,
+                0,
 
-                    north,
-                    east,
-                    south,
-                    west,
+                north,
+                east,
+                south,
+                west,
 
-                    north,
-                    east,
-                    south,
-                    west
+                north,
+                east,
+                south,
+                west
             );
         }
 
-        private static void emitChannel(WireConnection northConnection, WireConnection eastConnection, WireConnection southConnection, WireConnection westConnection, WireModels models, RenderContext context) {
+        private static void emitChannel(WireConnection northConnection, WireConnection eastConnection, WireConnection southConnection, WireConnection westConnection, StraightLineOrientation otherChannelOrientation, WireModels models, RenderContext context) {
             boolean north = northConnection.isConnected();
             boolean east = eastConnection.isConnected();
             boolean south = southConnection.isConnected();
             boolean west = westConnection.isConnected();
 
+            boolean straightNorthSouth = north && !east && south && !west;
+            boolean straightEastWest = !north && east && !south && west;
+            boolean noConnections = !north && !east && !south && !west;
+
             // Exact north-south straight line.
-            if (north && !east && south && !west) {
+            if (straightNorthSouth) {
                 emit(context, models.straightNorthSouthFirst());
                 emit(context, models.straightNorthSouthSecond());
             }
 
             // Exact east-west straight line.
-            if (!north && east && !south && west) {
+            if (straightEastWest) {
                 emit(context, models.straightEastWestFirst());
                 emit(context, models.straightEastWestSecond());
             }
@@ -275,19 +317,24 @@ public final class MultipleWiresModel implements UnbakedModel {
                 emit(context, models.upWest());
             }
 
-            // Render a centre dot for:
-            // - an unconnected wire;
-            // - corners;
-            // - T-junctions;
-            // - crosses.
-            boolean renderDot = (!north && !east && !south && !west)
-                            || (north && east)
-                            || (north && west)
-                            || (south && east)
-                            || (south && west);
+            // An unconnected channel uses a direction-specific dot when the
+            // other channel is an exact straight line.
+            if (noConnections) {
+                if (otherChannelOrientation == StraightLineOrientation.NORTH_SOUTH) {
+                    emit(context, models.dotLine0());
+                } else if (otherChannelOrientation == StraightLineOrientation.EAST_WEST) {
+                    emit(context, models.dotLine1());
+                } else {
+                    emit(context, models.dot());
+                }
+            }
+            else {
+                // Corners, T-junctions and crosses use the ordinary centre dot.
+                boolean renderDot = (north && east) || (north && west) || (south && east) || (south && west);
 
-            if (renderDot) {
-                emit(context, models.dot());
+                if (renderDot) {
+                    emit(context, models.dot());
+                }
             }
 
             // Render each required arm around the centre.

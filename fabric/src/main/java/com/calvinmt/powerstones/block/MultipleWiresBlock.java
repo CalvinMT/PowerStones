@@ -127,6 +127,13 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Block
         return null;
     }
 
+    private static PowerChannel getSingleWireRenderChannel(PowerColour colour) {
+        return switch (colour) {
+            case RED, GREEN -> PowerChannel.A;
+            case BLUE, YELLOW -> PowerChannel.B;
+        };
+    }
+
     @Override
     public BlockState getPlacementState(ItemPlacementContext context) {
         BlockView world = context.getWorld();
@@ -664,6 +671,8 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Block
 
         PowerPair powerPair = PowerPair.getPairFromColours(existingColour, placedColour);
 
+        boolean renderChannelsSwapped = powerPair.getChannel(existingColour) != getSingleWireRenderChannel(existingColour);
+
         int existingPower = this.getSingleWirePower(singleWireState);
 
         int powerA;
@@ -689,7 +698,7 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Block
             channelBState = singleWireState;
         }
 
-        MultipleWiresBlockEntity.RenderData initialRenderData = MultipleWiresBlockEntity.createRenderData(powerPair, powerA, powerB, channelAState, channelBState);
+        MultipleWiresBlockEntity.RenderData initialRenderData = MultipleWiresBlockEntity.createRenderData(renderChannelsSwapped, powerPair, powerA, powerB, channelAState, channelBState);
 
         // 'onUse' runs on both the client and server.
         // On the client, only store the expected render data.
@@ -752,7 +761,7 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Block
         MultipleWiresBlockEntity multipleWiresBlockEntity = (MultipleWiresBlockEntity) blockEntity;
 
         // Initialise both powers and both independent channel connection states together.
-        multipleWiresBlockEntity.setInitialData(powerA, powerB, channelAState, channelBState);
+        multipleWiresBlockEntity.setInitialData(renderChannelsSwapped, powerA, powerB, channelAState, channelBState);
 
         // Keep the normal wire update process.
         // This updates direct wires, offset wires, power strengths

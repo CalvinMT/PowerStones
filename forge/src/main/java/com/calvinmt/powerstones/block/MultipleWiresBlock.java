@@ -132,6 +132,13 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
         return null;
     }
 
+    private static PowerChannel getSingleWireRenderChannel(PowerColour colour) {
+        return switch (colour) {
+            case RED, GREEN -> PowerChannel.A;
+            case BLUE, YELLOW -> PowerChannel.B;
+        };
+    }
+
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext pContext) {
         Level level = pContext.getLevel();
@@ -581,30 +588,52 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
 
     public static int getColorForTintIndex(BlockState state, BlockGetter level, BlockPos pos, int tintIndex) {
         PowerPair powerPair = state.getValue(POWER_PAIR);
-        int powerA = getPowerA(level, pos);
-        int powerB = getPowerB(level, pos);
 
-        if (level != null && pos != null) {
-            powerA = getPowerA(level, pos);
-            powerB = getPowerB(level, pos);
+        MultipleWiresBlockEntity.RenderData renderData = null;
 
-            // The blockstate packet can arrive before the completed block entity packet.
-            // Use the same prediction as the custom model so powered wires
-            // do not briefly use power level zero during that interval.
+        /*
+        * Use the prediction first so the colour mapping changes at exactly the
+        * same time as the predicted custom model.
+        */
+        if (pos != null) {
             MultipleWiresBlockEntity.RenderData predictedData = MultipleWiresBlockEntity.getPredictedRenderData(pos);
 
             if (predictedData != null && predictedData.powerPair() == powerPair) {
-                powerA = predictedData.powerA();
-                powerB = predictedData.powerB();
+                renderData = predictedData;
             }
         }
 
+        /*
+        * Once the authoritative block entity render attachment is available,
+        * use it instead of the default zero-power fallback.
+        */
+        if (renderData == null && level != null && pos != null) {
+            BlockEntity blockEntity = level.getBlockEntity(pos);
+
+            if (blockEntity instanceof MultipleWiresBlockEntity multipleWiresBlockEntity) {
+                MultipleWiresBlockEntity.RenderData blockEntityData = multipleWiresBlockEntity.getRenderData();
+
+                if (blockEntityData.powerPair() == powerPair) {
+                    renderData = blockEntityData;
+                }
+            }
+        }
+
+        int powerA = renderData == null ? 0 : renderData.powerA();
+        int powerB = renderData == null ? 0 : renderData.powerB();
+
+        boolean renderChannelsSwapped = renderData != null && renderData.renderChannelsSwapped();
+
         if (tintIndex == MULTIPLE_WIRE_TINT_A) {
-            return powerPair.getColourA().getWireColour(powerA);
+            return renderChannelsSwapped
+                ? powerPair.getColourB().getWireColour(powerB)
+                : powerPair.getColourA().getWireColour(powerA);
         }
 
         if (tintIndex == MULTIPLE_WIRE_TINT_B) {
-            return powerPair.getColourB().getWireColour(powerB);
+            return renderChannelsSwapped
+                ? powerPair.getColourA().getWireColour(powerA)
+                : powerPair.getColourB().getWireColour(powerB);
         }
 
         return PowerColour.WHITE;
@@ -689,6 +718,8 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
 
         PowerPair powerPair = PowerPair.getPairFromColours(existingColour, placedColour);
 
+        boolean renderChannelsSwapped = powerPair.getChannel(existingColour) != getSingleWireRenderChannel(existingColour);
+
         int existingPower = this.getSingleWirePower(singleWireState);
 
         int powerA;
@@ -714,7 +745,7 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
             channelBState = singleWireState;
         }
 
-        MultipleWiresBlockEntity.RenderData initialRenderData = MultipleWiresBlockEntity.createRenderData(powerPair, powerA, powerB, channelAState, channelBState);
+        MultipleWiresBlockEntity.RenderData initialRenderData = MultipleWiresBlockEntity.createRenderData(renderChannelsSwapped, powerPair, powerA, powerB, channelAState, channelBState);
 
         // 'onUse' runs on both the client and server.
         // On the client, only store the expected render data.
@@ -777,7 +808,7 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
         MultipleWiresBlockEntity multipleWiresBlockEntity = (MultipleWiresBlockEntity) blockEntity;
 
         // Initialise both powers and both independent channel connection states together.
-        multipleWiresBlockEntity.setInitialData(powerA, powerB, channelAState, channelBState);
+        multipleWiresBlockEntity.setInitialData(renderChannelsSwapped, powerA, powerB, channelAState, channelBState);
 
         // Keep the normal wire update process.
         // This updates direct wires, offset wires, power strengths

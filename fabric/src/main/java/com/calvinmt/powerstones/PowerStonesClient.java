@@ -79,28 +79,54 @@ public class PowerStonesClient implements ClientModInitializer {
 
     private int getMultipleWiresColour(BlockState state, @Nullable BlockRenderView blockRenderView, @Nullable BlockPos pos, int tintIndex) {
         PowerPair powerPair = state.get(MultipleWiresBlock.POWER_PAIR);
-        int powerA = 0;
-        int powerB = 0;
 
-        if (blockRenderView instanceof RenderAttachedBlockView && pos != null) {
-            RenderAttachedBlockView attachedView = (RenderAttachedBlockView) blockRenderView;
-            Object attachment = attachedView.getBlockEntityRenderAttachment(pos);
+        MultipleWiresBlockEntity.RenderData renderData = null;
 
-            if (attachment instanceof MultipleWiresBlockEntity.RenderData) {
-                MultipleWiresBlockEntity.RenderData data = (MultipleWiresBlockEntity.RenderData) attachment;
+        /*
+        * Use the prediction first so the colour mapping changes at exactly the
+        * same time as the predicted custom model.
+        */
+        if (pos != null) {
+            MultipleWiresBlockEntity.RenderData predictedData = MultipleWiresBlockEntity.getPredictedRenderData(pos);
 
-                powerPair = data.powerPair();
-                powerA = data.powerA();
-                powerB = data.powerB();
+            if (predictedData != null && predictedData.powerPair() == powerPair) {
+                renderData = predictedData;
             }
         }
 
+        /*
+        * Once the authoritative block entity render attachment is available,
+        * use it instead of the default zero-power fallback.
+        */
+        if (renderData == null && blockRenderView instanceof RenderAttachedBlockView && pos != null) {
+            RenderAttachedBlockView attachedView = (RenderAttachedBlockView) blockRenderView;
+
+            Object attachment = attachedView.getBlockEntityRenderAttachment(pos);
+
+            if (attachment instanceof MultipleWiresBlockEntity.RenderData) {
+                MultipleWiresBlockEntity.RenderData attachedData = (MultipleWiresBlockEntity.RenderData) attachment;
+
+                if (attachedData.powerPair() == powerPair) {
+                    renderData = attachedData;
+                }
+            }
+        }
+
+        int powerA = renderData == null ? 0 : renderData.powerA();
+        int powerB = renderData == null ? 0 : renderData.powerB();
+
+        boolean renderChannelsSwapped = renderData != null && renderData.renderChannelsSwapped();
+
         if (tintIndex == MULTIPLE_WIRE_TINT_A) {
-            return powerPair.getColourA().getWireColour(powerA);
+            return renderChannelsSwapped 
+                ? powerPair.getColourB().getWireColour(powerB)
+                : powerPair.getColourA().getWireColour(powerA);
         }
 
         if (tintIndex == MULTIPLE_WIRE_TINT_B) {
-            return powerPair.getColourB().getWireColour(powerB);
+            return renderChannelsSwapped
+                ? powerPair.getColourA().getWireColour(powerA)
+                : powerPair.getColourB().getWireColour(powerB);
         }
 
         return PowerColour.WHITE;
