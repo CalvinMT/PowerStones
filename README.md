@@ -1,7 +1,10 @@
-# PowerStones
+# <img src="./icons/icon_4.0.0_64x64.png"> PowerStones
+
 Minecraft mod with overlapping wires of Redstone, Bluestone, Greenstone and Yellowstone
 
-<img src="./docs/images/preview_0.png">
+<img src="./docs/images/1.0.0/preview_0.png">
+
+Copyright (c) 2023-2026 CalvinMT
 
 ## Modding platforms
 
@@ -28,6 +31,14 @@ If there is a mod that you like which seems incompatible with PowerStones, pleas
 
 ## Features
 
+### Functionalities
+
+ - Four independent wire colours are available: **Redstone**, **Bluestone**, **Greenstone**, and **Yellowstone**, each carrying its own separate power signal.
+ - Powerstone wires can **overlap in pairs**, allowing two independent wire colours to occupy the same block **without interfering** with each other.
+ - Each wire colour **only connects** to and receives power from wires, blocks, torches, repeaters, comparators, and other redstone components **of the same colour**.
+ - **Redstone Repeaters** can **transfer power** from one wire colour to another, allowing controlled interaction between otherwise independent circuits.
+ - Breaking a wire while **holding a powerstone dust item** only removes wire channels matching the colour of the item held, making it easy to edit overlapping wires without disturbing the other channel.
+
 ### Blocks and items
 
 | Name              | Image | Crafting recipes |
@@ -42,12 +53,6 @@ If there is a mod that you like which seems incompatible with PowerStones, pleas
 | Bluestone Torch   | <img src="./docs/bluestone_torch.png" style="image-rendering: pixelated;"> | <img src="./docs/bluestone_torch_from_bluestone.png" style="image-rendering: pixelated;">
 | Greenstone Torch  | <img src="./docs/greenstone_torch.png" style="image-rendering: pixelated;"> | <img src="./docs/greenstone_torch_from_greenstone.png" style="image-rendering: pixelated;">
 | Yellowstone Torch | <img src="./docs/yellowstone_torch.png" style="image-rendering: pixelated;"> | <img src="./docs/yellowstone_torch_from_yellowstone.png" style="image-rendering: pixelated;">
-
-### Functionalities
-
- - Powerstone wires are overlappable by pairs. Redstone and Bluestone wires can overlap each other. Similarly, Greenstone and Yellowstone wires can overlap each other as well.
- - Hitting powerstone wires while holding a powerstone wire item will only break equally coloured powerstone wires than the one held in the main hand.
- - Powerstone blocks and powerstone torches only give power to powerstone wires of the same colour.
 
 ## Implementation process and limitations
 
@@ -93,3 +98,11 @@ Bug fixes, small compatibility fixes, and well-scoped improvements are generally
 
 [CalvinMT]: https://github.com/CalvinMT
 [AtronixMH48]: https://github.com/MokkaHornisse48
+
+## Licence
+
+PowerStones is licensed under the Mozilla Public License Version 2.0.
+
+If you reuse or modify this project, you must retain the required copyright and licence notices in accordance with the Mozilla Public License 2.0.
+
+If you create a project based on PowerStones, a visible acknowledgement of PowerStones and a link back to the original repository are greatly appreciated.
