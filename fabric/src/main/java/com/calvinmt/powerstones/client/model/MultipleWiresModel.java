@@ -6,8 +6,8 @@ import com.calvinmt.powerstones.block.PowerstoneWireBlockBase;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.blockview.v2.FabricBlockView;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
-import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachedBlockView;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.enums.WireConnection;
 import net.minecraft.client.render.model.BakedModel;
@@ -241,10 +241,10 @@ public final class MultipleWiresModel implements UnbakedModel {
                 return predictedData;
             }
 
-            if (blockView instanceof RenderAttachedBlockView) {
-                RenderAttachedBlockView attachedView = (RenderAttachedBlockView) blockView;
+            if (blockView instanceof FabricBlockView) {
+                FabricBlockView attachedView = (FabricBlockView) blockView;
 
-                Object attachment = attachedView.getBlockEntityRenderAttachment(pos);
+                Object attachment = attachedView.getBlockEntityRenderData(pos);
 
                 if (attachment instanceof MultipleWiresBlockEntity.RenderData) {
                     return (MultipleWiresBlockEntity.RenderData) attachment;

@@ -30,17 +30,14 @@ import net.minecraft.world.item.StandingAndWallBlockItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.level.material.Material;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.CreativeModeTabEvent;
+import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -76,9 +73,9 @@ public class PowerStones {
     public static final RegistryObject<Block> BLUESTONE_WALL_TORCH = BLOCKS.register("bluestone_wall_torch", () -> new BluestoneWallTorchBlock(BlockBehaviour.Properties.copy(Blocks.REDSTONE_WALL_TORCH)));
     public static final RegistryObject<Block> GREENSTONE_WALL_TORCH = BLOCKS.register("greenstone_wall_torch", () -> new GreenstoneWallTorchBlock(BlockBehaviour.Properties.copy(Blocks.REDSTONE_WALL_TORCH)));
     public static final RegistryObject<Block> YELLOWSTONE_WALL_TORCH = BLOCKS.register("yellowstone_wall_torch", () -> new YellowstoneWallTorchBlock(BlockBehaviour.Properties.copy(Blocks.REDSTONE_WALL_TORCH)));
-    public static final RegistryObject<Block> BLUESTONE_BLOCK = BLOCKS.register("bluestone_block", () -> new BluestoneBlock(BlockBehaviour.Properties.of(Material.METAL).requiresCorrectToolForDrops().strength(5.0f, 6.0f).sound(SoundType.METAL)));
-    public static final RegistryObject<Block> GREENSTONE_BLOCK = BLOCKS.register("greenstone_block", () -> new GreenstoneBlock(BlockBehaviour.Properties.of(Material.METAL).requiresCorrectToolForDrops().strength(5.0f, 6.0f).sound(SoundType.METAL)));
-    public static final RegistryObject<Block> YELLOWSTONE_BLOCK = BLOCKS.register("yellowstone_block", () -> new YellowstoneBlock(BlockBehaviour.Properties.of(Material.METAL).requiresCorrectToolForDrops().strength(5.0f, 6.0f).sound(SoundType.METAL)));
+    public static final RegistryObject<Block> BLUESTONE_BLOCK = BLOCKS.register("bluestone_block", () -> new BluestoneBlock(BlockBehaviour.Properties.copy(Blocks.REDSTONE_BLOCK)));
+    public static final RegistryObject<Block> GREENSTONE_BLOCK = BLOCKS.register("greenstone_block", () -> new GreenstoneBlock(BlockBehaviour.Properties.copy(Blocks.REDSTONE_BLOCK)));
+    public static final RegistryObject<Block> YELLOWSTONE_BLOCK = BLOCKS.register("yellowstone_block", () -> new YellowstoneBlock(BlockBehaviour.Properties.copy(Blocks.REDSTONE_BLOCK)));
 
     public static final RegistryObject<BlockEntityType<MultipleWiresBlockEntity>> MULTIPLE_WIRES_BE_TYPE = BLOCKENTITIES.register("multiple_wires_be", () -> BlockEntityType.Builder.of(MultipleWiresBlockEntity::new, MULTIPLE_WIRES.get()).build(null));
 
@@ -92,34 +89,32 @@ public class PowerStones {
     public static final RegistryObject<BlockItem> GREENSTONE_BLOCK_ITEM = ITEMS.register("greenstone_block", () -> new BlockItem(GREENSTONE_BLOCK.get(), new Item.Properties()));
     public static final RegistryObject<BlockItem> YELLOWSTONE_BLOCK_ITEM = ITEMS.register("yellowstone_block", () -> new BlockItem(YELLOWSTONE_BLOCK.get(), new Item.Properties()));
 
-    public PowerStones() {
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-        modEventBus.addListener(this::commonSetup);
+    public PowerStones(FMLJavaModLoadingContext context) {
+        IEventBus modEventBus = context.getModEventBus();
 
-        MinecraftForge.EVENT_BUS.register(this);
+        modEventBus.addListener(this::commonSetup);
+        modEventBus.addListener(this::addCreative);
 
         BLOCKS.register(modEventBus);
         BLOCKENTITIES.register(modEventBus);
         ITEMS.register(modEventBus);
-
-        modEventBus.addListener(this::addCreative);
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
         // Do nothing
     }
 
-    private void addCreative(CreativeModeTabEvent.BuildContents event) {
-        if (event.getTab() == CreativeModeTabs.REDSTONE_BLOCKS) {
+    private void addCreative(BuildCreativeModeTabContentsEvent event) {
+        if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {
             event.accept(BLUESTONE);
             event.accept(GREENSTONE);
             event.accept(YELLOWSTONE);
-            event.accept(BLUESTONE_TORCH_BLOCK);
-            event.accept(GREENSTONE_TORCH_BLOCK);
-            event.accept(YELLOWSTONE_TORCH_BLOCK);
-            event.accept(BLUESTONE_BLOCK);
-            event.accept(GREENSTONE_BLOCK);
-            event.accept(YELLOWSTONE_BLOCK);
+            event.accept(BLUESTONE_TORCH);
+            event.accept(GREENSTONE_TORCH);
+            event.accept(YELLOWSTONE_TORCH);
+            event.accept(BLUESTONE_BLOCK_ITEM);
+            event.accept(GREENSTONE_BLOCK_ITEM);
+            event.accept(YELLOWSTONE_BLOCK_ITEM);
         }
     }
 

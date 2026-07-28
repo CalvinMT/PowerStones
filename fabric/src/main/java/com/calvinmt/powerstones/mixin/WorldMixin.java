@@ -1,7 +1,7 @@
 package com.calvinmt.powerstones.mixin;
 
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 
 import com.calvinmt.powerstones.AbstractBlockStateInterface;
 import com.calvinmt.powerstones.WorldInterface;
@@ -10,24 +10,14 @@ import com.calvinmt.powerstones.WorldViewInterface;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.world.RedstoneView;
 import net.minecraft.world.World;
 
 @Mixin(World.class)
-public abstract class WorldMixin implements WorldInterface {
+public abstract class WorldMixin implements WorldInterface, RedstoneView {
 
-    @Shadow
+    @Unique
     private static final Direction[] DIRECTIONS = Direction.values();
-
-    @Shadow
-    public abstract BlockState getBlockState(BlockPos pos);
-    @Shadow
-    public abstract boolean isEmittingRedstonePower(BlockPos pos, Direction direction);
-    @Shadow
-    public abstract int getEmittedRedstonePower(BlockPos pos, Direction direction);
-    @Shadow
-    public abstract boolean isReceivingRedstonePower(BlockPos pos);
-    @Shadow
-    public abstract int getReceivedRedstonePower(BlockPos pos);
 
     @FunctionalInterface
     private interface BlockStatePowerFunction {

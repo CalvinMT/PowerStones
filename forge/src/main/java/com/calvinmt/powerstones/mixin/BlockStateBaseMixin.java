@@ -10,9 +10,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
-@Mixin(targets = "net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase")
+@Mixin(BlockBehaviour.BlockStateBase.class)
 public abstract class BlockStateBaseMixin implements BlockStateBaseInterface {
 
     @Shadow

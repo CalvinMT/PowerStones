@@ -10,9 +10,9 @@ import com.calvinmt.powerstones.client.model.MultipleWiresModel;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
+import net.fabricmc.fabric.api.blockview.v2.FabricBlockView;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
-import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachedBlockView;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.util.Identifier;
@@ -102,10 +102,10 @@ public class PowerStonesClient implements ClientModInitializer {
         * Once the authoritative block entity render attachment is available,
         * use it instead of the default zero-power fallback.
         */
-        if (renderData == null && blockRenderView instanceof RenderAttachedBlockView && pos != null) {
-            RenderAttachedBlockView attachedView = (RenderAttachedBlockView) blockRenderView;
+        if (renderData == null && blockRenderView instanceof FabricBlockView && pos != null) {
+            FabricBlockView attachedView = (FabricBlockView) blockRenderView;
 
-            Object attachment = attachedView.getBlockEntityRenderAttachment(pos);
+            Object attachment = attachedView.getBlockEntityRenderData(pos);
 
             if (attachment instanceof MultipleWiresBlockEntity.RenderData) {
                 MultipleWiresBlockEntity.RenderData attachedData = (MultipleWiresBlockEntity.RenderData) attachment;

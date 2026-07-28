@@ -92,7 +92,7 @@ public final class MultipleWiresModel implements IUnbakedGeometry<MultipleWiresM
     }
 
     private static ResourceLocation modelId(String channel, String part) {
-        return new ResourceLocation(MOD_ID, "block/" + channel + "_dust_" + part);
+        return ResourceLocation.fromNamespaceAndPath(MOD_ID, "block/" + channel + "_dust_" + part);
     }
 
     @Override

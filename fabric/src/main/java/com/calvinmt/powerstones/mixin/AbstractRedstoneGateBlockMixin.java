@@ -1,7 +1,6 @@
 package com.calvinmt.powerstones.mixin;
 
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -11,20 +10,20 @@ import com.calvinmt.powerstones.PowerStones;
 import com.calvinmt.powerstones.WorldInterface;
 import com.calvinmt.powerstones.block.MultipleWiresBlock;
 import com.calvinmt.powerstones.block.PowerstoneWireBlock;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 
 import net.minecraft.block.AbstractRedstoneGateBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.HorizontalFacingBlock;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.world.RedstoneView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldView;
 
 @Mixin(AbstractRedstoneGateBlock.class)
 public abstract class AbstractRedstoneGateBlockMixin extends HorizontalFacingBlock {
-
-    @Shadow
-    protected abstract boolean isValidInput(BlockState state);
 
     protected AbstractRedstoneGateBlockMixin(Settings settings) {
         super(settings);
@@ -50,25 +49,35 @@ public abstract class AbstractRedstoneGateBlockMixin extends HorizontalFacingBlo
         callbackInfo.setReturnValue(Math.max(callbackInfo.getReturnValue(), power));
     }
 
-    @Inject(method = "getInputLevel(Lnet/minecraft/world/WorldView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;)I", at = @At("HEAD"), cancellable = true)
-    public void getInputLevelConditions(WorldView world, BlockPos pos, Direction dir, CallbackInfoReturnable<Integer> callbackInfo) {
-        BlockState blockState = world.getBlockState(pos);
-        if (this.isValidInput(blockState)) {
-            if (blockState.isOf(PowerStones.BLUESTONE_BLOCK) || blockState.isOf(PowerStones.GREENSTONE_BLOCK) || blockState.isOf(PowerStones.YELLOWSTONE_BLOCK)) {
-                callbackInfo.setReturnValue(15);
-            }
-            else if (blockState.isOf(PowerStones.BLUESTONE_WIRE) || blockState.isOf(PowerStones.GREENSTONE_WIRE) || blockState.isOf(PowerStones.YELLOWSTONE_WIRE)) {
-                callbackInfo.setReturnValue(blockState.get(PowerstoneWireBlock.POWER));
-            }
-            else if (blockState.isOf(PowerStones.MULTIPLE_WIRES)) {
-                callbackInfo.setReturnValue(Math.max(MultipleWiresBlock.getPowerA(world, pos), MultipleWiresBlock.getPowerB(world, pos)));
-            }
-        }
-    }
+    @WrapOperation(method = "getMaxInputLevelSides(Lnet/minecraft/world/RedstoneView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)I", at = @At( value = "INVOKE", target = "Lnet/minecraft/world/RedstoneView;getEmittedRedstonePower(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;Z)I" ))
+    public int includeColouredSideInput(RedstoneView world, BlockPos pos, Direction dir, boolean onlyFromGate, Operation<Integer> original) {
+        int power = original.call(world, pos, dir, onlyFromGate);
 
-    @Redirect(method = "getInputLevel(Lnet/minecraft/world/WorldView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;)I", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/WorldView;getStrongRedstonePower(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/math/Direction;)I"))
-    public int getInputLevelGetStrongPower(WorldView world, BlockPos pos, Direction direction) {
-        return Math.max(world.getStrongRedstonePower(pos, direction), Math.max(world.getStrongBluestonePower(pos, direction), Math.max(world.getStrongGreenstonePower(pos, direction), world.getStrongYellowstonePower(pos, direction))));
+        // Repeaters only accept side input from other diode blocks.
+        // Do not allow coloured dust or power blocks to bypass that rule.
+        if (onlyFromGate) {
+            return power;
+        }
+
+        BlockState state = world.getBlockState(pos);
+        int colouredPower = 0;
+
+        if (state.isOf(PowerStones.BLUESTONE_BLOCK) || state.isOf(PowerStones.GREENSTONE_BLOCK) || state.isOf(PowerStones.YELLOWSTONE_BLOCK)) {
+            colouredPower = 15;
+        }
+        else if (state.isOf(PowerStones.BLUESTONE_WIRE) || state.isOf(PowerStones.GREENSTONE_WIRE) || state.isOf(PowerStones.YELLOWSTONE_WIRE)) {
+            colouredPower = state.get(PowerstoneWireBlock.POWER);
+        }
+        else if (state.isOf(PowerStones.MULTIPLE_WIRES)) {
+            WorldView worldView = (WorldView) world;
+            colouredPower = Math.max(MultipleWiresBlock.getPowerA(worldView, pos), MultipleWiresBlock.getPowerB(worldView, pos));
+        }
+
+        if (world instanceof WorldInterface powerWorld) {
+            colouredPower = Math.max(colouredPower, powerWorld.getMaxPower(pos, dir));
+        }
+
+        return Math.max(power, colouredPower);
     }
 
 }

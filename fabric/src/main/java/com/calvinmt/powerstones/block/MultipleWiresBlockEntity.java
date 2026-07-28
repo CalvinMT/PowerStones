@@ -18,9 +18,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.util.math.BlockPos;
 
-import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;
-
-public class MultipleWiresBlockEntity extends BlockEntity implements RenderAttachmentBlockEntity {
+public class MultipleWiresBlockEntity extends BlockEntity {
 
     /*
     * Holds the expected render data between the player's interaction and the
@@ -197,7 +195,7 @@ public class MultipleWiresBlockEntity extends BlockEntity implements RenderAttac
     }
 
     @Override
-    public @Nullable Object getRenderAttachmentData() {
+    public @Nullable Object getRenderData() {
         return this.createRenderData();
     }
 

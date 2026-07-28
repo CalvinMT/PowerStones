@@ -1,31 +1,22 @@
 package com.calvinmt.powerstones.mixin;
 
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
+
 import com.calvinmt.powerstones.BlockStateBaseInterface;
 import com.calvinmt.powerstones.LevelInterface;
 import com.calvinmt.powerstones.LevelReaderInterface;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.SignalGetter;
 import net.minecraft.world.level.block.state.BlockState;
 
 @Mixin(Level.class)
-public abstract class LevelMixin implements LevelInterface {
+public abstract class LevelMixin implements LevelInterface, SignalGetter {
 
-    @Shadow
+    @Unique
     private static final Direction[] DIRECTIONS = Direction.values();
-
-    @Shadow
-    public abstract BlockState getBlockState(BlockPos pos);
-    @Shadow
-    public abstract boolean hasSignal(BlockPos pos, Direction direction);
-    @Shadow
-    public abstract int getSignal(BlockPos pos, Direction direction);
-    @Shadow
-    public abstract boolean hasNeighborSignal(BlockPos pos);
-    @Shadow
-    public abstract int getBestNeighborSignal(BlockPos pos);
 
     @FunctionalInterface
     private interface BlockStateSignalFunction {
