@@ -17,7 +17,7 @@ Mods needed to be installed in order for PowerStones to function correctly:
 
 | Mod           | Version          | Reason |
 | ------------- | ---------------- | ------ |
-| [Fabric API]  | >=0.75.3+1.19.4  | Essential for Fabric mods to work. |
+| [Fabric API]  | >=0.116.15+1.21.1  | Essential for Fabric mods to work. |
 
 [Fabric API]: https://modrinth.com/mod/fabric-api
 
