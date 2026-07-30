@@ -34,7 +34,7 @@ public class PowerStonesClient implements ClientModInitializer {
     }
 
     private void registerModels() {
-        Identifier multipleWiresModelId = new Identifier(PowerStones.NAMESPACE, "block/multiple_wires");
+        Identifier multipleWiresModelId = Identifier.of(PowerStones.NAMESPACE, "block/multiple_wires");
 
         ModelLoadingPlugin.register(pluginContext ->
             pluginContext.resolveModel().register(context -> {

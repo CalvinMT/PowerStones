@@ -15,6 +15,7 @@ import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
@@ -45,13 +46,19 @@ extends YellowstoneTorchBlock {
     }
 
     @Override
-    public boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
-        return Blocks.WALL_TORCH.canPlaceAt(state, world, pos);
+    protected boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
+        return Blocks.WALL_TORCH.getDefaultState().with(FACING, state.get(FACING)).canPlaceAt(world, pos);
     }
 
     @Override
     public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
-        return Blocks.WALL_TORCH.getStateForNeighborUpdate(state, direction, neighborState, world, pos, neighborPos);
+        Direction supportDirection = state.get(FACING).getOpposite();
+
+        if (direction == supportDirection && !state.canPlaceAt(world, pos)) {
+            return Blocks.AIR.getDefaultState();
+        }
+
+        return state;
     }
 
     @Override
@@ -62,15 +69,14 @@ extends YellowstoneTorchBlock {
     }
 
     @Override
-    public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
-        if (!state.get(LIT).booleanValue()) {
-            return;
-        }
+    protected Vec3d getParticlePosition(BlockState state, BlockPos pos, Random random) {
         Direction direction = state.get(FACING).getOpposite();
-        double e = (double)pos.getX() + 0.5 + (random.nextDouble() - 0.5) * 0.2 + 0.27 * (double)direction.getOffsetX();
-        double f = (double)pos.getY() + 0.7 + (random.nextDouble() - 0.5) * 0.2 + 0.22;
-        double g = (double)pos.getZ() + 0.5 + (random.nextDouble() - 0.5) * 0.2 + 0.27 * (double)direction.getOffsetZ();
-        world.addParticle(this.particle, e, f, g, 0.0, 0.0, 0.0);
+
+        return new Vec3d(
+            pos.getX() + 0.5 + (random.nextDouble() - 0.5) * 0.2 + 0.27 * direction.getOffsetX(),
+            pos.getY() + 0.7 + (random.nextDouble() - 0.5) * 0.2 + 0.22,
+            pos.getZ() + 0.5 + (random.nextDouble() - 0.5) * 0.2 + 0.27 * direction.getOffsetZ()
+        );
     }
 
     @Override
@@ -89,12 +95,12 @@ extends YellowstoneTorchBlock {
 
     @Override
     public BlockState rotate(BlockState state, BlockRotation rotation) {
-        return Blocks.WALL_TORCH.rotate(state, rotation);
+        return state.with(FACING, rotation.rotate(state.get(FACING)));
     }
 
     @Override
     public BlockState mirror(BlockState state, BlockMirror mirror) {
-        return Blocks.WALL_TORCH.mirror(state, mirror);
+        return state.rotate(mirror.getRotation(state.get(FACING)));
     }
 
     @Override

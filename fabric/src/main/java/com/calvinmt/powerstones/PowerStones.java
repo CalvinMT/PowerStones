@@ -2,10 +2,8 @@ package com.calvinmt.powerstones;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
-import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
-import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -13,6 +11,7 @@ import net.minecraft.block.MapColor;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.AliasedBlockItem;
 import net.minecraft.item.BlockItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -51,31 +50,31 @@ public class PowerStones implements ModInitializer   {
 
     public static final EnumProperty<PowerPair> POWER_PAIR = EnumProperty.of("power_pair", PowerPair.class);
 
-	public static final Block BLUESTONE_WIRE = new BluestoneWireBlock(FabricBlockSettings.copy(Blocks.REDSTONE_WIRE));
-	public static final Block GREENSTONE_WIRE = new GreenstoneWireBlock(FabricBlockSettings.copy(Blocks.REDSTONE_WIRE));
-	public static final Block YELLOWSTONE_WIRE = new YellowstoneWireBlock(FabricBlockSettings.copy(Blocks.REDSTONE_WIRE));
-	public static final Block MULTIPLE_WIRES = new MultipleWiresBlock(FabricBlockSettings.copy(Blocks.REDSTONE_WIRE));
-	public static final Block BLUESTONE_TORCH_BLOCK = new BluestoneTorchBlock(FabricBlockSettings.copy(Blocks.REDSTONE_TORCH));
-	public static final Block GREENSTONE_TORCH_BLOCK = new GreenstoneTorchBlock(FabricBlockSettings.copy(Blocks.REDSTONE_TORCH));
-	public static final Block YELLOWSTONE_TORCH_BLOCK = new YellowstoneTorchBlock(FabricBlockSettings.copy(Blocks.REDSTONE_TORCH));
-	public static final Block BLUESTONE_WALL_TORCH = new WallBluestoneTorchBlock(FabricBlockSettings.copy(Blocks.REDSTONE_WALL_TORCH));
-	public static final Block GREENSTONE_WALL_TORCH = new WallGreenstoneTorchBlock(FabricBlockSettings.copy(Blocks.REDSTONE_WALL_TORCH));
-	public static final Block YELLOWSTONE_WALL_TORCH = new WallYellowstoneTorchBlock(FabricBlockSettings.copy(Blocks.REDSTONE_WALL_TORCH));
-	public static final Block BLUESTONE_BLOCK = new BluestoneBlock(FabricBlockSettings.create().mapColor(MapColor.LAPIS_BLUE).requiresTool().strength(5.0f, 6.0f).sounds(BlockSoundGroup.METAL));
-	public static final Block GREENSTONE_BLOCK = new GreenstoneBlock(FabricBlockSettings.create().mapColor(MapColor.EMERALD_GREEN).requiresTool().strength(5.0f, 6.0f).sounds(BlockSoundGroup.METAL));
-	public static final Block YELLOWSTONE_BLOCK = new YellowstoneBlock(FabricBlockSettings.create().mapColor(MapColor.PALE_YELLOW).requiresTool().strength(5.0f, 6.0f).sounds(BlockSoundGroup.METAL));
+	public static final Block BLUESTONE_WIRE = new BluestoneWireBlock(AbstractBlock.Settings.copy(Blocks.REDSTONE_WIRE));
+	public static final Block GREENSTONE_WIRE = new GreenstoneWireBlock(AbstractBlock.Settings.copy(Blocks.REDSTONE_WIRE));
+	public static final Block YELLOWSTONE_WIRE = new YellowstoneWireBlock(AbstractBlock.Settings.copy(Blocks.REDSTONE_WIRE));
+	public static final Block MULTIPLE_WIRES = new MultipleWiresBlock(AbstractBlock.Settings.copy(Blocks.REDSTONE_WIRE));
+	public static final Block BLUESTONE_TORCH_BLOCK = new BluestoneTorchBlock(AbstractBlock.Settings.copy(Blocks.REDSTONE_TORCH));
+	public static final Block GREENSTONE_TORCH_BLOCK = new GreenstoneTorchBlock(AbstractBlock.Settings.copy(Blocks.REDSTONE_TORCH));
+	public static final Block YELLOWSTONE_TORCH_BLOCK = new YellowstoneTorchBlock(AbstractBlock.Settings.copy(Blocks.REDSTONE_TORCH));
+	public static final Block BLUESTONE_WALL_TORCH = new WallBluestoneTorchBlock(AbstractBlock.Settings.copy(Blocks.REDSTONE_WALL_TORCH));
+	public static final Block GREENSTONE_WALL_TORCH = new WallGreenstoneTorchBlock(AbstractBlock.Settings.copy(Blocks.REDSTONE_WALL_TORCH));
+	public static final Block YELLOWSTONE_WALL_TORCH = new WallYellowstoneTorchBlock(AbstractBlock.Settings.copy(Blocks.REDSTONE_WALL_TORCH));
+	public static final Block BLUESTONE_BLOCK = new BluestoneBlock(AbstractBlock.Settings.create().mapColor(MapColor.LAPIS_BLUE).requiresTool().strength(5.0f, 6.0f).sounds(BlockSoundGroup.METAL));
+	public static final Block GREENSTONE_BLOCK = new GreenstoneBlock(AbstractBlock.Settings.create().mapColor(MapColor.EMERALD_GREEN).requiresTool().strength(5.0f, 6.0f).sounds(BlockSoundGroup.METAL));
+	public static final Block YELLOWSTONE_BLOCK = new YellowstoneBlock(AbstractBlock.Settings.create().mapColor(MapColor.PALE_YELLOW).requiresTool().strength(5.0f, 6.0f).sounds(BlockSoundGroup.METAL));
 
-	public static final BlockEntityType<MultipleWiresBlockEntity> MULTIPLE_WIRES_BE_TYPE = FabricBlockEntityTypeBuilder.create(MultipleWiresBlockEntity::new, MULTIPLE_WIRES).build();
+	public static final BlockEntityType<MultipleWiresBlockEntity> MULTIPLE_WIRES_BE_TYPE = BlockEntityType.Builder.create(MultipleWiresBlockEntity::new, MULTIPLE_WIRES).build();
 
-	public static final BlockItem BLUESTONE = new AliasedBlockItem(BLUESTONE_WIRE, new FabricItemSettings());
-	public static final BlockItem GREENSTONE = new AliasedBlockItem(GREENSTONE_WIRE, new FabricItemSettings());
-	public static final BlockItem YELLOWSTONE = new AliasedBlockItem(YELLOWSTONE_WIRE, new FabricItemSettings());
-	public static final BlockItem BLUESTONE_TORCH = new VerticallyAttachableBlockItem(BLUESTONE_TORCH_BLOCK, BLUESTONE_WALL_TORCH, new FabricItemSettings(), Direction.DOWN);
-	public static final BlockItem GREENSTONE_TORCH = new VerticallyAttachableBlockItem(GREENSTONE_TORCH_BLOCK, GREENSTONE_WALL_TORCH, new FabricItemSettings(), Direction.DOWN);
-	public static final BlockItem YELLOWSTONE_TORCH = new VerticallyAttachableBlockItem(YELLOWSTONE_TORCH_BLOCK, YELLOWSTONE_WALL_TORCH, new FabricItemSettings(), Direction.DOWN);
-	public static final BlockItem BLUESTONE_BLOCK_ITEM = new BlockItem(BLUESTONE_BLOCK, new FabricItemSettings());
-	public static final BlockItem GREENSTONE_BLOCK_ITEM = new BlockItem(GREENSTONE_BLOCK, new FabricItemSettings());
-	public static final BlockItem YELLOWSTONE_BLOCK_ITEM = new BlockItem(YELLOWSTONE_BLOCK, new FabricItemSettings());
+	public static final BlockItem BLUESTONE = new AliasedBlockItem(BLUESTONE_WIRE, new Item.Settings());
+	public static final BlockItem GREENSTONE = new AliasedBlockItem(GREENSTONE_WIRE, new Item.Settings());
+	public static final BlockItem YELLOWSTONE = new AliasedBlockItem(YELLOWSTONE_WIRE, new Item.Settings());
+	public static final BlockItem BLUESTONE_TORCH = new VerticallyAttachableBlockItem(BLUESTONE_TORCH_BLOCK, BLUESTONE_WALL_TORCH, new Item.Settings(), Direction.DOWN);
+	public static final BlockItem GREENSTONE_TORCH = new VerticallyAttachableBlockItem(GREENSTONE_TORCH_BLOCK, GREENSTONE_WALL_TORCH, new Item.Settings(), Direction.DOWN);
+	public static final BlockItem YELLOWSTONE_TORCH = new VerticallyAttachableBlockItem(YELLOWSTONE_TORCH_BLOCK, YELLOWSTONE_WALL_TORCH, new Item.Settings(), Direction.DOWN);
+	public static final BlockItem BLUESTONE_BLOCK_ITEM = new BlockItem(BLUESTONE_BLOCK, new Item.Settings());
+	public static final BlockItem GREENSTONE_BLOCK_ITEM = new BlockItem(GREENSTONE_BLOCK, new Item.Settings());
+	public static final BlockItem YELLOWSTONE_BLOCK_ITEM = new BlockItem(YELLOWSTONE_BLOCK, new Item.Settings());
 
 	@Override
 	public void onInitialize() {
@@ -87,35 +86,35 @@ public class PowerStones implements ModInitializer   {
 	}
 
 	private void registerItems() {
-		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "bluestone"), BLUESTONE);
-		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "greenstone"), GREENSTONE);
-		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "yellowstone"), YELLOWSTONE);
-		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "bluestone_torch"), BLUESTONE_TORCH);
-		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "greenstone_torch"), GREENSTONE_TORCH);
-		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "yellowstone_torch"), YELLOWSTONE_TORCH);
-		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "bluestone_block"), BLUESTONE_BLOCK_ITEM);
-		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "greenstone_block"), GREENSTONE_BLOCK_ITEM);
-		Registry.register(Registries.ITEM, new Identifier(NAMESPACE, "yellowstone_block"), YELLOWSTONE_BLOCK_ITEM);
+		Registry.register(Registries.ITEM, Identifier.of(NAMESPACE, "bluestone"), BLUESTONE);
+		Registry.register(Registries.ITEM, Identifier.of(NAMESPACE, "greenstone"), GREENSTONE);
+		Registry.register(Registries.ITEM, Identifier.of(NAMESPACE, "yellowstone"), YELLOWSTONE);
+		Registry.register(Registries.ITEM, Identifier.of(NAMESPACE, "bluestone_torch"), BLUESTONE_TORCH);
+		Registry.register(Registries.ITEM, Identifier.of(NAMESPACE, "greenstone_torch"), GREENSTONE_TORCH);
+		Registry.register(Registries.ITEM, Identifier.of(NAMESPACE, "yellowstone_torch"), YELLOWSTONE_TORCH);
+		Registry.register(Registries.ITEM, Identifier.of(NAMESPACE, "bluestone_block"), BLUESTONE_BLOCK_ITEM);
+		Registry.register(Registries.ITEM, Identifier.of(NAMESPACE, "greenstone_block"), GREENSTONE_BLOCK_ITEM);
+		Registry.register(Registries.ITEM, Identifier.of(NAMESPACE, "yellowstone_block"), YELLOWSTONE_BLOCK_ITEM);
 	}
 
 	private void registerBlockEntities() {
-		Registry.register(Registries.BLOCK_ENTITY_TYPE, new Identifier(NAMESPACE, "multiple_wires_be"), MULTIPLE_WIRES_BE_TYPE);
+		Registry.register(Registries.BLOCK_ENTITY_TYPE, Identifier.of(NAMESPACE, "multiple_wires_be"), MULTIPLE_WIRES_BE_TYPE);
 	}
 
 	private void registerBlocks() {
-		Registry.register(Registries.BLOCK, new Identifier(NAMESPACE, "bluestone_wire"), BLUESTONE_WIRE);
-		Registry.register(Registries.BLOCK, new Identifier(NAMESPACE, "greenstone_wire"), GREENSTONE_WIRE);
-		Registry.register(Registries.BLOCK, new Identifier(NAMESPACE, "yellowstone_wire"), YELLOWSTONE_WIRE);
-		Registry.register(Registries.BLOCK, new Identifier(NAMESPACE, "multiple_wires"), MULTIPLE_WIRES);
-		Registry.register(Registries.BLOCK, new Identifier(NAMESPACE, "bluestone_torch"), BLUESTONE_TORCH_BLOCK);
-		Registry.register(Registries.BLOCK, new Identifier(NAMESPACE, "greenstone_torch"), GREENSTONE_TORCH_BLOCK);
-		Registry.register(Registries.BLOCK, new Identifier(NAMESPACE, "yellowstone_torch"), YELLOWSTONE_TORCH_BLOCK);
-		Registry.register(Registries.BLOCK, new Identifier(NAMESPACE, "bluestone_wall_torch"), BLUESTONE_WALL_TORCH);
-		Registry.register(Registries.BLOCK, new Identifier(NAMESPACE, "greenstone_wall_torch"), GREENSTONE_WALL_TORCH);
-		Registry.register(Registries.BLOCK, new Identifier(NAMESPACE, "yellowstone_wall_torch"), YELLOWSTONE_WALL_TORCH);
-		Registry.register(Registries.BLOCK, new Identifier(NAMESPACE, "bluestone_block"), BLUESTONE_BLOCK);
-		Registry.register(Registries.BLOCK, new Identifier(NAMESPACE, "greenstone_block"), GREENSTONE_BLOCK);
-		Registry.register(Registries.BLOCK, new Identifier(NAMESPACE, "yellowstone_block"), YELLOWSTONE_BLOCK);
+		Registry.register(Registries.BLOCK, Identifier.of(NAMESPACE, "bluestone_wire"), BLUESTONE_WIRE);
+		Registry.register(Registries.BLOCK, Identifier.of(NAMESPACE, "greenstone_wire"), GREENSTONE_WIRE);
+		Registry.register(Registries.BLOCK, Identifier.of(NAMESPACE, "yellowstone_wire"), YELLOWSTONE_WIRE);
+		Registry.register(Registries.BLOCK, Identifier.of(NAMESPACE, "multiple_wires"), MULTIPLE_WIRES);
+		Registry.register(Registries.BLOCK, Identifier.of(NAMESPACE, "bluestone_torch"), BLUESTONE_TORCH_BLOCK);
+		Registry.register(Registries.BLOCK, Identifier.of(NAMESPACE, "greenstone_torch"), GREENSTONE_TORCH_BLOCK);
+		Registry.register(Registries.BLOCK, Identifier.of(NAMESPACE, "yellowstone_torch"), YELLOWSTONE_TORCH_BLOCK);
+		Registry.register(Registries.BLOCK, Identifier.of(NAMESPACE, "bluestone_wall_torch"), BLUESTONE_WALL_TORCH);
+		Registry.register(Registries.BLOCK, Identifier.of(NAMESPACE, "greenstone_wall_torch"), GREENSTONE_WALL_TORCH);
+		Registry.register(Registries.BLOCK, Identifier.of(NAMESPACE, "yellowstone_wall_torch"), YELLOWSTONE_WALL_TORCH);
+		Registry.register(Registries.BLOCK, Identifier.of(NAMESPACE, "bluestone_block"), BLUESTONE_BLOCK);
+		Registry.register(Registries.BLOCK, Identifier.of(NAMESPACE, "greenstone_block"), GREENSTONE_BLOCK);
+		Registry.register(Registries.BLOCK, Identifier.of(NAMESPACE, "yellowstone_block"), YELLOWSTONE_BLOCK);
 	}
 
 	private void registerToGroups() {

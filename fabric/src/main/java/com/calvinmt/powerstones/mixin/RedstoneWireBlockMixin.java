@@ -8,10 +8,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.calvinmt.powerstones.PowerColour;
 import com.calvinmt.powerstones.PowerStones;
@@ -28,10 +26,11 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.RedstoneWireBlock;
 import net.minecraft.block.enums.WireConnection;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.IntProperty;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -164,17 +163,6 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
         return state.isOf(this) ? state.get(POWER) : 0;
     }
 
-    @Inject(method = "onUse(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;Lnet/minecraft/util/hit/BlockHitResult;)Lnet/minecraft/util/ActionResult;", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/RedstoneWireBlock;isFullyConnected(Lnet/minecraft/block/BlockState;)Z", ordinal = 0), cancellable = true)
-    public void useAddColor(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit, CallbackInfoReturnable<ActionResult> callbackInfo) {
-        if (player.getMainHandStack().isOf(PowerStones.BLUESTONE) || player.getMainHandStack().isOf(PowerStones.GREENSTONE) || player.getMainHandStack().isOf(PowerStones.YELLOWSTONE)) {
-            // The player is holding a different dust item.
-            // Convert this wire into a MultipleWiresBlock.
-            this.placeOnUse(state, world, pos, player, hand);
-
-            callbackInfo.setReturnValue(ActionResult.SUCCESS);
-        }
-    }
-
     public void setShouldSignal(boolean wiresGivePower) {
         this.wiresGivePower = wiresGivePower;
     }
@@ -226,6 +214,17 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
 
     private void placeOnUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand) {
         ((MultipleWiresBlock) PowerStones.MULTIPLE_WIRES).convertFromSingleWire(world, pos, state, player, hand);
+    }
+
+    @Override
+    protected ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+        if (stack.isOf(PowerStones.BLUESTONE) || stack.isOf(PowerStones.GREENSTONE) || stack.isOf(PowerStones.YELLOWSTONE)) {
+            this.placeOnUse(state, world, pos, player, hand);
+
+            return ItemActionResult.success(world.isClient);
+        }
+
+        return super.onUseWithItem(stack, state, world, pos, player, hand, hit);
     }
 
 }

@@ -19,6 +19,7 @@ import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -184,38 +185,45 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
     }
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
         if (!player.getAbilities().allowModifyWorld) {
-           return ActionResult.PASS;
-        }
-        else {
-            ItemStack heldItemStack = player.getMainHandStack();
-
-            if ((state.isOf(PowerStones.BLUESTONE_WIRE) && (heldItemStack.isOf(Items.REDSTONE) || heldItemStack.isOf(PowerStones.GREENSTONE) || heldItemStack.isOf(PowerStones.YELLOWSTONE)))
-             || (state.isOf(PowerStones.GREENSTONE_WIRE) && (heldItemStack.isOf(Items.REDSTONE) || heldItemStack.isOf(PowerStones.BLUESTONE) || heldItemStack.isOf(PowerStones.YELLOWSTONE)))
-             || (state.isOf(PowerStones.YELLOWSTONE_WIRE) && (heldItemStack.isOf(Items.REDSTONE) || heldItemStack.isOf(PowerStones.BLUESTONE) || heldItemStack.isOf(PowerStones.GREENSTONE)))) {
-                // The player is holding a different dust item.
-                // Convert this wire into a MultipleWiresBlock.
-                this.placeOnUse(state, world, pos, player, hand);
-
-                return ActionResult.SUCCESS;
-            }
-
-            if (isFullyConnected(state) || isNotConnected(state)) {
-                BlockState blockstate = isFullyConnected(state) ? this.getDefaultState() : this.dotState;
-                blockstate = blockstate.with(POWER, state.get(POWER));
-                blockstate = this.getPlacementState(world, blockstate, pos);
-
-                if (blockstate != state) {
-                    world.setBlockState(pos, blockstate);
-                    this.updateForNewState(world, pos, state, blockstate);
-
-                    return ActionResult.SUCCESS;
-                }
-            }
-
             return ActionResult.PASS;
         }
+
+        if (isFullyConnected(state) || isNotConnected(state)) {
+            BlockState newState = isFullyConnected(state) ? this.getDefaultState() : this.dotState;
+
+            newState = newState.with(POWER, state.get(POWER));
+            newState = this.getPlacementState(world, newState, pos);
+
+            if (newState != state) {
+                world.setBlockState(pos, newState);
+                this.updateForNewState(world, pos, state, newState);
+
+                return ActionResult.success(world.isClient);
+            }
+        }
+
+        return ActionResult.PASS;
+    }
+
+    @Override
+    public ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+        if (!player.getAbilities().allowModifyWorld) {
+            return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+
+        boolean canCombine = state.isOf(PowerStones.BLUESTONE_WIRE) && (stack.isOf(Items.REDSTONE) || stack.isOf(PowerStones.GREENSTONE) || stack.isOf(PowerStones.YELLOWSTONE))
+                        || state.isOf(PowerStones.GREENSTONE_WIRE) && (stack.isOf(Items.REDSTONE) || stack.isOf(PowerStones.BLUESTONE) || stack.isOf(PowerStones.YELLOWSTONE))
+                        || state.isOf(PowerStones.YELLOWSTONE_WIRE) && (stack.isOf(Items.REDSTONE) || stack.isOf(PowerStones.BLUESTONE) || stack.isOf(PowerStones.GREENSTONE));
+
+        if (canCombine) {
+            this.placeOnUse(state, world, pos, player, hand);
+
+            return ItemActionResult.success(world.isClient);
+        }
+
+        return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
     public static boolean shouldBreakBlock(BlockState state, ItemStack heldItemStack) {

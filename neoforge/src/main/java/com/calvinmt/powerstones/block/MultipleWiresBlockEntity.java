@@ -5,21 +5,28 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import com.calvinmt.powerstones.PowerPair;
 import com.calvinmt.powerstones.PowerStones;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.enums.WireConnection;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.RedstoneSide;
+import net.neoforged.neoforge.client.model.data.ModelData;
+import net.neoforged.neoforge.client.model.data.ModelProperty;
 
 public class MultipleWiresBlockEntity extends BlockEntity {
+
+    public static final ModelProperty<RenderData> RENDER_DATA = new ModelProperty<>();
 
     /*
     * Holds the expected render data between the player's interaction and the
@@ -50,15 +57,15 @@ public class MultipleWiresBlockEntity extends BlockEntity {
     private int powerA = 0;
     private int powerB = 0;
 
-    private WireConnection northA = WireConnection.NONE;
-    private WireConnection eastA = WireConnection.NONE;
-    private WireConnection southA = WireConnection.NONE;
-    private WireConnection westA = WireConnection.NONE;
+    private RedstoneSide northA = RedstoneSide.NONE;
+    private RedstoneSide eastA = RedstoneSide.NONE;
+    private RedstoneSide southA = RedstoneSide.NONE;
+    private RedstoneSide westA = RedstoneSide.NONE;
 
-    private WireConnection northB = WireConnection.NONE;
-    private WireConnection eastB = WireConnection.NONE;
-    private WireConnection southB = WireConnection.NONE;
-    private WireConnection westB = WireConnection.NONE;
+    private RedstoneSide northB = RedstoneSide.NONE;
+    private RedstoneSide eastB = RedstoneSide.NONE;
+    private RedstoneSide southB = RedstoneSide.NONE;
+    private RedstoneSide westB = RedstoneSide.NONE;
 
     public record RenderData(
             boolean renderChannelsSwapped,
@@ -67,19 +74,19 @@ public class MultipleWiresBlockEntity extends BlockEntity {
             int powerA,
             int powerB,
 
-            WireConnection northA,
-            WireConnection eastA,
-            WireConnection southA,
-            WireConnection westA,
+            RedstoneSide northA,
+            RedstoneSide eastA,
+            RedstoneSide southA,
+            RedstoneSide westA,
 
-            WireConnection northB,
-            WireConnection eastB,
-            WireConnection southB,
-            WireConnection westB
+            RedstoneSide northB,
+            RedstoneSide eastB,
+            RedstoneSide southB,
+            RedstoneSide westB
     ) {}
 
     public MultipleWiresBlockEntity(BlockPos pos, BlockState state) {
-        super(PowerStones.MULTIPLE_WIRES_BE_TYPE, pos, state);
+        super(PowerStones.MULTIPLE_WIRES_BE_TYPE.get(), pos, state);
 
         // On the server, this data is registered immediately before
         // setBlockState. Seed the new block entity before any block-added
@@ -88,7 +95,7 @@ public class MultipleWiresBlockEntity extends BlockEntity {
 
         this.suppressUpdatePackets = conversionData != null;
 
-        if (conversionData != null && conversionData.powerPair() == state.get(MultipleWiresBlock.POWER_PAIR)) {
+        if (conversionData != null && conversionData.powerPair() == state.getValue(MultipleWiresBlock.POWER_PAIR)) {
             this.applyRenderData(conversionData);
             return;
         }
@@ -97,14 +104,14 @@ public class MultipleWiresBlockEntity extends BlockEntity {
         // before its authoritative block-entity packet arrives.
         RenderData predictedData = getPredictedRenderData(pos);
 
-        if (predictedData != null && predictedData.powerPair() == state.get(MultipleWiresBlock.POWER_PAIR)) {
+        if (predictedData != null && predictedData.powerPair() == state.getValue(MultipleWiresBlock.POWER_PAIR)) {
             this.applyRenderData(predictedData);
         }
     }
 
     /**
      * Supplies the complete conversion data to the block-entity constructor
-     * that runs synchronously inside World#setBlockState.
+     * that runs synchronously inside Level#setBlock.
      */
     public static void beginConversionInitialisation(BlockPos pos, RenderData data) {
         Map<Long, RenderData> pendingData = CONVERSION_INITIAL_DATA.get();
@@ -176,33 +183,38 @@ public class MultipleWiresBlockEntity extends BlockEntity {
             powerA,
             powerB,
 
-            channelAState.get(PowerstoneWireBlockBase.WIRE_CONNECTION_NORTH),
-            channelAState.get(PowerstoneWireBlockBase.WIRE_CONNECTION_EAST),
-            channelAState.get(PowerstoneWireBlockBase.WIRE_CONNECTION_SOUTH),
-            channelAState.get(PowerstoneWireBlockBase.WIRE_CONNECTION_WEST),
+            channelAState.getValue(PowerstoneWireBlockBase.NORTH),
+            channelAState.getValue(PowerstoneWireBlockBase.EAST),
+            channelAState.getValue(PowerstoneWireBlockBase.SOUTH),
+            channelAState.getValue(PowerstoneWireBlockBase.WEST),
 
-            channelBState.get(PowerstoneWireBlockBase.WIRE_CONNECTION_NORTH),
-            channelBState.get(PowerstoneWireBlockBase.WIRE_CONNECTION_EAST),
-            channelBState.get(PowerstoneWireBlockBase.WIRE_CONNECTION_SOUTH),
-            channelBState.get(PowerstoneWireBlockBase.WIRE_CONNECTION_WEST)
+            channelBState.getValue(PowerstoneWireBlockBase.NORTH),
+            channelBState.getValue(PowerstoneWireBlockBase.EAST),
+            channelBState.getValue(PowerstoneWireBlockBase.SOUTH),
+            channelBState.getValue(PowerstoneWireBlockBase.WEST)
         );
     }
 
     @Override
-    public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
-        return this.createNbt(registryLookup);
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag nbt = new CompoundTag();
+        saveAdditional(nbt, registries);
+        return nbt;
     }
 
     @Override
-    public @Nullable Object getRenderData() {
-        return this.createRenderData();
+    @Nonnull
+    public ModelData getModelData() {
+        return ModelData.builder()
+                .with(RENDER_DATA, getRenderData())
+                .build();
     }
 
-    private RenderData createRenderData() {
+    public RenderData getRenderData() {
         return new RenderData(
             this.renderChannelsSwapped,
 
-            this.getCachedState().get(MultipleWiresBlock.POWER_PAIR),
+            this.getBlockState().getValue(MultipleWiresBlock.POWER_PAIR),
             this.powerA,
             this.powerB,
 
@@ -223,15 +235,15 @@ public class MultipleWiresBlockEntity extends BlockEntity {
      * this block entity.
      */
     public void setConnectionStates(BlockState channelAState, BlockState channelBState) {
-        WireConnection newNorthA = channelAState.get(PowerstoneWireBlockBase.WIRE_CONNECTION_NORTH);
-        WireConnection newEastA = channelAState.get(PowerstoneWireBlockBase.WIRE_CONNECTION_EAST);
-        WireConnection newSouthA = channelAState.get(PowerstoneWireBlockBase.WIRE_CONNECTION_SOUTH);
-        WireConnection newWestA = channelAState.get(PowerstoneWireBlockBase.WIRE_CONNECTION_WEST);
+        RedstoneSide newNorthA = channelAState.getValue(PowerstoneWireBlockBase.NORTH);
+        RedstoneSide newEastA = channelAState.getValue(PowerstoneWireBlockBase.EAST);
+        RedstoneSide newSouthA = channelAState.getValue(PowerstoneWireBlockBase.SOUTH);
+        RedstoneSide newWestA = channelAState.getValue(PowerstoneWireBlockBase.WEST);
 
-        WireConnection newNorthB = channelBState.get(PowerstoneWireBlockBase.WIRE_CONNECTION_NORTH);
-        WireConnection newEastB = channelBState.get(PowerstoneWireBlockBase.WIRE_CONNECTION_EAST);
-        WireConnection newSouthB = channelBState.get(PowerstoneWireBlockBase.WIRE_CONNECTION_SOUTH);
-        WireConnection newWestB = channelBState.get(PowerstoneWireBlockBase.WIRE_CONNECTION_WEST);
+        RedstoneSide newNorthB = channelBState.getValue(PowerstoneWireBlockBase.NORTH);
+        RedstoneSide newEastB = channelBState.getValue(PowerstoneWireBlockBase.EAST);
+        RedstoneSide newSouthB = channelBState.getValue(PowerstoneWireBlockBase.SOUTH);
+        RedstoneSide newWestB = channelBState.getValue(PowerstoneWireBlockBase.WEST);
 
         boolean unchanged = this.northA == newNorthA && this.eastA == newEastA && this.southA == newSouthA && this.westA == newWestA
                         && this.northB == newNorthB && this.eastB == newEastB && this.southB == newSouthB && this.westB == newWestB;
@@ -254,8 +266,8 @@ public class MultipleWiresBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.writeNbt(nbt, registryLookup);
+    protected void saveAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
+        super.saveAdditional(nbt, registries);
 
         nbt.putBoolean("render_channels_swapped", this.renderChannelsSwapped);
 
@@ -274,8 +286,8 @@ public class MultipleWiresBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.readNbt(nbt, registryLookup);
+    protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
+        super.loadAdditional(nbt, registries);
 
         boolean hasCompleteRenderData =
             nbt.contains("render_channels_swapped")
@@ -292,13 +304,13 @@ public class MultipleWiresBlockEntity extends BlockEntity {
 
         // Do not overwrite a correct prediction with implicit zero values
         // from an incomplete client-side NBT compound.
-        if (!hasCompleteRenderData && this.world != null && this.world.isClient) {
-            RenderData predictedData = getPredictedRenderData(this.pos);
+        if (!hasCompleteRenderData && this.level != null && this.level.isClientSide()) {
+            RenderData predictedData = getPredictedRenderData(this.worldPosition);
 
-            if (predictedData != null && predictedData.powerPair() == this.getCachedState().get(MultipleWiresBlock.POWER_PAIR)) {
+            if (predictedData != null && predictedData.powerPair() == this.getBlockState().getValue(MultipleWiresBlock.POWER_PAIR)) {
                 this.applyRenderData(predictedData);
 
-                this.world.scheduleBlockRerenderIfNeeded(this.pos, null, this.getCachedState());
+                this.level.setBlocksDirty(this.worldPosition, null, this.getBlockState());
 
                 return;
             }
@@ -319,14 +331,19 @@ public class MultipleWiresBlockEntity extends BlockEntity {
         this.southB = byteToConnection(nbt.getByte("south_b"));
         this.westB = byteToConnection(nbt.getByte("west_b"));
 
-        if (this.world != null && this.world.isClient) {
-            clearPredictedRenderData(this.pos);
-            this.world.scheduleBlockRerenderIfNeeded(this.pos, null, this.getCachedState());
+        if (this.level != null && this.level.isClientSide()) {
+            this.requestModelDataUpdate();
+
+            if (hasCompleteRenderData) {
+                clearPredictedRenderData(this.worldPosition);
+            }
+
+            this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), Block.UPDATE_CLIENTS);
         }
     }
 
-    public BlockEntityUpdateS2CPacket toUpdatePacket() {
-        return BlockEntityUpdateS2CPacket.create(this);
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     /**
@@ -339,17 +356,17 @@ public class MultipleWiresBlockEntity extends BlockEntity {
         this.powerA = powerA;
         this.powerB = powerB;
 
-        this.northA = channelAState.get(PowerstoneWireBlockBase.WIRE_CONNECTION_NORTH);
-        this.eastA = channelAState.get(PowerstoneWireBlockBase.WIRE_CONNECTION_EAST);
-        this.southA = channelAState.get(PowerstoneWireBlockBase.WIRE_CONNECTION_SOUTH);
-        this.westA = channelAState.get(PowerstoneWireBlockBase.WIRE_CONNECTION_WEST);
+        this.northA = channelAState.getValue(PowerstoneWireBlockBase.NORTH);
+        this.eastA = channelAState.getValue(PowerstoneWireBlockBase.EAST);
+        this.southA = channelAState.getValue(PowerstoneWireBlockBase.SOUTH);
+        this.westA = channelAState.getValue(PowerstoneWireBlockBase.WEST);
 
-        this.northB = channelBState.get(PowerstoneWireBlockBase.WIRE_CONNECTION_NORTH);
-        this.eastB = channelBState.get(PowerstoneWireBlockBase.WIRE_CONNECTION_EAST);
-        this.southB = channelBState.get(PowerstoneWireBlockBase.WIRE_CONNECTION_SOUTH);
-        this.westB = channelBState.get(PowerstoneWireBlockBase.WIRE_CONNECTION_WEST);
+        this.northB = channelBState.getValue(PowerstoneWireBlockBase.NORTH);
+        this.eastB = channelBState.getValue(PowerstoneWireBlockBase.EAST);
+        this.southB = channelBState.getValue(PowerstoneWireBlockBase.SOUTH);
+        this.westB = channelBState.getValue(PowerstoneWireBlockBase.WEST);
 
-        this.markDirty();
+        this.setChanged();
     }
 
     /**
@@ -358,39 +375,41 @@ public class MultipleWiresBlockEntity extends BlockEntity {
      */
     public void finishConversionInitialisation() {
         this.suppressUpdatePackets = false;
-        this.markDirty();
+        this.setChanged();
     }
 
     private void update() {
-        if (world != null && !world.isClient) {
-            this.markDirty();
+        this.requestModelDataUpdate();
+
+        if (this.level != null && !this.level.isClientSide()) {
+            this.setChanged();
 
             if (!this.suppressUpdatePackets) {
-                world.updateListeners(pos, getCachedState(), getCachedState(), Block.NOTIFY_LISTENERS);
+                this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), Block.UPDATE_CLIENTS);
             }
         }
     }
 
-    private static byte connectionToByte(WireConnection connection) {
-        if (connection == WireConnection.SIDE) return 1;
-        else if (connection == WireConnection.UP) return 2;
+    private static byte connectionToByte(RedstoneSide connection) {
+        if (connection == RedstoneSide.SIDE) return 1;
+        else if (connection == RedstoneSide.UP) return 2;
         else return 0;
     }
 
-    private static WireConnection byteToConnection(byte value) {
-        if (value == 1) return WireConnection.SIDE;
-        else if (value == 2) return WireConnection.UP;
-        else return WireConnection.NONE;
+    private static RedstoneSide byteToConnection(byte value) {
+        if (value == 1) return RedstoneSide.SIDE;
+        else if (value == 2) return RedstoneSide.UP;
+        else return RedstoneSide.NONE;
     }
 
-    public void setPowerA(int power){
-        if (power==powerA) return;
+    public void setPowerA(int power) {
+        if (power == powerA) return;
         powerA = power;
         update();
     }
 
-    public void setPowerB(int power){
-        if (power==powerB) return;
+    public void setPowerB(int power) {
+        if (power == powerB) return;
         powerB = power;
         update();
     }

@@ -28,6 +28,7 @@ import net.minecraft.state.StateManager;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -630,7 +631,7 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Block
     }
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand pHand, BlockHitResult pHit) {
+    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
         if (!player.getAbilities().allowModifyWorld) {
             return ActionResult.PASS;
         } else {
@@ -649,6 +650,11 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Block
 
             return ActionResult.PASS;
         }
+    }
+
+    @Override
+    public ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+        return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
     private int getSingleWirePower(BlockState state) {

@@ -10,12 +10,14 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.TorchBlock;
 import net.minecraft.particle.DustParticleEffect;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
@@ -30,8 +32,8 @@ extends TorchBlock {
     public static final int field_31229 = 160;
 
     public BluestoneTorchBlock(AbstractBlock.Settings settings) {
-        super(settings, new DustParticleEffect(PowerColour.BLUE.getVectorColour(15), 1.0f));
-        this.setDefaultState((BlockState)((BlockState)this.stateManager.getDefaultState()).with(LIT, true));
+        super(ParticleTypes.FLAME, settings);
+        this.setDefaultState(this.stateManager.getDefaultState().with(LIT, true));
     }
 
     @Override
@@ -105,13 +107,21 @@ extends TorchBlock {
 
     @Override
     public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
-        if (!state.get(LIT).booleanValue()) {
+        if (!state.get(LIT)) {
             return;
         }
-        double d = (double)pos.getX() + 0.5 + (random.nextDouble() - 0.5) * 0.2;
-        double e = (double)pos.getY() + 0.7 + (random.nextDouble() - 0.5) * 0.2;
-        double f = (double)pos.getZ() + 0.5 + (random.nextDouble() - 0.5) * 0.2;
-        world.addParticle(this.particle, d, e, f, 0.0, 0.0, 0.0);
+
+        Vec3d particlePos = this.getParticlePosition(state, pos, random);
+
+        world.addParticle(new DustParticleEffect(PowerColour.BLUE.getVectorColour(15), 1.0F), particlePos.getX(), particlePos.getY(), particlePos.getZ(), 0.0, 0.0, 0.0);
+    }
+
+    protected Vec3d getParticlePosition(BlockState state, BlockPos pos, Random random) {
+        return new Vec3d(
+            pos.getX() + 0.5 + (random.nextDouble() - 0.5) * 0.2,
+            pos.getY() + 0.7 + (random.nextDouble() - 0.5) * 0.2,
+            pos.getZ() + 0.5 + (random.nextDouble() - 0.5) * 0.2
+        );
     }
 
     @Override

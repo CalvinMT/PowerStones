@@ -86,7 +86,7 @@ public final class MultipleWiresModel implements UnbakedModel {
     }
 
     private static Identifier modelId(String channel, String part) {
-        return new Identifier(MOD_ID, "block/" + channel + "_dust_" + part);
+        return Identifier.of(MOD_ID, "block/" + channel + "_dust_" + part);
     }
 
     @Override
@@ -107,7 +107,7 @@ public final class MultipleWiresModel implements UnbakedModel {
 
     @Override
     @Nullable
-    public BakedModel bake(Baker baker, Function<SpriteIdentifier, Sprite> textureGetter, ModelBakeSettings rotationContainer, Identifier modelId) {
+    public BakedModel bake(Baker baker, Function<SpriteIdentifier, Sprite> textureGetter, ModelBakeSettings rotationContainer) {
         WireModels channelA = bakeWireModels(baker, "multiple_a");
         WireModels channelB = bakeWireModels(baker, "multiple_b");
 
