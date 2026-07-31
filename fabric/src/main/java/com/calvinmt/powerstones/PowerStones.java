@@ -74,9 +74,9 @@ public class PowerStones implements ModInitializer   {
 	public static final BlockItem BLUESTONE_TORCH = new VerticallyAttachableBlockItem(BLUESTONE_TORCH_BLOCK, BLUESTONE_WALL_TORCH, Direction.DOWN, createItemSettings("bluestone_torch").useBlockPrefixedTranslationKey());
 	public static final BlockItem GREENSTONE_TORCH = new VerticallyAttachableBlockItem(GREENSTONE_TORCH_BLOCK, GREENSTONE_WALL_TORCH, Direction.DOWN, createItemSettings("greenstone_torch").useBlockPrefixedTranslationKey());
 	public static final BlockItem YELLOWSTONE_TORCH = new VerticallyAttachableBlockItem(YELLOWSTONE_TORCH_BLOCK, YELLOWSTONE_WALL_TORCH, Direction.DOWN, createItemSettings("yellowstone_torch").useBlockPrefixedTranslationKey());
-	public static final BlockItem BLUESTONE_BLOCK_ITEM = new BlockItem(BLUESTONE_BLOCK, createItemSettings("bluestone_block"));
-	public static final BlockItem GREENSTONE_BLOCK_ITEM = new BlockItem(GREENSTONE_BLOCK, createItemSettings("greenstone_block"));
-	public static final BlockItem YELLOWSTONE_BLOCK_ITEM = new BlockItem(YELLOWSTONE_BLOCK, createItemSettings("yellowstone_block"));
+	public static final BlockItem BLUESTONE_BLOCK_ITEM = new BlockItem(BLUESTONE_BLOCK, createItemSettings("bluestone_block").useBlockPrefixedTranslationKey());
+	public static final BlockItem GREENSTONE_BLOCK_ITEM = new BlockItem(GREENSTONE_BLOCK, createItemSettings("greenstone_block").useBlockPrefixedTranslationKey());
+	public static final BlockItem YELLOWSTONE_BLOCK_ITEM = new BlockItem(YELLOWSTONE_BLOCK, createItemSettings("yellowstone_block").useBlockPrefixedTranslationKey());
 
 	private static AbstractBlock.Settings createBlockSettings(String name, AbstractBlock.Settings settings) {
 		return settings.registryKey(RegistryKey.of(RegistryKeys.BLOCK, Identifier.of(NAMESPACE, name)));

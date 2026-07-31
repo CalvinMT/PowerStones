@@ -79,15 +79,15 @@ public class PowerStones {
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MultipleWiresBlockEntity>> MULTIPLE_WIRES_BE_TYPE = BLOCKENTITIES.register("multiple_wires_be", () -> new BlockEntityType<>(MultipleWiresBlockEntity::new, false, MULTIPLE_WIRES.get()));
 
-    public static final DeferredItem<BlockItem> BLUESTONE = ITEMS.registerItem("bluestone", properties -> new BlockItem(BLUESTONE_WIRE.get(), properties.overrideDescription(BLUESTONE_WIRE.get().getDescriptionId())));
-    public static final DeferredItem<BlockItem> GREENSTONE = ITEMS.registerItem("greenstone", properties -> new BlockItem(GREENSTONE_WIRE.get(), properties.overrideDescription(GREENSTONE_WIRE.get().getDescriptionId())));
-    public static final DeferredItem<BlockItem> YELLOWSTONE = ITEMS.registerItem("yellowstone", properties -> new BlockItem(YELLOWSTONE_WIRE.get(), properties.overrideDescription(YELLOWSTONE_WIRE.get().getDescriptionId())));
+    public static final DeferredItem<BlockItem> BLUESTONE = ITEMS.registerItem("bluestone", properties -> new BlockItem(BLUESTONE_WIRE.get(), properties));
+    public static final DeferredItem<BlockItem> GREENSTONE = ITEMS.registerItem("greenstone", properties -> new BlockItem(GREENSTONE_WIRE.get(), properties));
+    public static final DeferredItem<BlockItem> YELLOWSTONE = ITEMS.registerItem("yellowstone", properties -> new BlockItem(YELLOWSTONE_WIRE.get(), properties));
     public static final DeferredItem<BlockItem> BLUESTONE_TORCH = ITEMS.registerItem("bluestone_torch", properties -> new StandingAndWallBlockItem(BLUESTONE_TORCH_BLOCK.get(), BLUESTONE_WALL_TORCH.get(), Direction.DOWN, properties.useBlockDescriptionPrefix()));
     public static final DeferredItem<BlockItem> GREENSTONE_TORCH = ITEMS.registerItem("greenstone_torch", properties -> new StandingAndWallBlockItem(GREENSTONE_TORCH_BLOCK.get(), GREENSTONE_WALL_TORCH.get(), Direction.DOWN, properties.useBlockDescriptionPrefix()));
     public static final DeferredItem<BlockItem> YELLOWSTONE_TORCH = ITEMS.registerItem("yellowstone_torch", properties -> new StandingAndWallBlockItem(YELLOWSTONE_TORCH_BLOCK.get(), YELLOWSTONE_WALL_TORCH.get(), Direction.DOWN, properties.useBlockDescriptionPrefix()));
-    public static final DeferredItem<BlockItem> BLUESTONE_BLOCK_ITEM = ITEMS.registerSimpleBlockItem(BLUESTONE_BLOCK);
-    public static final DeferredItem<BlockItem> GREENSTONE_BLOCK_ITEM = ITEMS.registerSimpleBlockItem(GREENSTONE_BLOCK);
-    public static final DeferredItem<BlockItem> YELLOWSTONE_BLOCK_ITEM = ITEMS.registerSimpleBlockItem(YELLOWSTONE_BLOCK);
+    public static final DeferredItem<BlockItem> BLUESTONE_BLOCK_ITEM = ITEMS.registerItem("bluestone_block", properties -> new BlockItem(BLUESTONE_BLOCK.get(), properties.useBlockDescriptionPrefix()));
+    public static final DeferredItem<BlockItem> GREENSTONE_BLOCK_ITEM = ITEMS.registerItem("greenstone_block", properties -> new BlockItem(GREENSTONE_BLOCK.get(), properties.useBlockDescriptionPrefix()));
+    public static final DeferredItem<BlockItem> YELLOWSTONE_BLOCK_ITEM = ITEMS.registerItem("yellowstone_block", properties -> new BlockItem(YELLOWSTONE_BLOCK.get(), properties.useBlockDescriptionPrefix()));
 
     public PowerStones(IEventBus modEventBus) {
         modEventBus.addListener(this::commonSetup);
