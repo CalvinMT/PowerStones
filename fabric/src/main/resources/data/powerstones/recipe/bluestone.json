@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "minecraft:redstone",
+    "minecraft:lapis_lazuli"
+  ],
+  "result": {
+    "id": "powerstones:bluestone",
+    "count": 2
+  }
+}

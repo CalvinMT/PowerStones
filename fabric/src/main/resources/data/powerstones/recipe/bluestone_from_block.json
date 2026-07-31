@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "powerstones:bluestone_block"
+  ],
+  "result": {
+    "id": "powerstones:bluestone",
+    "count": 9
+  }
+}

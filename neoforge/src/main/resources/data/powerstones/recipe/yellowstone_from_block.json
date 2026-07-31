@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    "powerstones:yellowstone_block"
+  ],
+  "result": {
+    "id": "powerstones:yellowstone",
+    "count": 9
+  }
+}
