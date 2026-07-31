@@ -10,7 +10,7 @@ import net.minecraft.block.WallTorchBlock;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.state.property.DirectionProperty;
+import net.minecraft.state.property.EnumProperty;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockPos;
@@ -20,24 +20,19 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
+import net.minecraft.world.tick.ScheduledTickView;
 
 import org.jetbrains.annotations.Nullable;
 
 public class WallBluestoneTorchBlock
 extends BluestoneTorchBlock {
-    public static final DirectionProperty FACING = HorizontalFacingBlock.FACING;
+    public static final EnumProperty<Direction> FACING = HorizontalFacingBlock.FACING;
     public static final BooleanProperty LIT = BluestoneTorchBlock.LIT;
 
     public WallBluestoneTorchBlock(AbstractBlock.Settings settings) {
         super(settings);
         this.setDefaultState((BlockState)((BlockState)((BlockState)this.stateManager.getDefaultState()).with(FACING, Direction.NORTH)).with(LIT, true));
-    }
-
-    @Override
-    public String getTranslationKey() {
-        return this.asItem().getTranslationKey();
     }
 
     @Override
@@ -51,7 +46,7 @@ extends BluestoneTorchBlock {
     }
 
     @Override
-    public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
+    protected BlockState getStateForNeighborUpdate(BlockState state, WorldView world, ScheduledTickView tickView, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, Random random) {
         Direction supportDirection = state.get(FACING).getOpposite();
 
         if (direction == supportDirection && !state.canPlaceAt(world, pos)) {

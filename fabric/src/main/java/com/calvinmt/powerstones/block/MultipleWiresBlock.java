@@ -28,7 +28,6 @@ import net.minecraft.state.StateManager;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -81,7 +80,7 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Block
     }
 
     private void refreshChannelConnections(World world, BlockPos pos) {
-        if (world.isClient) {
+        if (world.isClient()) {
             return;
         }
 
@@ -653,8 +652,8 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Block
     }
 
     @Override
-    public ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    public ActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+        return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
     }
 
     private int getSingleWirePower(BlockState state) {
@@ -713,7 +712,7 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Block
         // 'onUse' runs on both the client and server.
         // On the client, only store the expected render data.
         // Do not replace the block or notify neighbours on the client.
-        if (world.isClient) {
+        if (world.isClient()) {
             MultipleWiresBlockEntity.setPredictedRenderData(pos, initialRenderData);
 
             return true;

@@ -2,8 +2,7 @@ package com.calvinmt.powerstones;
 
 import java.util.function.IntFunction;
 
-import org.joml.Vector3f;
-
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
@@ -19,7 +18,7 @@ public enum PowerColour {
     private final int tintIndex;
     private final Vec3[] colours;
 
-    public static final int WHITE = Mth.color(1.0F, 1.0F, 1.0F);
+    public static final int WHITE = ARGB.colorFromFloat(1.0F, 1.0F, 1.0F, 1.0F);
 
     PowerColour(int tintIndex, IntFunction<Vec3> colourFactory) {
         this.tintIndex = tintIndex;
@@ -30,12 +29,12 @@ public enum PowerColour {
         return this.tintIndex;
     }
 
-    public Vector3f getVectorColour(int powerLevel) {
+    public int getVectorColour(int powerLevel) {
         int clampedPower = Mth.clamp(powerLevel, MIN_POWER, MAX_POWER);
 
         Vec3 colour = this.colours[clampedPower];
 
-        return new Vector3f((float) colour.x, (float) colour.y, (float) colour.z);
+        return ARGB.colorFromFloat(1.0F, (float) colour.x, (float) colour.y, (float) colour.z);
     }
 
     public int getWireColour(int powerLevel) {
@@ -43,7 +42,7 @@ public enum PowerColour {
 
         Vec3 colour = this.colours[clampedPower];
 
-        return Mth.color((float) colour.x, (float) colour.y, (float) colour.z);
+        return ARGB.colorFromFloat(1.0F, (float) colour.x, (float) colour.y, (float) colour.z);
     }
 
     public Vec3 getColour(int powerLevel) {

@@ -24,6 +24,7 @@
     "PistonBaseBlockMixin",
     "PoweredBlockMixin",
     "PoweredRailBlockMixin",
+    "RedstoneControllerMixin",
     "RedstoneLampBlockMixin",
     "RedstoneTorchBlockMixin",
     "RedstoneWallTorchBlockMixin",

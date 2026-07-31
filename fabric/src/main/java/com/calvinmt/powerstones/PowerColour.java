@@ -4,6 +4,7 @@ import java.util.function.IntFunction;
 
 import org.joml.Vector3f;
 
+import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
@@ -19,7 +20,7 @@ public enum PowerColour {
     private final int tintIndex;
     private final Vec3d[] colours;
 
-    public static final int WHITE = MathHelper.packRgb(1.0F, 1.0F, 1.0F);
+    public static final int WHITE = ColorHelper.fromFloats(1.0F, 1.0F, 1.0F, 1.0F);
 
     PowerColour(int tintIndex, IntFunction<Vec3d> colourFactory) {
         this.tintIndex = tintIndex;
@@ -43,7 +44,7 @@ public enum PowerColour {
 
         Vec3d colour = this.colours[clampedPower];
 
-        return MathHelper.packRgb((float) colour.getX(), (float) colour.getY(), (float) colour.getZ());
+        return ColorHelper.fromFloats(1.0F, (float) colour.getX(), (float) colour.getY(), (float) colour.getZ());
     }
 
     public Vec3d getColour(int powerLevel) {

@@ -19,7 +19,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -85,7 +84,7 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
     }
 
     private void refreshChannelConnections(Level level, BlockPos pos) {
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             return;
         }
 
@@ -696,8 +695,8 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
     }
 
     @Override
-    public ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    public InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 
     private int getSingleWirePower(BlockState state) {
@@ -756,7 +755,7 @@ public class MultipleWiresBlock extends PowerstoneWireBlockBase implements Entit
         // 'useItemOn' runs on both the client and server.
         // On the client, only store the expected render data.
         // Do not replace the block or notify neighbours on the client.
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             MultipleWiresBlockEntity.setPredictedRenderData(pos, initialRenderData);
 
             return true;

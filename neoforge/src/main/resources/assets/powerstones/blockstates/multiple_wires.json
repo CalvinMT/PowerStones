@@ -1,9 +1,7 @@
 {
-  "multipart": [
-    {
-      "apply": {
-        "model": "powerstones:block/multiple_wires"
-      }
+  "variants": {
+    "": {
+      "type": "powerstones:multiple_wires"
     }
-  ]
+  }
 }

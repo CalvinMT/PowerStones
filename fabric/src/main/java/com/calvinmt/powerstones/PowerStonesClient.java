@@ -9,13 +9,12 @@ import com.calvinmt.powerstones.block.YellowstoneWireBlock;
 import com.calvinmt.powerstones.client.model.MultipleWiresModel;
 
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.blockview.v2.FabricBlockView;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
+import net.fabricmc.fabric.api.client.rendering.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.render.BlockRenderLayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockRenderView;
 import org.jetbrains.annotations.Nullable;
@@ -34,22 +33,20 @@ public class PowerStonesClient implements ClientModInitializer {
     }
 
     private void registerModels() {
-        Identifier multipleWiresModelId = Identifier.of(PowerStones.NAMESPACE, "block/multiple_wires");
-
         ModelLoadingPlugin.register(pluginContext ->
-            pluginContext.resolveModel().register(context -> {
-                if (context.id().equals(multipleWiresModelId)) {
-                    return MultipleWiresModel.INSTANCE;
+            pluginContext.modifyBlockModelOnLoad().register((model, context) -> {
+                if (context.state().isOf(PowerStones.MULTIPLE_WIRES)) {
+                    return MultipleWiresModel.INSTANCE.cached();
                 }
 
-                return null;
+                return model;
             })
         );
     }
 
     private void setBlockRenderLayer() {
-        BlockRenderLayerMap.INSTANCE.putBlocks(
-                RenderLayer.getCutout(),
+        BlockRenderLayerMap.putBlocks(
+                BlockRenderLayer.CUTOUT,
 
                 PowerStones.BLUESTONE_WIRE,
                 PowerStones.GREENSTONE_WIRE,

@@ -22,6 +22,7 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldEvents;
+import net.minecraft.world.block.WireOrientation;
 
 public class BluestoneTorchBlock
 extends TorchBlock {
@@ -39,17 +40,17 @@ extends TorchBlock {
     @Override
     public void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean notify) {
         for (Direction direction : Direction.values()) {
-            world.updateNeighborsAlways(pos.offset(direction), this);
+            world.updateNeighborsAlways(pos.offset(direction), this, null);
         }
     }
 
     @Override
-    public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+    protected void onStateReplaced(BlockState state, ServerWorld world, BlockPos pos, boolean moved) {
         if (moved) {
             return;
         }
         for (Direction direction : Direction.values()) {
-            world.updateNeighborsAlways(pos.offset(direction), this);
+            world.updateNeighborsAlways(pos.offset(direction), this, null);
         }
     }
 
@@ -86,7 +87,7 @@ extends TorchBlock {
     }
 
     @Override
-    public void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify) {
+    protected void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, WireOrientation wireOrientation, boolean notify) {
         if (state.get(LIT).booleanValue() == this.shouldUnpower(world, pos, state) && !world.getBlockTickScheduler().isTicking(pos, this)) {
             world.scheduleBlockTick(pos, this, 2);
         }
@@ -113,7 +114,7 @@ extends TorchBlock {
 
         Vec3d particlePos = this.getParticlePosition(state, pos, random);
 
-        world.addParticle(new DustParticleEffect(PowerColour.BLUE.getVectorColour(15), 1.0F), particlePos.getX(), particlePos.getY(), particlePos.getZ(), 0.0, 0.0, 0.0);
+        world.addParticleClient(new DustParticleEffect(PowerColour.BLUE.getWireColour(15), 1.0F), particlePos.getX(), particlePos.getY(), particlePos.getZ(), 0.0, 0.0, 0.0);
     }
 
     protected Vec3d getParticlePosition(BlockState state, BlockPos pos, Random random) {

@@ -4,52 +4,50 @@ import com.calvinmt.powerstones.block.MultipleWiresBlock;
 import com.calvinmt.powerstones.block.MultipleWiresBlockEntity;
 import com.calvinmt.powerstones.block.PowerstoneWireBlockBase;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
+import com.mojang.math.OctahedralGroup;
+import com.mojang.serialization.MapCodec;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.ItemOverrides;
+import net.minecraft.client.renderer.block.model.BlockModelPart;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.block.model.TextureSlots;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.BlockModelRotation;
-import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
-import net.minecraft.client.resources.model.UnbakedModel;
+import net.minecraft.client.resources.model.QuadCollection;
+import net.minecraft.client.resources.model.ResolvableModel;
+import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RedstoneSide;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.client.ChunkRenderTypeSet;
-import net.neoforged.neoforge.client.model.IDynamicBakedModel;
-import net.neoforged.neoforge.client.model.data.ModelData;
-import net.neoforged.neoforge.client.model.geometry.IGeometryBakingContext;
-import net.neoforged.neoforge.client.model.geometry.IGeometryLoader;
-import net.neoforged.neoforge.client.model.geometry.IUnbakedGeometry;
+import net.neoforged.neoforge.client.model.DynamicBlockStateModel;
+import net.neoforged.neoforge.client.model.block.CustomUnbakedBlockStateModel;
+import net.neoforged.neoforge.model.data.ModelData;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
 
-@OnlyIn(Dist.CLIENT)
-public final class MultipleWiresModel implements IUnbakedGeometry<MultipleWiresModel> {
+public final class MultipleWiresModel implements CustomUnbakedBlockStateModel {
 
+    public static final Identifier ID = Identifier.fromNamespaceAndPath("powerstones", "multiple_wires");
     public static final MultipleWiresModel INSTANCE = new MultipleWiresModel();
+    public static final MapCodec<MultipleWiresModel> CODEC = MapCodec.unit(INSTANCE);
 
     private static final String MOD_ID = "powerstones";
+
+    private static final ModelState Y_0 = BlockModelRotation.IDENTITY;
+    private static final ModelState Y_90 = BlockModelRotation.get(OctahedralGroup.ROT_90_Y_NEG);
+    private static final ModelState Y_180 = BlockModelRotation.get(OctahedralGroup.ROT_180_FACE_XZ);
+    private static final ModelState Y_270 = BlockModelRotation.get(OctahedralGroup.ROT_90_Y_POS);
 
     private enum StraightLineOrientation {
         NONE,
@@ -77,12 +75,12 @@ public final class MultipleWiresModel implements IUnbakedGeometry<MultipleWiresM
             "side1_duo"
     );
 
-    private static final List<ResourceLocation> MODEL_DEPENDENCIES = createModelDependencies();
+    private static final List<Identifier> MODEL_DEPENDENCIES = createModelDependencies();
 
     private MultipleWiresModel() {}
 
-    private static List<ResourceLocation> createModelDependencies() {
-        List<ResourceLocation> dependencies = new ArrayList<>();
+    private static List<Identifier> createModelDependencies() {
+        List<Identifier> dependencies = new ArrayList<>();
 
         for (String channel : CHANNELS) {
             for (String part : MODEL_PARTS) {
@@ -93,93 +91,105 @@ public final class MultipleWiresModel implements IUnbakedGeometry<MultipleWiresM
         return Collections.unmodifiableList(dependencies);
     }
 
-    private static ResourceLocation modelId(String channel, String part) {
-        return ResourceLocation.fromNamespaceAndPath(MOD_ID, "block/" + channel + "_dust_" + part);
+    private static Identifier modelId(String channel, String part) {
+        return Identifier.fromNamespaceAndPath(MOD_ID, "block/" + channel + "_dust_" + part);
     }
 
     @Override
-    public void resolveParents(Function<ResourceLocation, UnbakedModel> modelGetter, IGeometryBakingContext context) {
-        for (ResourceLocation dependency : MODEL_DEPENDENCIES) {
-            UnbakedModel model = modelGetter.apply(dependency);
+    public MapCodec<? extends CustomUnbakedBlockStateModel> codec() {
+        return CODEC;
+    }
 
-            if (model != null) {
-                model.resolveParents(modelGetter);
-            }
+    @Override
+    public void resolveDependencies(ResolvableModel.Resolver resolver) {
+        for (Identifier dependency : MODEL_DEPENDENCIES) {
+            resolver.markDependency(dependency);
         }
     }
 
     @Override
-    public BakedModel bake(IGeometryBakingContext owner, ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelTransform, ItemOverrides overrides) {
-        WireModels channelA = bakeWireModels(baker, spriteGetter, "multiple_a");
-        WireModels channelB = bakeWireModels(baker, spriteGetter, "multiple_b");
+    public BlockStateModel bake(ModelBaker baker) {
+        WireModels channelA = bakeWireModels(baker, "multiple_a");
+        WireModels channelB = bakeWireModels(baker, "multiple_b");
 
         return new Baked(channelA, channelB);
     }
 
-    private static WireModels bakeWireModels(ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, String channel) {
+    private static WireModels bakeWireModels(ModelBaker baker, String channel) {
         return new WireModels(
             // Straight north-south line.
-            bakeRequired(baker, spriteGetter, channel, "side0", BlockModelRotation.X0_Y0),
-            bakeRequired(baker, spriteGetter, channel, "side_alt0", BlockModelRotation.X0_Y0),
+            bakeRequired(baker, channel, "side0", Y_0),
+            bakeRequired(baker, channel, "side_alt0", Y_0),
 
             // Straight east-west line.
-            bakeRequired(baker, spriteGetter, channel, "side_alt1", BlockModelRotation.X0_Y270),
-            bakeRequired(baker, spriteGetter, channel, "side1", BlockModelRotation.X0_Y270),
+            bakeRequired(baker, channel, "side_alt1", Y_270),
+            bakeRequired(baker, channel, "side1", Y_270),
 
             // Vertical wall sections.
-            bakeRequired(baker, spriteGetter, channel, "up", BlockModelRotation.X0_Y0),
-            bakeRequired(baker, spriteGetter, channel, "up", BlockModelRotation.X0_Y90),
-            bakeRequired(baker, spriteGetter, channel, "up", BlockModelRotation.X0_Y180),
-            bakeRequired(baker, spriteGetter, channel, "up", BlockModelRotation.X0_Y270),
+            bakeRequired(baker, channel, "up", Y_0),
+            bakeRequired(baker, channel, "up", Y_90),
+            bakeRequired(baker, channel, "up", Y_180),
+            bakeRequired(baker, channel, "up", Y_270),
 
             // Centre dots.
-            bakeRequired(baker, spriteGetter, channel, "dot_duo", BlockModelRotation.X0_Y0),
-            bakeRequired(baker, spriteGetter, channel, "dot_duo_line0", BlockModelRotation.X0_Y0),
-            bakeRequired(baker, spriteGetter, channel, "dot_duo_line1", BlockModelRotation.X0_Y0),
+            bakeRequired(baker, channel, "dot_duo", Y_0),
+            bakeRequired(baker, channel, "dot_duo_line0", Y_0),
+            bakeRequired(baker, channel, "dot_duo_line1", Y_0),
 
             // Directional arms.
-            bakeRequired(baker, spriteGetter, channel, "side0_duo", BlockModelRotation.X0_Y0),
-            bakeRequired(baker, spriteGetter, channel, "side_alt0_duo", BlockModelRotation.X0_Y0),
-            bakeRequired(baker, spriteGetter, channel, "side_alt1_duo", BlockModelRotation.X0_Y270),
-            bakeRequired(baker, spriteGetter, channel, "side1_duo", BlockModelRotation.X0_Y270)
+            bakeRequired(baker, channel, "side0_duo", Y_0),
+            bakeRequired(baker, channel, "side_alt0_duo", Y_0),
+            bakeRequired(baker, channel, "side_alt1_duo", Y_270),
+            bakeRequired(baker, channel, "side1_duo", Y_270)
         );
     }
 
-    private static BakedModel bakeRequired(ModelBaker baker, Function<Material, TextureAtlasSprite> spriteGetter, String channel, String part, ModelState rotation) {
-        ResourceLocation id = modelId(channel, part);
-        UnbakedModel unbakedModel = baker.getModel(id);
-        BakedModel bakedModel = unbakedModel.bake(baker, spriteGetter, rotation);
+    private static WireModelPart bakeRequired(ModelBaker baker, String channel, String part, ModelState rotation) {
+        Identifier id = modelId(channel, part);
+        ResolvedModel resolvedModel = baker.getModel(id);
+        TextureSlots slots = resolvedModel.getTopTextureSlots();
+        boolean ambientOcclusion = resolvedModel.getTopAmbientOcclusion();
+        TextureAtlasSprite particleIcon = resolvedModel.resolveParticleSprite(slots, baker);
+        QuadCollection quads = resolvedModel.bakeTopGeometry(slots, baker, rotation);
 
-        if (bakedModel == null) {
-            throw new IllegalStateException("Could not bake PowerStones model: " + id);
+        return new WireModelPart(quads, ambientOcclusion, particleIcon);
+    }
+
+    private record WireModelPart(QuadCollection quads, boolean useAmbientOcclusion, TextureAtlasSprite particleIcon) implements BlockModelPart {
+        @Override
+        public List<BakedQuad> getQuads(@Nullable Direction face) {
+            return this.quads.getQuads(face);
         }
 
-        return bakedModel;
+        @Override
+        public ChunkSectionLayer getRenderType(BlockState state) {
+            return ChunkSectionLayer.CUTOUT;
+        }
     }
 
     private record WireModels(
-            BakedModel straightNorthSouthFirst,
-            BakedModel straightNorthSouthSecond,
+            WireModelPart straightNorthSouthFirst,
+            WireModelPart straightNorthSouthSecond,
 
-            BakedModel straightEastWestFirst,
-            BakedModel straightEastWestSecond,
+            WireModelPart straightEastWestFirst,
+            WireModelPart straightEastWestSecond,
 
-            BakedModel upNorth,
-            BakedModel upEast,
-            BakedModel upSouth,
-            BakedModel upWest,
+            WireModelPart upNorth,
+            WireModelPart upEast,
+            WireModelPart upSouth,
+            WireModelPart upWest,
 
-            BakedModel dot,
-            BakedModel dotLine0,
-            BakedModel dotLine1,
+            WireModelPart dot,
+            WireModelPart dotLine0,
+            WireModelPart dotLine1,
 
-            BakedModel armNorth,
-            BakedModel armSouth,
-            BakedModel armEast,
-            BakedModel armWest
+            WireModelPart armNorth,
+            WireModelPart armSouth,
+            WireModelPart armEast,
+            WireModelPart armWest
     ) {}
 
-    private static final class Baked implements IDynamicBakedModel {
+    private static final class Baked implements DynamicBlockStateModel {
 
         private final WireModels channelA;
         private final WireModels channelB;
@@ -189,39 +199,19 @@ public final class MultipleWiresModel implements IUnbakedGeometry<MultipleWiresM
             this.channelB = channelB;
         }
 
-        @Nonnull
         @Override
-        public ModelData getModelData(@Nonnull BlockAndTintGetter level, @Nonnull BlockPos pos, @Nonnull BlockState state, @Nonnull ModelData modelData) {
-            // When a single wire is converted, the block-state packet can arrive before the block-entity packet.
-            // Use the locally calculated render data during that short interval.
-            MultipleWiresBlockEntity.RenderData predictedData = MultipleWiresBlockEntity.getPredictedRenderData(pos);
-
-            if (predictedData != null && predictedData.powerPair() == state.getValue(MultipleWiresBlock.POWER_PAIR)) {
-                return ModelData.builder().with(MultipleWiresBlockEntity.RENDER_DATA, predictedData).build();
-            }
-
-            return modelData;
+        public TextureAtlasSprite particleIcon() {
+            return this.channelA.dot().particleIcon();
         }
 
-        @Nonnull
         @Override
-        public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction face, @Nonnull RandomSource random, @Nonnull ModelData extraData, @Nullable RenderType renderType) {
-            List<BakedQuad> quads = new ArrayList<>();
+        public Object createGeometryKey(BlockAndTintGetter level, BlockPos pos, BlockState state, RandomSource random) {
+            return new GeometryKey(getRenderData(level, pos, state));
+        }
 
-            // Fallback for an item renderer that reaches this block model.
-            if (state == null) {
-                addModelQuads(quads, this.channelA.dot(), null, face, random, renderType);
-                addModelQuads(quads, this.channelB.dot(), null, face, random, renderType);
-                return quads;
-            }
-
-            MultipleWiresBlockEntity.RenderData data = extraData.get(MultipleWiresBlockEntity.RENDER_DATA);
-
-            if (data == null) {
-                // Fallback for when the block entity is not available,
-                // such as when the block is being rendered in the inventory, or pushed by a piston.
-                data = getFallbackRenderData(state);
-            }
+        @Override
+        public void collectParts(BlockAndTintGetter level, BlockPos pos, BlockState state, RandomSource random, List<BlockModelPart> parts) {
+            MultipleWiresBlockEntity.RenderData data = getRenderData(level, pos, state);
 
             WireModels modelsForLogicalA = data.renderChannelsSwapped() ? this.channelB : this.channelA;
             WireModels modelsForLogicalB = data.renderChannelsSwapped() ? this.channelA : this.channelB;
@@ -229,10 +219,29 @@ public final class MultipleWiresModel implements IUnbakedGeometry<MultipleWiresM
             StraightLineOrientation logicalAOrientation = getStraightLineOrientation(data.northA(), data.eastA(), data.southA(), data.westA());
             StraightLineOrientation logicalBOrientation = getStraightLineOrientation(data.northB(), data.eastB(), data.southB(), data.westB());
 
-            addChannelQuads(quads, state, face, random, renderType, data.northA(), data.eastA(), data.southA(), data.westA(), logicalBOrientation, modelsForLogicalA);
-            addChannelQuads(quads, state, face, random, renderType, data.northB(), data.eastB(), data.southB(), data.westB(), logicalAOrientation, modelsForLogicalB);
+            addChannelParts(parts, data.northA(), data.eastA(), data.southA(), data.westA(), logicalBOrientation, modelsForLogicalA);
+            addChannelParts(parts, data.northB(), data.eastB(), data.southB(), data.westB(), logicalAOrientation, modelsForLogicalB);
+        }
 
-            return quads;
+        private static MultipleWiresBlockEntity.RenderData getRenderData(BlockAndTintGetter level, BlockPos pos, BlockState state) {
+            // When a single wire is converted, the block-state packet can arrive before the block-entity packet.
+            // Use the locally calculated render data during that short interval.
+            MultipleWiresBlockEntity.RenderData predictedData = MultipleWiresBlockEntity.getPredictedRenderData(pos);
+
+            if (predictedData != null && predictedData.powerPair() == state.getValue(MultipleWiresBlock.POWER_PAIR)) {
+                return predictedData;
+            }
+
+            ModelData modelData = level.getModelData(pos);
+            MultipleWiresBlockEntity.RenderData data = modelData.get(MultipleWiresBlockEntity.RENDER_DATA);
+
+            if (data == null || data.powerPair() != state.getValue(MultipleWiresBlock.POWER_PAIR)) {
+                // Fallback for when the block entity is not available,
+                // such as when the block is being rendered while pushed by a piston.
+                return getFallbackRenderData(state);
+            }
+
+            return data;
         }
 
         private static StraightLineOrientation getStraightLineOrientation(RedstoneSide northConnection, RedstoneSide eastConnection, RedstoneSide southConnection, RedstoneSide westConnection) {
@@ -250,12 +259,6 @@ public final class MultipleWiresModel implements IUnbakedGeometry<MultipleWiresM
             }
 
             return StraightLineOrientation.NONE;
-        }
-
-        @Nonnull
-        @Override
-        public ChunkRenderTypeSet getRenderTypes(@Nonnull BlockState state, @Nonnull RandomSource random, @Nonnull ModelData data) {
-            return ChunkRenderTypeSet.of(RenderType.cutout());
         }
 
         private static MultipleWiresBlockEntity.RenderData getFallbackRenderData(BlockState state) {
@@ -283,7 +286,7 @@ public final class MultipleWiresModel implements IUnbakedGeometry<MultipleWiresM
             );
         }
 
-        private static void addChannelQuads(List<BakedQuad> quads, BlockState state, @Nullable Direction face, RandomSource random, RenderType renderType, RedstoneSide northConnection, RedstoneSide eastConnection, RedstoneSide southConnection, RedstoneSide westConnection, StraightLineOrientation otherChannelOrientation, WireModels models) {
+        private static void addChannelParts(List<BlockModelPart> parts, RedstoneSide northConnection, RedstoneSide eastConnection, RedstoneSide southConnection, RedstoneSide westConnection, StraightLineOrientation otherChannelOrientation, WireModels models) {
             boolean north = northConnection.isConnected();
             boolean east = eastConnection.isConnected();
             boolean south = southConnection.isConnected();
@@ -295,42 +298,42 @@ public final class MultipleWiresModel implements IUnbakedGeometry<MultipleWiresM
 
             // Exact north-south straight line.
             if (straightNorthSouth) {
-                addModelQuads(quads, models.straightNorthSouthFirst(), state, face, random, renderType);
-                addModelQuads(quads, models.straightNorthSouthSecond(), state, face, random, renderType);
+                parts.add(models.straightNorthSouthFirst());
+                parts.add(models.straightNorthSouthSecond());
             }
 
             // Exact east-west straight line.
             if (straightEastWest) {
-                addModelQuads(quads, models.straightEastWestFirst(), state, face, random, renderType);
-                addModelQuads(quads, models.straightEastWestSecond(), state, face, random, renderType);
+                parts.add(models.straightEastWestFirst());
+                parts.add(models.straightEastWestSecond());
             }
 
             // Sections running up adjacent blocks.
             if (northConnection == RedstoneSide.UP) {
-                addModelQuads(quads, models.upNorth(), state, face, random, renderType);
+                parts.add(models.upNorth());
             }
 
             if (eastConnection == RedstoneSide.UP) {
-                addModelQuads(quads, models.upEast(), state, face, random, renderType);
+                parts.add(models.upEast());
             }
 
             if (southConnection == RedstoneSide.UP) {
-                addModelQuads(quads, models.upSouth(), state, face, random, renderType);
+                parts.add(models.upSouth());
             }
 
             if (westConnection == RedstoneSide.UP) {
-                addModelQuads(quads, models.upWest(), state, face, random, renderType);
+                parts.add(models.upWest());
             }
 
             // An unconnected channel uses a direction-specific dot when the
             // other channel is an exact straight line.
             if (noConnections) {
                 if (otherChannelOrientation == StraightLineOrientation.NORTH_SOUTH) {
-                    addModelQuads(quads, models.dotLine0(), state, face, random, renderType);
+                    parts.add(models.dotLine0());
                 } else if (otherChannelOrientation == StraightLineOrientation.EAST_WEST) {
-                    addModelQuads(quads, models.dotLine1(), state, face, random, renderType);
+                    parts.add(models.dotLine1());
                 } else {
-                    addModelQuads(quads, models.dot(), state, face, random, renderType);
+                    parts.add(models.dot());
                 }
             }
             else {
@@ -338,80 +341,28 @@ public final class MultipleWiresModel implements IUnbakedGeometry<MultipleWiresM
                 boolean renderDot = (north && east) || (north && west) || (south && east) || (south && west);
 
                 if (renderDot) {
-                    addModelQuads(quads, models.dot(), state, face, random, renderType);
+                    parts.add(models.dot());
                 }
             }
 
             // Render each required arm around the centre.
             if (north && (east || west)) {
-                addModelQuads(quads, models.armNorth(), state, face, random, renderType);
+                parts.add(models.armNorth());
             }
 
             if (south && (east || west)) {
-                addModelQuads(quads, models.armSouth(), state, face, random, renderType);
+                parts.add(models.armSouth());
             }
 
             if (east && (north || south)) {
-                addModelQuads(quads, models.armEast(), state, face, random, renderType);
+                parts.add(models.armEast());
             }
 
             if (west && (north || south)) {
-                addModelQuads(quads, models.armWest(), state, face, random, renderType);
+                parts.add(models.armWest());
             }
         }
 
-        private static void addModelQuads(List<BakedQuad> quads, BakedModel model, @Nullable BlockState state, @Nullable Direction face, RandomSource random, RenderType renderType) {
-            quads.addAll(model.getQuads(state, face, random, ModelData.EMPTY, renderType));
-        }
-
-        @Override
-        public boolean useAmbientOcclusion() {
-            return this.channelA.dot().useAmbientOcclusion();
-        }
-
-        @Override
-        public boolean isGui3d() {
-            return this.channelA.dot().isGui3d();
-        }
-
-        @Override
-        public boolean usesBlockLight() {
-            return this.channelA.dot().usesBlockLight();
-        }
-
-        @Override
-        public boolean isCustomRenderer() {
-            return this.channelA.dot().isCustomRenderer();
-        }
-
-        @Override
-        public TextureAtlasSprite getParticleIcon() {
-            return this.channelA.dot().getParticleIcon();
-        }
-
-        @Override
-        public TextureAtlasSprite getParticleIcon(@Nonnull ModelData data) {
-            return this.channelA.dot().getParticleIcon(data);
-        }
-
-        @Override
-        public BakedModel applyTransform(ItemDisplayContext transformType, PoseStack poseStack, boolean applyLeftHandTransform) {
-            this.channelA.dot().applyTransform(transformType, poseStack, applyLeftHandTransform);
-            return this;
-        }
-
-        @Override
-        public ItemOverrides getOverrides() {
-            return this.channelA.dot().getOverrides();
-        }
-    }
-
-    public enum Loader implements IGeometryLoader<MultipleWiresModel> {
-        INSTANCE;
-
-        @Override
-        public MultipleWiresModel read(JsonObject modelContents, JsonDeserializationContext deserializationContext) {
-            return MultipleWiresModel.INSTANCE;
-        }
+        private record GeometryKey(MultipleWiresBlockEntity.RenderData data) {}
     }
 }

@@ -17,6 +17,8 @@ import net.minecraft.block.enums.WireConnection;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.util.math.BlockPos;
 
 public class MultipleWiresBlockEntity extends BlockEntity {
@@ -254,45 +256,47 @@ public class MultipleWiresBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.writeNbt(nbt, registryLookup);
+    protected void writeData(WriteView view) {
+        super.writeData(view);
 
-        nbt.putBoolean("render_channels_swapped", this.renderChannelsSwapped);
+        view.putBoolean("render_channels_swapped", this.renderChannelsSwapped);
 
-        nbt.putInt("a", powerA);
-        nbt.putInt("b", powerB);
+        view.putInt("a", powerA);
+        view.putInt("b", powerB);
 
-        nbt.putByte("north_a", connectionToByte(this.northA));
-        nbt.putByte("east_a", connectionToByte(this.eastA));
-        nbt.putByte("south_a", connectionToByte(this.southA));
-        nbt.putByte("west_a", connectionToByte(this.westA));
+        view.putByte("north_a", connectionToByte(this.northA));
+        view.putByte("east_a", connectionToByte(this.eastA));
+        view.putByte("south_a", connectionToByte(this.southA));
+        view.putByte("west_a", connectionToByte(this.westA));
 
-        nbt.putByte("north_b", connectionToByte(this.northB));
-        nbt.putByte("east_b", connectionToByte(this.eastB));
-        nbt.putByte("south_b", connectionToByte(this.southB));
-        nbt.putByte("west_b", connectionToByte(this.westB));
+        view.putByte("north_b", connectionToByte(this.northB));
+        view.putByte("east_b", connectionToByte(this.eastB));
+        view.putByte("south_b", connectionToByte(this.southB));
+        view.putByte("west_b", connectionToByte(this.westB));
     }
 
     @Override
-    protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.readNbt(nbt, registryLookup);
+    protected void readData(ReadView view) {
+        super.readData(view);
 
         boolean hasCompleteRenderData =
-            nbt.contains("render_channels_swapped")
-            && nbt.contains("a")
-            && nbt.contains("b")
-            && nbt.contains("north_a")
-            && nbt.contains("east_a")
-            && nbt.contains("south_a")
-            && nbt.contains("west_a")
-            && nbt.contains("north_b")
-            && nbt.contains("east_b")
-            && nbt.contains("south_b")
-            && nbt.contains("west_b");
+            view.getOptionalInt("render_channels_swapped").isPresent()
+            && view.getOptionalInt("a").isPresent()
+            && view.getOptionalInt("b").isPresent()
+            && view.getOptionalInt("north_a").isPresent()
+            && view.getOptionalInt("east_a").isPresent()
+            && view.getOptionalInt("south_a").isPresent()
+            && view.getOptionalInt("west_a").isPresent()
+            && view.getOptionalInt("north_b").isPresent()
+            && view.getOptionalInt("east_b").isPresent()
+            && view.getOptionalInt("south_b").isPresent()
+            && view.getOptionalInt("west_b").isPresent();
 
         // Do not overwrite a correct prediction with implicit zero values
+
         // from an incomplete client-side NBT compound.
-        if (!hasCompleteRenderData && this.world != null && this.world.isClient) {
+
+        if (!hasCompleteRenderData && this.world != null && this.world.isClient()) {
             RenderData predictedData = getPredictedRenderData(this.pos);
 
             if (predictedData != null && predictedData.powerPair() == this.getCachedState().get(MultipleWiresBlock.POWER_PAIR)) {
@@ -304,22 +308,22 @@ public class MultipleWiresBlockEntity extends BlockEntity {
             }
         }
 
-        this.renderChannelsSwapped = nbt.getBoolean("render_channels_swapped");
+        this.renderChannelsSwapped = view.getBoolean("render_channels_swapped", false);
 
-        this.powerA = nbt.getInt("a");
-        this.powerB = nbt.getInt("b");
+        this.powerA = view.getInt("a", 0);
+        this.powerB = view.getInt("b", 0);
 
-        this.northA = byteToConnection(nbt.getByte("north_a"));
-        this.eastA = byteToConnection(nbt.getByte("east_a"));
-        this.southA = byteToConnection(nbt.getByte("south_a"));
-        this.westA = byteToConnection(nbt.getByte("west_a"));
+        this.northA = byteToConnection(view.getByte("north_a", (byte) 0));
+        this.eastA = byteToConnection(view.getByte("east_a", (byte) 0));
+        this.southA = byteToConnection(view.getByte("south_a", (byte) 0));
+        this.westA = byteToConnection(view.getByte("west_a", (byte) 0));
 
-        this.northB = byteToConnection(nbt.getByte("north_b"));
-        this.eastB = byteToConnection(nbt.getByte("east_b"));
-        this.southB = byteToConnection(nbt.getByte("south_b"));
-        this.westB = byteToConnection(nbt.getByte("west_b"));
+        this.northB = byteToConnection(view.getByte("north_b", (byte) 0));
+        this.eastB = byteToConnection(view.getByte("east_b", (byte) 0));
+        this.southB = byteToConnection(view.getByte("south_b", (byte) 0));
+        this.westB = byteToConnection(view.getByte("west_b", (byte) 0));
 
-        if (this.world != null && this.world.isClient) {
+        if (this.world != null && this.world.isClient()) {
             clearPredictedRenderData(this.pos);
             this.world.scheduleBlockRerenderIfNeeded(this.pos, null, this.getCachedState());
         }
@@ -362,7 +366,7 @@ public class MultipleWiresBlockEntity extends BlockEntity {
     }
 
     private void update() {
-        if (world != null && !world.isClient) {
+        if (world != null && !world.isClient()) {
             this.markDirty();
 
             if (!this.suppressUpdatePackets) {

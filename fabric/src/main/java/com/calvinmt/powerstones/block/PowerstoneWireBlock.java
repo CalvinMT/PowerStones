@@ -19,11 +19,10 @@ import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Direction.Type;
 import net.minecraft.util.math.random.Random;
@@ -161,7 +160,7 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
 
     public int getColorForPower(int power) {
         Vec3d vec3d = COLORS[power];
-        return MathHelper.packRgb((float)vec3d.getX(), (float)vec3d.getY(), (float)vec3d.getZ());
+        return ColorHelper.fromFloats(1.0F, (float)vec3d.getX(), (float)vec3d.getY(), (float)vec3d.getZ());
     }
 
     @Override
@@ -200,7 +199,7 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
                 world.setBlockState(pos, newState);
                 this.updateForNewState(world, pos, state, newState);
 
-                return ActionResult.success(world.isClient);
+                return ActionResult.SUCCESS;
             }
         }
 
@@ -208,9 +207,9 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
     }
 
     @Override
-    public ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+    public ActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         if (!player.getAbilities().allowModifyWorld) {
-            return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
         }
 
         boolean canCombine = state.isOf(PowerStones.BLUESTONE_WIRE) && (stack.isOf(Items.REDSTONE) || stack.isOf(PowerStones.GREENSTONE) || stack.isOf(PowerStones.YELLOWSTONE))
@@ -220,10 +219,10 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
         if (canCombine) {
             this.placeOnUse(state, world, pos, player, hand);
 
-            return ItemActionResult.success(world.isClient);
+            return ActionResult.SUCCESS;
         }
 
-        return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
     }
 
     public static boolean shouldBreakBlock(BlockState state, ItemStack heldItemStack) {

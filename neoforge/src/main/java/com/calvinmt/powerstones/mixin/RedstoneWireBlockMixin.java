@@ -1,7 +1,11 @@
 package com.calvinmt.powerstones.mixin;
 
+import java.util.Map;
+
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
@@ -11,27 +15,25 @@ import com.calvinmt.powerstones.PowerColour;
 import com.calvinmt.powerstones.PowerStones;
 import com.calvinmt.powerstones.RedstoneWireBlockInterface;
 import com.calvinmt.powerstones.block.MultipleWiresBlock;
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import com.llamalad7.mixinextras.sugar.Local;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.properties.RedstoneSide;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 
 @Mixin(RedStoneWireBlock.class)
@@ -46,11 +48,11 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
     @Shadow
     public static @Final EnumProperty<RedstoneSide> WEST;
     @Shadow
-    public static @Final IntegerProperty POWER;
+    public static @Final Map<Direction, EnumProperty<RedstoneSide>> PROPERTY_BY_DIRECTION;
     @Shadow
     private void updateNeighborsOfNeighboringWires(Level level, BlockPos pos) {}
     @Shadow
-    private void updatePowerStrength(Level pLevel, BlockPos pPos, BlockState pState) {}
+    private void updatePowerStrength(Level level, BlockPos pos, BlockState state, @Nullable Orientation orientation, boolean blockAdded) {}
     @Shadow
     private BlockState getConnectionState(BlockGetter level, BlockState state, BlockPos pos) { return null; };
     @Shadow
@@ -65,9 +67,36 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
         return this.getConnectionState(level, Blocks.REDSTONE_WIRE.defaultBlockState(), pos);
     }
 
-    @Redirect(method = "updateIndirectNeighbourShapes(Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/LevelAccessor;Lnet/minecraft/core/BlockPos;II)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z"))
-    private boolean updateIndirectNeighbourShapesIs(BlockState state, Block block) {
-        return state.is(block) || (state.is(PowerStones.MULTIPLE_WIRES.get()) && state.getValue(PowerStones.POWER_PAIR).hasRed());
+    @Overwrite
+    public void updateIndirectNeighbourShapes(BlockState state, LevelAccessor level, BlockPos pos, int pFlags, int pRecursionLeft) {
+        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
+
+        for(Direction direction : Direction.Plane.HORIZONTAL) {
+            RedstoneSide redstoneside = state.getValue(PROPERTY_BY_DIRECTION.get(direction));
+            mutable.setWithOffset(pos, direction);
+            if (redstoneside != RedstoneSide.NONE
+             && (! level.getBlockState(mutable).is(this) || ! this.isOtherConnectablePowerstone(level.getBlockState(mutable)))) {
+                mutable.move(Direction.DOWN);
+                BlockState blockstate = level.getBlockState(mutable);
+                if (blockstate.is(this) || this.isOtherConnectablePowerstone(blockstate)) {
+                    BlockPos blockpos = mutable.relative(direction.getOpposite());
+                    BlockState newBlockstate = blockstate.updateShape(level, level, mutable, direction.getOpposite(), blockpos, level.getBlockState(blockpos), level.getRandom());
+                    updateOrDestroy(blockstate, newBlockstate, level, mutable, pFlags, pRecursionLeft);
+                }
+
+                mutable.setWithOffset(pos, direction).move(Direction.UP);
+                BlockState blockstate1 = level.getBlockState(mutable);
+                if (blockstate1.is(this) || this.isOtherConnectablePowerstone(blockstate1)) {
+                    BlockPos blockpos1 = mutable.relative(direction.getOpposite());
+                    BlockState newBlockstate1 = blockstate1.updateShape(level, level, mutable, direction.getOpposite(), blockpos1, level.getBlockState(blockpos1), level.getRandom());
+                    updateOrDestroy(blockstate1, newBlockstate1, level, mutable, pFlags, pRecursionLeft);
+                }
+            }
+        }
+    }
+
+    private boolean isOtherConnectablePowerstone(BlockState state) {
+        return state.is(PowerStones.MULTIPLE_WIRES.get()) && state.getValue(PowerStones.POWER_PAIR).hasRed();
     }
 
     @Redirect(method = "getConnectingSide(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;Z)Lnet/minecraft/world/level/block/state/properties/RedstoneSide;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;canRedstoneConnectTo(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;)Z"))
@@ -88,49 +117,6 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
         else {
             return state.canRedstoneConnectTo(level, pos, direction);
         }
-    }
-
-    @Redirect(method = "calculateTargetStrength(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)I", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;getBestNeighborSignal(Lnet/minecraft/core/BlockPos;)I"))
-    private int calculateTargetStrengthMultipleWiresShouldSignal(Level level, BlockPos pos) {
-        int result = 0;
-        ((MultipleWiresBlock)PowerStones.MULTIPLE_WIRES.get()).setShouldSignal(false);
-        result = level.getBestNeighborSignal(pos);
-        ((MultipleWiresBlock)PowerStones.MULTIPLE_WIRES.get()).setShouldSignal(true);
-        return result;
-    }
-
-    @WrapOperation(method = "calculateTargetStrength(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)I", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/RedStoneWireBlock;getWireSignal(Lnet/minecraft/world/level/block/state/BlockState;)I", ordinal = 0))
-    private int getIncreasePower(RedStoneWireBlock self, BlockState state, Operation<Integer> original, Level level, BlockPos pos, @Local(name = "blockpos") BlockPos blockPos) {
-        return this.increasePower(level, blockPos, state);
-    }
-
-    @WrapOperation( method = "calculateTargetStrength(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)I", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/RedStoneWireBlock;getWireSignal(Lnet/minecraft/world/level/block/state/BlockState;)I", ordinal = 1))
-    private int getIncreasePowerUp(RedStoneWireBlock self, BlockState state, Operation<Integer> original, Level level, BlockPos pos, @Local(name = "blockpos") BlockPos blockPos) {
-        return this.increasePower(level, blockPos.above(), state);
-    }
-
-    @WrapOperation(method = "calculateTargetStrength(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)I", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/RedStoneWireBlock;getWireSignal(Lnet/minecraft/world/level/block/state/BlockState;)I", ordinal = 2))
-    private int getIncreasePowerDown(RedStoneWireBlock self, BlockState state, Operation<Integer> original, Level level, BlockPos pos, @Local(name = "blockpos") BlockPos blockPos) {
-        return this.increasePower(level, blockPos.below(), state);
-    }
-
-    private int increasePower(Level level, BlockPos pos, BlockState state) {
-        if (state.is(PowerStones.MULTIPLE_WIRES.get())) {
-            return MultipleWiresBlock.getPowerForColour(state, level, pos, PowerColour.RED);
-        }
-
-        return state.is(this) ? state.getValue(POWER) : 0;
-    }
-
-    @Override
-    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if (stack.is(PowerStones.BLUESTONE.get()) || stack.is(PowerStones.GREENSTONE.get()) || stack.is(PowerStones.YELLOWSTONE.get())) {
-            this.placeOnUse(state, level, pos, player, hand);
-
-            return ItemInteractionResult.sidedSuccess(level.isClientSide());
-        }
-
-        return super.useItemOn(stack, state, level, pos, player, hand, hit);
     }
 
     public void setShouldSignal(boolean shouldSignal) {
@@ -173,10 +159,10 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
     @Override
     public void updateAll(BlockState state, Level level, BlockPos pos) {
         for (Direction direction : Direction.values()) {
-            level.updateNeighborsAt(pos.relative(direction), (RedStoneWireBlock)(Object)this);
+            level.updateNeighborsAt(pos.relative(direction), (RedStoneWireBlock)(Object)this, null);
         }
         state = this.getConnectionState(level, state, pos);
-        this.updatePowerStrength(level, pos, state);
+        this.updatePowerStrength(level, pos, state, null, false);
         this.updateNeighborsOfNeighboringWires(level, pos);
         state = this.getConnectionState(level, level.getBlockState(pos), pos);
         level.setBlock(pos, state,  Block.UPDATE_ALL | Block.UPDATE_IMMEDIATE);
@@ -187,11 +173,22 @@ public abstract class RedstoneWireBlockMixin extends Block implements RedstoneWi
     }
 
     @Override
-    public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, boolean willHarvest, FluidState fluid) {
-        if (! RedstoneWireBlockInterface.shouldBreakBlock(state, player.getMainHandItem())) {
+    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (stack.is(PowerStones.BLUESTONE.get()) || stack.is(PowerStones.GREENSTONE.get()) || stack.is(PowerStones.YELLOWSTONE.get())) {
+            this.placeOnUse(state, level, pos, player, hand);
+
+            return InteractionResult.SUCCESS;
+        }
+
+        return super.useItemOn(stack, state, level, pos, player, hand, hit);
+    }
+
+    @Override
+    public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, ItemStack stack, boolean willHarvest, FluidState fluid) {
+        if (! RedstoneWireBlockInterface.shouldBreakBlock(state, stack)) {
             return false;
         }
-        return super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);
+        return super.onDestroyedByPlayer(state, level, pos, player, stack, willHarvest, fluid);
     }
 
 }

@@ -3,13 +3,13 @@ package com.calvinmt.powerstones;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.MapColor;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.item.AliasedBlockItem;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroups;
@@ -18,6 +18,8 @@ import net.minecraft.item.Items;
 import net.minecraft.item.VerticallyAttachableBlockItem;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.util.ActionResult;
@@ -50,31 +52,39 @@ public class PowerStones implements ModInitializer   {
 
     public static final EnumProperty<PowerPair> POWER_PAIR = EnumProperty.of("power_pair", PowerPair.class);
 
-	public static final Block BLUESTONE_WIRE = new BluestoneWireBlock(AbstractBlock.Settings.copy(Blocks.REDSTONE_WIRE));
-	public static final Block GREENSTONE_WIRE = new GreenstoneWireBlock(AbstractBlock.Settings.copy(Blocks.REDSTONE_WIRE));
-	public static final Block YELLOWSTONE_WIRE = new YellowstoneWireBlock(AbstractBlock.Settings.copy(Blocks.REDSTONE_WIRE));
-	public static final Block MULTIPLE_WIRES = new MultipleWiresBlock(AbstractBlock.Settings.copy(Blocks.REDSTONE_WIRE));
-	public static final Block BLUESTONE_TORCH_BLOCK = new BluestoneTorchBlock(AbstractBlock.Settings.copy(Blocks.REDSTONE_TORCH));
-	public static final Block GREENSTONE_TORCH_BLOCK = new GreenstoneTorchBlock(AbstractBlock.Settings.copy(Blocks.REDSTONE_TORCH));
-	public static final Block YELLOWSTONE_TORCH_BLOCK = new YellowstoneTorchBlock(AbstractBlock.Settings.copy(Blocks.REDSTONE_TORCH));
-	public static final Block BLUESTONE_WALL_TORCH = new WallBluestoneTorchBlock(AbstractBlock.Settings.copy(Blocks.REDSTONE_WALL_TORCH));
-	public static final Block GREENSTONE_WALL_TORCH = new WallGreenstoneTorchBlock(AbstractBlock.Settings.copy(Blocks.REDSTONE_WALL_TORCH));
-	public static final Block YELLOWSTONE_WALL_TORCH = new WallYellowstoneTorchBlock(AbstractBlock.Settings.copy(Blocks.REDSTONE_WALL_TORCH));
-	public static final Block BLUESTONE_BLOCK = new BluestoneBlock(AbstractBlock.Settings.create().mapColor(MapColor.LAPIS_BLUE).requiresTool().strength(5.0f, 6.0f).sounds(BlockSoundGroup.METAL));
-	public static final Block GREENSTONE_BLOCK = new GreenstoneBlock(AbstractBlock.Settings.create().mapColor(MapColor.EMERALD_GREEN).requiresTool().strength(5.0f, 6.0f).sounds(BlockSoundGroup.METAL));
-	public static final Block YELLOWSTONE_BLOCK = new YellowstoneBlock(AbstractBlock.Settings.create().mapColor(MapColor.PALE_YELLOW).requiresTool().strength(5.0f, 6.0f).sounds(BlockSoundGroup.METAL));
+	public static final Block BLUESTONE_WIRE = new BluestoneWireBlock(createBlockSettings("bluestone_wire", AbstractBlock.Settings.copy(Blocks.REDSTONE_WIRE)));
+	public static final Block GREENSTONE_WIRE = new GreenstoneWireBlock(createBlockSettings("greenstone_wire", AbstractBlock.Settings.copy(Blocks.REDSTONE_WIRE)));
+	public static final Block YELLOWSTONE_WIRE = new YellowstoneWireBlock(createBlockSettings("yellowstone_wire", AbstractBlock.Settings.copy(Blocks.REDSTONE_WIRE)));
+	public static final Block MULTIPLE_WIRES = new MultipleWiresBlock(createBlockSettings("multiple_wires", AbstractBlock.Settings.copy(Blocks.REDSTONE_WIRE)));
+	public static final Block BLUESTONE_TORCH_BLOCK = new BluestoneTorchBlock(createBlockSettings("bluestone_torch", AbstractBlock.Settings.copy(Blocks.REDSTONE_TORCH)));
+	public static final Block GREENSTONE_TORCH_BLOCK = new GreenstoneTorchBlock(createBlockSettings("greenstone_torch", AbstractBlock.Settings.copy(Blocks.REDSTONE_TORCH)));
+	public static final Block YELLOWSTONE_TORCH_BLOCK = new YellowstoneTorchBlock(createBlockSettings("yellowstone_torch", AbstractBlock.Settings.copy(Blocks.REDSTONE_TORCH)));
+	public static final Block BLUESTONE_WALL_TORCH = new WallBluestoneTorchBlock(createBlockSettings("bluestone_wall_torch", AbstractBlock.Settings.copy(Blocks.REDSTONE_WALL_TORCH)));
+	public static final Block GREENSTONE_WALL_TORCH = new WallGreenstoneTorchBlock(createBlockSettings("greenstone_wall_torch", AbstractBlock.Settings.copy(Blocks.REDSTONE_WALL_TORCH)));
+	public static final Block YELLOWSTONE_WALL_TORCH = new WallYellowstoneTorchBlock(createBlockSettings("yellowstone_wall_torch", AbstractBlock.Settings.copy(Blocks.REDSTONE_WALL_TORCH)));
+	public static final Block BLUESTONE_BLOCK = new BluestoneBlock(createBlockSettings("bluestone_block", AbstractBlock.Settings.create().mapColor(MapColor.LAPIS_BLUE).requiresTool().strength(5.0f, 6.0f).sounds(BlockSoundGroup.METAL)));
+	public static final Block GREENSTONE_BLOCK = new GreenstoneBlock(createBlockSettings("greenstone_block", AbstractBlock.Settings.create().mapColor(MapColor.EMERALD_GREEN).requiresTool().strength(5.0f, 6.0f).sounds(BlockSoundGroup.METAL)));
+	public static final Block YELLOWSTONE_BLOCK = new YellowstoneBlock(createBlockSettings("yellowstone_block", AbstractBlock.Settings.create().mapColor(MapColor.PALE_YELLOW).requiresTool().strength(5.0f, 6.0f).sounds(BlockSoundGroup.METAL)));
 
-	public static final BlockEntityType<MultipleWiresBlockEntity> MULTIPLE_WIRES_BE_TYPE = BlockEntityType.Builder.create(MultipleWiresBlockEntity::new, MULTIPLE_WIRES).build();
+	public static final BlockEntityType<MultipleWiresBlockEntity> MULTIPLE_WIRES_BE_TYPE = FabricBlockEntityTypeBuilder.create(MultipleWiresBlockEntity::new, MULTIPLE_WIRES).build();
 
-	public static final BlockItem BLUESTONE = new AliasedBlockItem(BLUESTONE_WIRE, new Item.Settings());
-	public static final BlockItem GREENSTONE = new AliasedBlockItem(GREENSTONE_WIRE, new Item.Settings());
-	public static final BlockItem YELLOWSTONE = new AliasedBlockItem(YELLOWSTONE_WIRE, new Item.Settings());
-	public static final BlockItem BLUESTONE_TORCH = new VerticallyAttachableBlockItem(BLUESTONE_TORCH_BLOCK, BLUESTONE_WALL_TORCH, new Item.Settings(), Direction.DOWN);
-	public static final BlockItem GREENSTONE_TORCH = new VerticallyAttachableBlockItem(GREENSTONE_TORCH_BLOCK, GREENSTONE_WALL_TORCH, new Item.Settings(), Direction.DOWN);
-	public static final BlockItem YELLOWSTONE_TORCH = new VerticallyAttachableBlockItem(YELLOWSTONE_TORCH_BLOCK, YELLOWSTONE_WALL_TORCH, new Item.Settings(), Direction.DOWN);
-	public static final BlockItem BLUESTONE_BLOCK_ITEM = new BlockItem(BLUESTONE_BLOCK, new Item.Settings());
-	public static final BlockItem GREENSTONE_BLOCK_ITEM = new BlockItem(GREENSTONE_BLOCK, new Item.Settings());
-	public static final BlockItem YELLOWSTONE_BLOCK_ITEM = new BlockItem(YELLOWSTONE_BLOCK, new Item.Settings());
+	public static final BlockItem BLUESTONE = new BlockItem(BLUESTONE_WIRE, createItemSettings("bluestone"));
+	public static final BlockItem GREENSTONE = new BlockItem(GREENSTONE_WIRE, createItemSettings("greenstone"));
+	public static final BlockItem YELLOWSTONE = new BlockItem(YELLOWSTONE_WIRE, createItemSettings("yellowstone"));
+	public static final BlockItem BLUESTONE_TORCH = new VerticallyAttachableBlockItem(BLUESTONE_TORCH_BLOCK, BLUESTONE_WALL_TORCH, Direction.DOWN, createItemSettings("bluestone_torch").useBlockPrefixedTranslationKey());
+	public static final BlockItem GREENSTONE_TORCH = new VerticallyAttachableBlockItem(GREENSTONE_TORCH_BLOCK, GREENSTONE_WALL_TORCH, Direction.DOWN, createItemSettings("greenstone_torch").useBlockPrefixedTranslationKey());
+	public static final BlockItem YELLOWSTONE_TORCH = new VerticallyAttachableBlockItem(YELLOWSTONE_TORCH_BLOCK, YELLOWSTONE_WALL_TORCH, Direction.DOWN, createItemSettings("yellowstone_torch").useBlockPrefixedTranslationKey());
+	public static final BlockItem BLUESTONE_BLOCK_ITEM = new BlockItem(BLUESTONE_BLOCK, createItemSettings("bluestone_block"));
+	public static final BlockItem GREENSTONE_BLOCK_ITEM = new BlockItem(GREENSTONE_BLOCK, createItemSettings("greenstone_block"));
+	public static final BlockItem YELLOWSTONE_BLOCK_ITEM = new BlockItem(YELLOWSTONE_BLOCK, createItemSettings("yellowstone_block"));
+
+	private static AbstractBlock.Settings createBlockSettings(String name, AbstractBlock.Settings settings) {
+		return settings.registryKey(RegistryKey.of(RegistryKeys.BLOCK, Identifier.of(NAMESPACE, name)));
+	}
+
+	private static Item.Settings createItemSettings(String name) {
+		return new Item.Settings().registryKey(RegistryKey.of(RegistryKeys.ITEM, Identifier.of(NAMESPACE, name)));
+	}
 
 	@Override
 	public void onInitialize() {
@@ -133,9 +143,11 @@ public class PowerStones implements ModInitializer   {
         	ItemStack heldItemStack = player.getMainHandStack();
 
 			if (MultipleWiresBlock.shouldBreakIntoSingle(state, heldItemStack)) {
-				if (!world.isClient) {
+				if (!world.isClient()) {
 					// Vanilla breaking will be cancelled, so produce the selected wire's normal loot manually.
+
 					// 'multiple_wires' loot table can still inspect the held dust item.
+
 					if (!player.getAbilities().creativeMode) {
 						Block.dropStacks(state, world, pos, world.getBlockEntity(pos), player, heldItemStack);
 					}
@@ -143,6 +155,7 @@ public class PowerStones implements ModInitializer   {
 					((MultipleWiresBlock) state.getBlock()).breakSingle(world, pos, state, player);
 				}
 				// Prevents vanilla from breaking the replacement wire.
+
 				return ActionResult.SUCCESS;
 			}
 

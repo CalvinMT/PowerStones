@@ -9,11 +9,10 @@ import java.util.Set;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.util.Mth;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -162,7 +161,7 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
 
     public int getColorForPower(int power) {
         Vec3 vec3 = COLORS[power];
-        return Mth.color((float)vec3.x(), (float)vec3.y(), (float)vec3.z());
+        return ARGB.color(vec3);
     }
 
     @Override
@@ -201,7 +200,7 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
                 level.setBlockAndUpdate(pos, newState);
                 this.updatesOnShapeChange(level, pos, state, newState);
 
-                return InteractionResult.sidedSuccess(level.isClientSide());
+                return InteractionResult.SUCCESS;
             }
         }
 
@@ -209,9 +208,9 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
     }
 
     @Override
-    public ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    public InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (!player.getAbilities().mayBuild) {
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
 
         boolean canCombine = state.is(PowerStones.BLUESTONE_WIRE.get()) && (stack.is(Items.REDSTONE) || stack.is(PowerStones.GREENSTONE.get()) || stack.is(PowerStones.YELLOWSTONE.get()))
@@ -221,10 +220,10 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
         if (canCombine) {
             this.placeOnUse(state, level, pos, player, hand);
 
-            return ItemInteractionResult.sidedSuccess(level.isClientSide());
+            return InteractionResult.SUCCESS;
         }
 
-        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 
     public static boolean shouldBreakBlock(BlockState state, ItemStack heldItemStack) {
@@ -237,11 +236,11 @@ public abstract class PowerstoneWireBlock extends PowerstoneWireBlockBase {
     }
 
     @Override
-    public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, boolean willHarvest, FluidState fluid) {
-        if (! shouldBreakBlock(state, player.getMainHandItem())) {
+    public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, ItemStack stack, boolean willHarvest, FluidState fluid) {
+        if (! shouldBreakBlock(state, stack)) {
             return false;
         }
-        return super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);
+        return super.onDestroyedByPlayer(state, level, pos, player, stack, willHarvest, fluid);
     }
 
 }

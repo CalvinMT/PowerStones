@@ -15,7 +15,7 @@ base {
     archivesName = mod_id
 }
 
-// Minecraft 1.21.1 and NeoForge use Java 21.
+// Minecraft 1.21.11 and NeoForge use Java 21.
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 sourceSets.main.resources {
@@ -53,7 +53,7 @@ neoForge {
         }
 
         data {
-            data()
+            clientData()
             programArguments.addAll(
                 '--mod', project.mod_id,
                 '--all',

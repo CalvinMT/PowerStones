@@ -9,10 +9,11 @@ import com.google.common.collect.Maps;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -20,6 +21,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Mirror;
@@ -29,6 +31,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.RedstoneSide;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -131,7 +134,7 @@ public abstract class PowerstoneWireBlockBase extends Block implements BlockBeha
         return state;
     }
 
-    public BlockState updateShape(BlockState state, Direction facing, BlockState facingState, LevelAccessor level, BlockPos currentPos, BlockPos facingPos) {
+    public BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess tickAccess, BlockPos currentPos, Direction facing, BlockPos facingPos, BlockState facingState, RandomSource random) {
         if (facing == Direction.DOWN) {
             return state;
         } else if (facing == Direction.UP) {
@@ -164,14 +167,14 @@ public abstract class PowerstoneWireBlockBase extends Block implements BlockBeha
                 BlockState blockstate = level.getBlockState(blockpos$mutableblockpos);
                 if (blockstate.is(this) || this.isOtherConnectablePowerstone(blockstate)) {
                     BlockPos blockpos = blockpos$mutableblockpos.relative(direction.getOpposite());
-                    level.neighborShapeChanged(direction.getOpposite(), level.getBlockState(blockpos), blockpos$mutableblockpos, blockpos, pFlags, pRecursionLeft);
+                    level.neighborShapeChanged(direction.getOpposite(), blockpos$mutableblockpos, blockpos, level.getBlockState(blockpos), pFlags, pRecursionLeft);
                 }
 
                 blockpos$mutableblockpos.setWithOffset(pos, direction).move(Direction.UP);
                 BlockState blockstate1 = level.getBlockState(blockpos$mutableblockpos);
                 if (blockstate1.is(this) || this.isOtherConnectablePowerstone(blockstate1)) {
                     BlockPos blockpos1 = blockpos$mutableblockpos.relative(direction.getOpposite());
-                    level.neighborShapeChanged(direction.getOpposite(), level.getBlockState(blockpos1), blockpos$mutableblockpos, blockpos1, pFlags, pRecursionLeft);
+                    level.neighborShapeChanged(direction.getOpposite(), blockpos$mutableblockpos, blockpos1, level.getBlockState(blockpos1), pFlags, pRecursionLeft);
                 }
             }
         }
@@ -238,7 +241,7 @@ public abstract class PowerstoneWireBlockBase extends Block implements BlockBeha
     }
 
     public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean isMoving) {
-        if (!oldState.is(state.getBlock()) && !level.isClientSide) {
+        if (!oldState.is(state.getBlock()) && !level.isClientSide()) {
             this.updatePowerStrength(level, pos, state);
 
             for(Direction direction : Direction.Plane.VERTICAL) {
@@ -249,10 +252,10 @@ public abstract class PowerstoneWireBlockBase extends Block implements BlockBeha
         }
     }
 
-    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
-        if (!isMoving && !state.is(newState.getBlock())) {
-            super.onRemove(state, level, pos, newState, isMoving);
-            if (!level.isClientSide) {
+    public void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean isMoving) {
+        if (!isMoving) {
+            super.affectNeighborsAfterRemoval(state, level, pos, isMoving);
+            if (!level.isClientSide()) {
                 for(Direction direction : Direction.values()) {
                     level.updateNeighborsAt(pos.relative(direction), this);
                 }
@@ -278,8 +281,8 @@ public abstract class PowerstoneWireBlockBase extends Block implements BlockBeha
         }
     }
 
-    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block pBlock, BlockPos pFromPos, boolean pIsMoving) {
-        if (!level.isClientSide) {
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block pBlock, Orientation orientation, boolean pIsMoving) {
+        if (!level.isClientSide()) {
             if (state.canSurvive(level, pos)) {
                 this.updatePowerStrength(level, pos, state);
             } else {
@@ -307,7 +310,7 @@ public abstract class PowerstoneWireBlockBase extends Block implements BlockBeha
             double d0 = 0.5D + (double)(0.4375F * (float)xDirection.getStepX()) + (double)(f2 * (float)zDirection.getStepX());
             double d1 = 0.5D + (double)(0.4375F * (float)xDirection.getStepY()) + (double)(f2 * (float)zDirection.getStepY());
             double d2 = 0.5D + (double)(0.4375F * (float)xDirection.getStepZ()) + (double)(f2 * (float)zDirection.getStepZ());
-            level.addParticle(new DustParticleOptions(particleVec.toVector3f(), 1.0F), (double)pos.getX() + d0, (double)pos.getY() + d1, (double)pos.getZ() + d2, 0.0D, 0.0D, 0.0D);
+            level.addParticle(new DustParticleOptions(ARGB.color(particleVec), 1.0F), (double)pos.getX() + d0, (double)pos.getY() + d1, (double)pos.getZ() + d2, 0.0D, 0.0D, 0.0D);
         }
     }
 
@@ -375,13 +378,13 @@ public abstract class PowerstoneWireBlockBase extends Block implements BlockBeha
 
     public abstract InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit);
 
-    public abstract ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit);
+    public abstract InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit);
 
     protected void updatesOnShapeChange(Level level, BlockPos pos, BlockState pOldState, BlockState pNewState) {
         for(Direction direction : Direction.Plane.HORIZONTAL) {
             BlockPos blockpos = pos.relative(direction);
             if (pOldState.getValue(PROPERTY_BY_DIRECTION.get(direction)).isConnected() != pNewState.getValue(PROPERTY_BY_DIRECTION.get(direction)).isConnected() && level.getBlockState(blockpos).isRedstoneConductor(level, blockpos)) {
-                level.updateNeighborsAtExceptFromFacing(blockpos, pNewState.getBlock(), direction.getOpposite());
+                level.updateNeighborsAtExceptFromFacing(blockpos, pNewState.getBlock(), direction.getOpposite(), null);
             }
         }
     }

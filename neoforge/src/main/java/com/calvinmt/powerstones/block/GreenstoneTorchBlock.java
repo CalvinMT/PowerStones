@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.Vec3;
 
 public class GreenstoneTorchBlock extends TorchBlock {
@@ -83,7 +84,7 @@ public class GreenstoneTorchBlock extends TorchBlock {
 
    }
 
-   public void neighborChanged(BlockState pState, Level pLevel, BlockPos pPos, Block pBlock, BlockPos pFromPos, boolean pIsMoving) {
+   public void neighborChanged(BlockState pState, Level pLevel, BlockPos pPos, Block pBlock, Orientation pOrientation, boolean pIsMoving) {
       if (pState.getValue(LIT) == this.hasNeighborSignal(pLevel, pPos, pState) && !pLevel.getBlockTicks().willTickThisTick(pPos, this)) {
          pLevel.scheduleTick(pPos, this, 2);
       }

@@ -7,37 +7,34 @@ import com.calvinmt.powerstones.block.PowerstoneWireBlockBase;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.blockview.v2.FabricBlockView;
-import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
+import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
+import net.fabricmc.fabric.api.renderer.v1.model.FabricBlockModelPart;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.enums.WireConnection;
-import net.minecraft.client.render.model.BakedModel;
-import net.minecraft.client.render.model.BakedQuad;
 import net.minecraft.client.render.model.Baker;
+import net.minecraft.client.render.model.BlockModelPart;
+import net.minecraft.client.render.model.BlockStateModel;
+import net.minecraft.client.render.model.GeometryBakedModel;
 import net.minecraft.client.render.model.ModelBakeSettings;
 import net.minecraft.client.render.model.ModelRotation;
-import net.minecraft.client.render.model.UnbakedModel;
-import net.minecraft.client.render.model.json.ModelOverrideList;
-import net.minecraft.client.render.model.json.ModelTransformation;
+import net.minecraft.client.render.model.ResolvableModel;
 import net.minecraft.client.texture.Sprite;
-import net.minecraft.client.util.SpriteIdentifier;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.DirectionTransformation;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.BlockRenderView;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.Predicate;
 
 @Environment(EnvType.CLIENT)
-public final class MultipleWiresModel implements UnbakedModel {
+public final class MultipleWiresModel implements BlockStateModel.Unbaked {
 
     public static final MultipleWiresModel INSTANCE = new MultipleWiresModel();
 
@@ -90,24 +87,14 @@ public final class MultipleWiresModel implements UnbakedModel {
     }
 
     @Override
-    public Collection<Identifier> getModelDependencies() {
-        return MODEL_DEPENDENCIES;
-    }
-
-    @Override
-    public void setParents(Function<Identifier, UnbakedModel> modelLoader) {
+    public void resolve(ResolvableModel.Resolver resolver) {
         for (Identifier dependency : MODEL_DEPENDENCIES) {
-            UnbakedModel model = modelLoader.apply(dependency);
-
-            if (model != null) {
-                model.setParents(modelLoader);
-            }
+            resolver.markDependency(dependency);
         }
     }
 
     @Override
-    @Nullable
-    public BakedModel bake(Baker baker, Function<SpriteIdentifier, Sprite> textureGetter, ModelBakeSettings rotationContainer) {
+    public BlockStateModel bake(Baker baker) {
         WireModels channelA = bakeWireModels(baker, "multiple_a");
         WireModels channelB = bakeWireModels(baker, "multiple_b");
 
@@ -117,67 +104,72 @@ public final class MultipleWiresModel implements UnbakedModel {
     private static WireModels bakeWireModels(Baker baker, String channel) {
         return new WireModels(
             // Straight north-south line.
-            bakeRequired(baker, channel, "side0", ModelRotation.X0_Y0),
-            bakeRequired(baker, channel, "side_alt0", ModelRotation.X0_Y0),
+            bakeRequired(baker, channel, "side0", ModelRotation.IDENTITY),
+            bakeRequired(baker, channel, "side_alt0", ModelRotation.IDENTITY),
 
             // Straight east-west line.
-            bakeRequired(baker, channel, "side_alt1", ModelRotation.X0_Y270),
-            bakeRequired(baker, channel, "side1", ModelRotation.X0_Y270),
+            bakeRequired(baker, channel, "side_alt1", rotationY270()),
+            bakeRequired(baker, channel, "side1", rotationY270()),
 
             // Vertical wall sections.
-            bakeRequired(baker, channel, "up", ModelRotation.X0_Y0),
-            bakeRequired(baker, channel, "up", ModelRotation.X0_Y90),
-            bakeRequired(baker, channel, "up", ModelRotation.X0_Y180),
-            bakeRequired(baker, channel, "up", ModelRotation.X0_Y270),
+            bakeRequired(baker, channel, "up", ModelRotation.IDENTITY),
+            bakeRequired(baker, channel, "up", rotationY90()),
+            bakeRequired(baker, channel, "up", rotationY180()),
+            bakeRequired(baker, channel, "up", rotationY270()),
 
             // Centre dots.
-            bakeRequired(baker, channel, "dot_duo", ModelRotation.X0_Y0),
-            bakeRequired(baker, channel, "dot_duo_line0", ModelRotation.X0_Y0),
-            bakeRequired(baker, channel, "dot_duo_line1", ModelRotation.X0_Y0),
+            bakeRequired(baker, channel, "dot_duo", ModelRotation.IDENTITY),
+            bakeRequired(baker, channel, "dot_duo_line0", ModelRotation.IDENTITY),
+            bakeRequired(baker, channel, "dot_duo_line1", ModelRotation.IDENTITY),
 
             // Directional arms.
-            bakeRequired(baker, channel, "side0_duo", ModelRotation.X0_Y0),
-            bakeRequired(baker, channel, "side_alt0_duo", ModelRotation.X0_Y0),
-            bakeRequired(baker, channel, "side_alt1_duo", ModelRotation.X0_Y270),
-            bakeRequired(baker, channel, "side1_duo", ModelRotation.X0_Y270)
+            bakeRequired(baker, channel, "side0_duo", ModelRotation.IDENTITY),
+            bakeRequired(baker, channel, "side_alt0_duo", ModelRotation.IDENTITY),
+            bakeRequired(baker, channel, "side_alt1_duo", rotationY270()),
+            bakeRequired(baker, channel, "side1_duo", rotationY270())
         );
     }
 
-    private static BakedModel bakeRequired(Baker baker, String channel, String part, ModelRotation rotation) {
+    private static ModelBakeSettings rotationY90() {
+        return ModelRotation.fromDirectionTransformation(DirectionTransformation.ROT_90_Y_NEG);
+    }
+
+    private static ModelBakeSettings rotationY180() {
+        return ModelRotation.fromDirectionTransformation(DirectionTransformation.ROT_180_FACE_XZ);
+    }
+
+    private static ModelBakeSettings rotationY270() {
+        return ModelRotation.fromDirectionTransformation(DirectionTransformation.ROT_90_Y_POS);
+    }
+
+    private static BlockModelPart bakeRequired(Baker baker, String channel, String part, ModelBakeSettings rotation) {
         Identifier id = modelId(channel, part);
-
-        BakedModel model = baker.bake(id, rotation);
-
-        if (model == null) {
-            throw new IllegalStateException("Could not bake PowerStones model: " + id);
-        }
-
-        return model;
+        return GeometryBakedModel.create(baker, id, rotation);
     }
 
     private record WireModels(
-            BakedModel straightNorthSouthFirst,
-            BakedModel straightNorthSouthSecond,
+            BlockModelPart straightNorthSouthFirst,
+            BlockModelPart straightNorthSouthSecond,
 
-            BakedModel straightEastWestFirst,
-            BakedModel straightEastWestSecond,
+            BlockModelPart straightEastWestFirst,
+            BlockModelPart straightEastWestSecond,
 
-            BakedModel upNorth,
-            BakedModel upEast,
-            BakedModel upSouth,
-            BakedModel upWest,
+            BlockModelPart upNorth,
+            BlockModelPart upEast,
+            BlockModelPart upSouth,
+            BlockModelPart upWest,
 
-            BakedModel dot,
-            BakedModel dotLine0,
-            BakedModel dotLine1,
+            BlockModelPart dot,
+            BlockModelPart dotLine0,
+            BlockModelPart dotLine1,
 
-            BakedModel armNorth,
-            BakedModel armSouth,
-            BakedModel armEast,
-            BakedModel armWest
+            BlockModelPart armNorth,
+            BlockModelPart armSouth,
+            BlockModelPart armEast,
+            BlockModelPart armWest
     ) {}
 
-    private static final class Baked implements BakedModel {
+    private static final class Baked implements BlockStateModel {
 
         private final WireModels channelA;
         private final WireModels channelB;
@@ -188,20 +180,20 @@ public final class MultipleWiresModel implements UnbakedModel {
         }
 
         @Override
-        public boolean isVanillaAdapter() {
-            return false;
+        public void addParts(Random random, List<BlockModelPart> parts) {
+            // Dynamic block geometry is supplied through emitQuads().
+
+            // Keep the vanilla fallback empty, matching the 1.21.1 model's getQuads().
         }
 
         @Override
-        public void emitBlockQuads(BlockRenderView blockView, BlockState state, BlockPos pos, Supplier<Random> randomSupplier, RenderContext context) {
-            Consumer<BakedModel> emit = model ->
-                model.emitBlockQuads(
-                    blockView,
-                    state,
-                    pos,
-                    randomSupplier,
-                    context
-            );
+        public Sprite particleSprite() {
+            return this.channelA.dot().particleSprite();
+        }
+
+        @Override
+        public void emitQuads(QuadEmitter emitter, BlockRenderView blockView, BlockPos pos, BlockState state, Random random, Predicate<@Nullable Direction> cullTest) {
+            Consumer<BlockModelPart> emit = model -> ((FabricBlockModelPart) model).emitQuads(emitter, cullTest);
 
             MultipleWiresBlockEntity.RenderData data = getRenderData(blockView, state, pos);
 
@@ -234,7 +226,11 @@ public final class MultipleWiresModel implements UnbakedModel {
 
         private static MultipleWiresBlockEntity.RenderData getRenderData(BlockRenderView blockView, BlockState state, BlockPos pos) {
             // When a single wire is converted, the block-state packet can arrive before the block-entity packet.
+
+
             // Use the locally calculated render data during that short interval.
+
+
             MultipleWiresBlockEntity.RenderData predictedData = MultipleWiresBlockEntity.getPredictedRenderData(pos);
 
             if (predictedData != null && predictedData.powerPair() == state.get(MultipleWiresBlock.POWER_PAIR)) {
@@ -252,7 +248,11 @@ public final class MultipleWiresModel implements UnbakedModel {
             }
 
             // Fallback for when the block entity is not available,
+
+
             // such as when the block is being rendered in the inventory, or pushed by a piston.
+
+
             return getFallbackRenderData(state);
         }
 
@@ -280,7 +280,7 @@ public final class MultipleWiresModel implements UnbakedModel {
             );
         }
 
-        private static void emitChannel(WireConnection northConnection, WireConnection eastConnection, WireConnection southConnection, WireConnection westConnection, StraightLineOrientation otherChannelOrientation, WireModels models, Consumer<BakedModel> emit) {
+        private static void emitChannel(WireConnection northConnection, WireConnection eastConnection, WireConnection southConnection, WireConnection westConnection, StraightLineOrientation otherChannelOrientation, WireModels models, java.util.function.Consumer<BlockModelPart> emit) {
             boolean north = northConnection.isConnected();
             boolean east = eastConnection.isConnected();
             boolean south = southConnection.isConnected();
@@ -357,62 +357,5 @@ public final class MultipleWiresModel implements UnbakedModel {
             }
         }
 
-        private static void emit(RenderContext context, BakedModel model, BlockRenderView blockView, BlockState state, BlockPos pos, Supplier<Random> randomSupplier) {
-            model.emitBlockQuads(blockView, state, pos, randomSupplier, context);
-        }
-
-        /**
-         * The custom block output is supplied through emitBlockQuads,
-         * so vanilla getQuads must not emit another copy.
-         */
-        @Override
-        public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction face, Random random) {
-            return Collections.emptyList();
-        }
-
-        @Override
-        public boolean useAmbientOcclusion() {
-            return this.channelA.dot().useAmbientOcclusion();
-        }
-
-        @Override
-        public boolean hasDepth() {
-            return this.channelA.dot().hasDepth();
-        }
-
-        @Override
-        public boolean isSideLit() {
-            return this.channelA.dot().isSideLit();
-        }
-
-        @Override
-        public boolean isBuiltin() {
-            return this.channelA.dot().isBuiltin();
-        }
-
-        @Override
-        public Sprite getParticleSprite() {
-            return this.channelA.dot().getParticleSprite();
-        }
-
-        @Override
-        public ModelTransformation getTransformation() {
-            return this.channelA.dot().getTransformation();
-        }
-
-        @Override
-        public ModelOverrideList getOverrides() {
-            return this.channelA.dot().getOverrides();
-        }
-
-        /**
-         * The inventory variant is not replaced by this model.
-         * This fallback exists in case another renderer calls it.
-         */
-        @Override
-        public void emitItemQuads(ItemStack stack, Supplier<Random> randomSupplier, RenderContext context) {
-            emit(context, this.channelA.dot(), null, null, null, randomSupplier);
-            emit(context, this.channelB.dot(), null, null, null, randomSupplier);
-        }
     }
 }

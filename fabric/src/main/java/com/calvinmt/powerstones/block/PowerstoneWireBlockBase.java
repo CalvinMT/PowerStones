@@ -18,6 +18,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.particle.DustParticleEffect;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
@@ -26,9 +27,9 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Hand;
-import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Direction.Type;
@@ -39,6 +40,8 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
+import net.minecraft.world.block.WireOrientation;
+import net.minecraft.world.tick.ScheduledTickView;
 
 public abstract class PowerstoneWireBlockBase extends Block {
 
@@ -137,7 +140,7 @@ public abstract class PowerstoneWireBlockBase extends Block {
         return state;
     }
 
-    public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
+    public BlockState getStateForNeighborUpdate(BlockState state, WorldView world, ScheduledTickView tickView, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, Random random) {
         if (direction == Direction.DOWN) {
             return state;
         } else if (direction == Direction.UP) {
@@ -169,7 +172,7 @@ public abstract class PowerstoneWireBlockBase extends Block {
                 BlockState blockState = world.getBlockState(mutable);
                 if (blockState.isOf(this) || this.isOtherConnectablePowerstone(blockState)) {
                     BlockPos blockPos = mutable.offset(direction.getOpposite());
-                    BlockState blockState2 = blockState.getStateForNeighborUpdate(direction.getOpposite(), world.getBlockState(blockPos), world, mutable, blockPos);
+                    BlockState blockState2 = blockState.getStateForNeighborUpdate(world, world, mutable, direction.getOpposite(), blockPos, world.getBlockState(blockPos), world.getRandom());
                     replace(blockState, blockState2, world, mutable, flags, maxUpdateDepth);
                 }
 
@@ -177,7 +180,7 @@ public abstract class PowerstoneWireBlockBase extends Block {
                 BlockState blockState3 = world.getBlockState(mutable);
                 if (blockState3.isOf(this) || this.isOtherConnectablePowerstone(blockState3)) {
                     BlockPos blockPos2 = mutable.offset(direction.getOpposite());
-                    BlockState blockState4 = blockState3.getStateForNeighborUpdate(direction.getOpposite(), world.getBlockState(blockPos2), world, mutable, blockPos2);
+                    BlockState blockState4 = blockState3.getStateForNeighborUpdate(world, world, mutable, direction.getOpposite(), blockPos2, world.getBlockState(blockPos2), world.getRandom());
                     replace(blockState3, blockState4, world, mutable, flags, maxUpdateDepth);
                 }
             }
@@ -235,45 +238,43 @@ public abstract class PowerstoneWireBlockBase extends Block {
 
     private void updateNeighbors(World world, BlockPos pos) {
         if (world.getBlockState(pos).isOf(this)) {
-            world.updateNeighborsAlways(pos, this);
+            world.updateNeighborsAlways(pos, this, null);
             Direction[] var3 = Direction.values();
             int var4 = var3.length;
 
             for(int var5 = 0; var5 < var4; ++var5) {
                 Direction direction = var3[var5];
-                world.updateNeighborsAlways(pos.offset(direction), this);
+                world.updateNeighborsAlways(pos.offset(direction), this, null);
             }
 
         }
     }
 
     public void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean notify) {
-        if (!oldState.isOf(state.getBlock()) && !world.isClient) {
+        if (!oldState.isOf(state.getBlock()) && !world.isClient()) {
             this.updatePowerStrength(world, pos, state);
 
             for(Direction direction : Type.VERTICAL) {
-                world.updateNeighborsAlways(pos.offset(direction), this);
+                world.updateNeighborsAlways(pos.offset(direction), this, null);
             }
 
             this.updateOffsetNeighbors(world, pos);
         }
     }
 
-    public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
-        if (!moved && !state.isOf(newState.getBlock())) {
-            super.onStateReplaced(state, world, pos, newState, moved);
-            if (!world.isClient) {
-                Direction[] var6 = Direction.values();
-                int var7 = var6.length;
+    public void onStateReplaced(BlockState state, ServerWorld world, BlockPos pos, boolean moved) {
+        if (!moved) {
+            super.onStateReplaced(state, world, pos, moved);
+            Direction[] var6 = Direction.values();
+            int var7 = var6.length;
 
-                for(int var8 = 0; var8 < var7; ++var8) {
-                    Direction direction = var6[var8];
-                    world.updateNeighborsAlways(pos.offset(direction), this);
-                }
-
-                this.updatePowerStrength(world, pos, state);
-                this.updateOffsetNeighbors(world, pos);
+            for(int var8 = 0; var8 < var7; ++var8) {
+                Direction direction = var6[var8];
+                world.updateNeighborsAlways(pos.offset(direction), this, null);
             }
+
+            this.updatePowerStrength(world, pos, state);
+            this.updateOffsetNeighbors(world, pos);
         }
     }
 
@@ -294,8 +295,8 @@ public abstract class PowerstoneWireBlockBase extends Block {
 
     }
 
-    public void neighborUpdate(BlockState state, World world, BlockPos pos, Block block, BlockPos fromPos, boolean notify) {
-        if (!world.isClient) {
+    public void neighborUpdate(BlockState state, World world, BlockPos pos, Block block, WireOrientation wireOrientation, boolean notify) {
+        if (!world.isClient()) {
             if (state.canPlaceAt(world, pos)) {
                 this.updatePowerStrength(world, pos, state);
             } else {
@@ -336,7 +337,7 @@ public abstract class PowerstoneWireBlockBase extends Block {
             double d = 0.5 + (double)(0.4375F * (float)direction.getOffsetX()) + (double)(j * (float)direction2.getOffsetX());
             double e = 0.5 + (double)(0.4375F * (float)direction.getOffsetY()) + (double)(j * (float)direction2.getOffsetY());
             double k = 0.5 + (double)(0.4375F * (float)direction.getOffsetZ()) + (double)(j * (float)direction2.getOffsetZ());
-            world.addParticle(new DustParticleEffect(color.toVector3f(), 1.0F), (double)pos.getX() + d, (double)pos.getY() + e, (double)pos.getZ() + k, 0.0, 0.0, 0.0);
+            world.addParticleClient(new DustParticleEffect(ColorHelper.getArgb(color), 1.0F), (double)pos.getX() + d, (double)pos.getY() + e, (double)pos.getZ() + k, 0.0, 0.0, 0.0);
         }
     }
 
@@ -394,7 +395,7 @@ public abstract class PowerstoneWireBlockBase extends Block {
 
     public void updateAll(BlockState state, World world, BlockPos pos) {
         for (Direction direction : Direction.values()) {
-            world.updateNeighborsAlways(pos.offset(direction), this);
+            world.updateNeighborsAlways(pos.offset(direction), this, null);
         }
         state = this.getPlacementState(world, state, pos);
         this.updatePowerStrength(world, pos, state);
@@ -405,15 +406,16 @@ public abstract class PowerstoneWireBlockBase extends Block {
 
     public abstract ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit);
 
-    public abstract ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit);
+    public abstract ActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit);
 
     protected void updateForNewState(World world, BlockPos pos, BlockState oldState, BlockState newState) { 
         for(Direction direction : Type.HORIZONTAL) {
             BlockPos blockPos = pos.offset(direction);
             if (((WireConnection)oldState.get(DIRECTION_TO_WIRE_CONNECTION_PROPERTY.get(direction))).isConnected() != ((WireConnection)newState.get(DIRECTION_TO_WIRE_CONNECTION_PROPERTY.get(direction))).isConnected() && world.getBlockState(blockPos).isSolidBlock(world, blockPos)) {
-                world.updateNeighborsExcept(blockPos, newState.getBlock(), direction.getOpposite());
+                world.updateNeighborsExcept(blockPos, newState.getBlock(), direction.getOpposite(), null);
             }
         }
     }
 
  }
+ 

@@ -22,22 +22,18 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class GreenstoneWallTorchBlock extends GreenstoneTorchBlock {
-   public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+   public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
    public static final BooleanProperty LIT = GreenstoneTorchBlock.LIT;
 
    public GreenstoneWallTorchBlock(BlockBehaviour.Properties p_55744_) {
       super(p_55744_);
       this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(LIT, Boolean.valueOf(true)));
-   }
-
-   public String getDescriptionId() {
-      return this.asItem().getDescriptionId();
    }
 
    public VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {

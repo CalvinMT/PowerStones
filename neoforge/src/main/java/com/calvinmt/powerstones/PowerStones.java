@@ -21,12 +21,9 @@ import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemNameBlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.StandingAndWallBlockItem;
 import net.minecraft.world.level.Level;
@@ -43,7 +40,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.neoforged.neoforge.client.event.ModelEvent;
+import net.neoforged.neoforge.client.event.RegisterBlockStateModels;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
@@ -66,31 +63,31 @@ public class PowerStones {
 
     public static final EnumProperty<PowerPair> POWER_PAIR = EnumProperty.create("power_pair", PowerPair.class);
 
-    public static final DeferredBlock<Block> BLUESTONE_WIRE = BLOCKS.register("bluestone_wire", () -> new BluestoneWireBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_WIRE)));
-    public static final DeferredBlock<Block> GREENSTONE_WIRE = BLOCKS.register("greenstone_wire", () -> new GreenstoneWireBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_WIRE)));
-    public static final DeferredBlock<Block> YELLOWSTONE_WIRE = BLOCKS.register("yellowstone_wire", () -> new YellowstoneWireBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_WIRE)));
-    public static final DeferredBlock<Block> MULTIPLE_WIRES = BLOCKS.register("multiple_wires", () -> new MultipleWiresBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_WIRE)));
-    public static final DeferredBlock<Block> BLUESTONE_TORCH_BLOCK = BLOCKS.register("bluestone_torch", () -> new BluestoneTorchBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_TORCH)));
-    public static final DeferredBlock<Block> GREENSTONE_TORCH_BLOCK = BLOCKS.register("greenstone_torch", () -> new GreenstoneTorchBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_TORCH)));
-    public static final DeferredBlock<Block> YELLOWSTONE_TORCH_BLOCK = BLOCKS.register("yellowstone_torch", () -> new YellowstoneTorchBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_TORCH)));
-    public static final DeferredBlock<Block> BLUESTONE_WALL_TORCH = BLOCKS.register("bluestone_wall_torch", () -> new BluestoneWallTorchBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_WALL_TORCH)));
-    public static final DeferredBlock<Block> GREENSTONE_WALL_TORCH = BLOCKS.register("greenstone_wall_torch", () -> new GreenstoneWallTorchBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_WALL_TORCH)));
-    public static final DeferredBlock<Block> YELLOWSTONE_WALL_TORCH = BLOCKS.register("yellowstone_wall_torch", () -> new YellowstoneWallTorchBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_WALL_TORCH)));
-    public static final DeferredBlock<Block> BLUESTONE_BLOCK = BLOCKS.register("bluestone_block", () -> new BluestoneBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_BLOCK)));
-    public static final DeferredBlock<Block> GREENSTONE_BLOCK = BLOCKS.register("greenstone_block", () -> new GreenstoneBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_BLOCK)));
-    public static final DeferredBlock<Block> YELLOWSTONE_BLOCK = BLOCKS.register("yellowstone_block", () -> new YellowstoneBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_BLOCK)));
+    public static final DeferredBlock<BluestoneWireBlock> BLUESTONE_WIRE = BLOCKS.registerBlock("bluestone_wire", BluestoneWireBlock::new, () -> BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_WIRE));
+    public static final DeferredBlock<GreenstoneWireBlock> GREENSTONE_WIRE = BLOCKS.registerBlock("greenstone_wire", GreenstoneWireBlock::new, () -> BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_WIRE));
+    public static final DeferredBlock<YellowstoneWireBlock> YELLOWSTONE_WIRE = BLOCKS.registerBlock("yellowstone_wire", YellowstoneWireBlock::new, () -> BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_WIRE));
+    public static final DeferredBlock<MultipleWiresBlock> MULTIPLE_WIRES = BLOCKS.registerBlock("multiple_wires", MultipleWiresBlock::new, () -> BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_WIRE));
+    public static final DeferredBlock<BluestoneTorchBlock> BLUESTONE_TORCH_BLOCK = BLOCKS.registerBlock("bluestone_torch", BluestoneTorchBlock::new, () -> BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_TORCH));
+    public static final DeferredBlock<GreenstoneTorchBlock> GREENSTONE_TORCH_BLOCK = BLOCKS.registerBlock("greenstone_torch", GreenstoneTorchBlock::new, () -> BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_TORCH));
+    public static final DeferredBlock<YellowstoneTorchBlock> YELLOWSTONE_TORCH_BLOCK = BLOCKS.registerBlock("yellowstone_torch", YellowstoneTorchBlock::new, () -> BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_TORCH));
+    public static final DeferredBlock<BluestoneWallTorchBlock> BLUESTONE_WALL_TORCH = BLOCKS.registerBlock("bluestone_wall_torch", BluestoneWallTorchBlock::new, () -> BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_WALL_TORCH));
+    public static final DeferredBlock<GreenstoneWallTorchBlock> GREENSTONE_WALL_TORCH = BLOCKS.registerBlock("greenstone_wall_torch", GreenstoneWallTorchBlock::new, () -> BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_WALL_TORCH));
+    public static final DeferredBlock<YellowstoneWallTorchBlock> YELLOWSTONE_WALL_TORCH = BLOCKS.registerBlock("yellowstone_wall_torch", YellowstoneWallTorchBlock::new, () -> BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_WALL_TORCH));
+    public static final DeferredBlock<BluestoneBlock> BLUESTONE_BLOCK = BLOCKS.registerBlock("bluestone_block", BluestoneBlock::new, () -> BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_BLOCK));
+    public static final DeferredBlock<GreenstoneBlock> GREENSTONE_BLOCK = BLOCKS.registerBlock("greenstone_block", GreenstoneBlock::new, () -> BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_BLOCK));
+    public static final DeferredBlock<YellowstoneBlock> YELLOWSTONE_BLOCK = BLOCKS.registerBlock("yellowstone_block", YellowstoneBlock::new, () -> BlockBehaviour.Properties.ofFullCopy(Blocks.REDSTONE_BLOCK));
 
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MultipleWiresBlockEntity>> MULTIPLE_WIRES_BE_TYPE = BLOCKENTITIES.register("multiple_wires_be", () -> BlockEntityType.Builder.of(MultipleWiresBlockEntity::new, MULTIPLE_WIRES.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<MultipleWiresBlockEntity>> MULTIPLE_WIRES_BE_TYPE = BLOCKENTITIES.register("multiple_wires_be", () -> new BlockEntityType<>(MultipleWiresBlockEntity::new, false, MULTIPLE_WIRES.get()));
 
-    public static final DeferredItem<BlockItem> BLUESTONE = ITEMS.register("bluestone", () -> new ItemNameBlockItem(BLUESTONE_WIRE.get(), new Item.Properties()));
-    public static final DeferredItem<BlockItem> GREENSTONE = ITEMS.register("greenstone", () -> new ItemNameBlockItem(GREENSTONE_WIRE.get(), new Item.Properties()));
-    public static final DeferredItem<BlockItem> YELLOWSTONE = ITEMS.register("yellowstone", () -> new ItemNameBlockItem(YELLOWSTONE_WIRE.get(), new Item.Properties()));
-    public static final DeferredItem<BlockItem> BLUESTONE_TORCH = ITEMS.register("bluestone_torch", () -> new StandingAndWallBlockItem(BLUESTONE_TORCH_BLOCK.get(), BLUESTONE_WALL_TORCH.get(), new Item.Properties(), Direction.DOWN));
-    public static final DeferredItem<BlockItem> GREENSTONE_TORCH = ITEMS.register("greenstone_torch", () -> new StandingAndWallBlockItem(GREENSTONE_TORCH_BLOCK.get(), GREENSTONE_WALL_TORCH.get(), new Item.Properties(), Direction.DOWN));
-    public static final DeferredItem<BlockItem> YELLOWSTONE_TORCH = ITEMS.register("yellowstone_torch", () -> new StandingAndWallBlockItem(YELLOWSTONE_TORCH_BLOCK.get(), YELLOWSTONE_WALL_TORCH.get(), new Item.Properties(), Direction.DOWN));
-    public static final DeferredItem<BlockItem> BLUESTONE_BLOCK_ITEM = ITEMS.register("bluestone_block", () -> new BlockItem(BLUESTONE_BLOCK.get(), new Item.Properties()));
-    public static final DeferredItem<BlockItem> GREENSTONE_BLOCK_ITEM = ITEMS.register("greenstone_block", () -> new BlockItem(GREENSTONE_BLOCK.get(), new Item.Properties()));
-    public static final DeferredItem<BlockItem> YELLOWSTONE_BLOCK_ITEM = ITEMS.register("yellowstone_block", () -> new BlockItem(YELLOWSTONE_BLOCK.get(), new Item.Properties()));
+    public static final DeferredItem<BlockItem> BLUESTONE = ITEMS.registerItem("bluestone", properties -> new BlockItem(BLUESTONE_WIRE.get(), properties.overrideDescription(BLUESTONE_WIRE.get().getDescriptionId())));
+    public static final DeferredItem<BlockItem> GREENSTONE = ITEMS.registerItem("greenstone", properties -> new BlockItem(GREENSTONE_WIRE.get(), properties.overrideDescription(GREENSTONE_WIRE.get().getDescriptionId())));
+    public static final DeferredItem<BlockItem> YELLOWSTONE = ITEMS.registerItem("yellowstone", properties -> new BlockItem(YELLOWSTONE_WIRE.get(), properties.overrideDescription(YELLOWSTONE_WIRE.get().getDescriptionId())));
+    public static final DeferredItem<BlockItem> BLUESTONE_TORCH = ITEMS.registerItem("bluestone_torch", properties -> new StandingAndWallBlockItem(BLUESTONE_TORCH_BLOCK.get(), BLUESTONE_WALL_TORCH.get(), Direction.DOWN, properties.useBlockDescriptionPrefix()));
+    public static final DeferredItem<BlockItem> GREENSTONE_TORCH = ITEMS.registerItem("greenstone_torch", properties -> new StandingAndWallBlockItem(GREENSTONE_TORCH_BLOCK.get(), GREENSTONE_WALL_TORCH.get(), Direction.DOWN, properties.useBlockDescriptionPrefix()));
+    public static final DeferredItem<BlockItem> YELLOWSTONE_TORCH = ITEMS.registerItem("yellowstone_torch", properties -> new StandingAndWallBlockItem(YELLOWSTONE_TORCH_BLOCK.get(), YELLOWSTONE_WALL_TORCH.get(), Direction.DOWN, properties.useBlockDescriptionPrefix()));
+    public static final DeferredItem<BlockItem> BLUESTONE_BLOCK_ITEM = ITEMS.registerSimpleBlockItem(BLUESTONE_BLOCK);
+    public static final DeferredItem<BlockItem> GREENSTONE_BLOCK_ITEM = ITEMS.registerSimpleBlockItem(GREENSTONE_BLOCK);
+    public static final DeferredItem<BlockItem> YELLOWSTONE_BLOCK_ITEM = ITEMS.registerSimpleBlockItem(YELLOWSTONE_BLOCK);
 
     public PowerStones(IEventBus modEventBus) {
         modEventBus.addListener(this::commonSetup);
@@ -144,8 +141,8 @@ public class PowerStones {
         }
 
         @SubscribeEvent
-        public static void registerGeometryLoaders(ModelEvent.RegisterGeometryLoaders event) {
-            event.register(ResourceLocation.fromNamespaceAndPath(MODID, "multiple_wires"), MultipleWiresModel.Loader.INSTANCE);
+        public static void registerBlockStateModels(RegisterBlockStateModels event) {
+            event.registerModel(MultipleWiresModel.ID, MultipleWiresModel.CODEC);
         }
     }
 

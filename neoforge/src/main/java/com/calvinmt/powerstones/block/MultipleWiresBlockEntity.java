@@ -10,6 +10,7 @@ import javax.annotation.Nullable;
 
 import com.calvinmt.powerstones.PowerPair;
 import com.calvinmt.powerstones.PowerStones;
+import com.mojang.serialization.Codec;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -21,8 +22,10 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RedstoneSide;
-import net.neoforged.neoforge.client.model.data.ModelData;
-import net.neoforged.neoforge.client.model.data.ModelProperty;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.model.data.ModelData;
+import net.neoforged.neoforge.model.data.ModelProperty;
 
 public class MultipleWiresBlockEntity extends BlockEntity {
 
@@ -89,8 +92,11 @@ public class MultipleWiresBlockEntity extends BlockEntity {
         super(PowerStones.MULTIPLE_WIRES_BE_TYPE.get(), pos, state);
 
         // On the server, this data is registered immediately before
+
         // setBlockState. Seed the new block entity before any block-added
+
         // or neighbour callbacks run.
+
         RenderData conversionData = getBeginningConversionData(pos);
 
         this.suppressUpdatePackets = conversionData != null;
@@ -101,7 +107,9 @@ public class MultipleWiresBlockEntity extends BlockEntity {
         }
 
         // On the client, the block-state packet can create the block entity
+
         // before its authoritative block-entity packet arrives.
+
         RenderData predictedData = getPredictedRenderData(pos);
 
         if (predictedData != null && predictedData.powerPair() == state.getValue(MultipleWiresBlock.POWER_PAIR)) {
@@ -197,9 +205,7 @@ public class MultipleWiresBlockEntity extends BlockEntity {
 
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        CompoundTag nbt = new CompoundTag();
-        saveAdditional(nbt, registries);
-        return nbt;
+        return this.saveWithoutMetadata(registries);
     }
 
     @Override
@@ -266,8 +272,8 @@ public class MultipleWiresBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
-        super.saveAdditional(nbt, registries);
+    protected void saveAdditional(ValueOutput nbt) {
+        super.saveAdditional(nbt);
 
         nbt.putBoolean("render_channels_swapped", this.renderChannelsSwapped);
 
@@ -286,24 +292,26 @@ public class MultipleWiresBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
-        super.loadAdditional(nbt, registries);
+    protected void loadAdditional(ValueInput nbt) {
+        super.loadAdditional(nbt);
 
         boolean hasCompleteRenderData =
-            nbt.contains("render_channels_swapped")
-            && nbt.contains("a")
-            && nbt.contains("b")
-            && nbt.contains("north_a")
-            && nbt.contains("east_a")
-            && nbt.contains("south_a")
-            && nbt.contains("west_a")
-            && nbt.contains("north_b")
-            && nbt.contains("east_b")
-            && nbt.contains("south_b")
-            && nbt.contains("west_b");
+            nbt.read("render_channels_swapped", Codec.BOOL).isPresent()
+            && nbt.getInt("a").isPresent()
+            && nbt.getInt("b").isPresent()
+            && nbt.read("north_a", Codec.BYTE).isPresent()
+            && nbt.read("east_a", Codec.BYTE).isPresent()
+            && nbt.read("south_a", Codec.BYTE).isPresent()
+            && nbt.read("west_a", Codec.BYTE).isPresent()
+            && nbt.read("north_b", Codec.BYTE).isPresent()
+            && nbt.read("east_b", Codec.BYTE).isPresent()
+            && nbt.read("south_b", Codec.BYTE).isPresent()
+            && nbt.read("west_b", Codec.BYTE).isPresent();
 
         // Do not overwrite a correct prediction with implicit zero values
+
         // from an incomplete client-side NBT compound.
+
         if (!hasCompleteRenderData && this.level != null && this.level.isClientSide()) {
             RenderData predictedData = getPredictedRenderData(this.worldPosition);
 
@@ -316,20 +324,20 @@ public class MultipleWiresBlockEntity extends BlockEntity {
             }
         }
 
-        this.renderChannelsSwapped = nbt.getBoolean("render_channels_swapped");
+        this.renderChannelsSwapped = nbt.getBooleanOr("render_channels_swapped", false);
 
-        this.powerA = nbt.getInt("a");
-        this.powerB = nbt.getInt("b");
+        this.powerA = nbt.getIntOr("a", 0);
+        this.powerB = nbt.getIntOr("b", 0);
 
-        this.northA = byteToConnection(nbt.getByte("north_a"));
-        this.eastA = byteToConnection(nbt.getByte("east_a"));
-        this.southA = byteToConnection(nbt.getByte("south_a"));
-        this.westA = byteToConnection(nbt.getByte("west_a"));
+        this.northA = byteToConnection(nbt.getByteOr("north_a", (byte) 0));
+        this.eastA = byteToConnection(nbt.getByteOr("east_a", (byte) 0));
+        this.southA = byteToConnection(nbt.getByteOr("south_a", (byte) 0));
+        this.westA = byteToConnection(nbt.getByteOr("west_a", (byte) 0));
 
-        this.northB = byteToConnection(nbt.getByte("north_b"));
-        this.eastB = byteToConnection(nbt.getByte("east_b"));
-        this.southB = byteToConnection(nbt.getByte("south_b"));
-        this.westB = byteToConnection(nbt.getByte("west_b"));
+        this.northB = byteToConnection(nbt.getByteOr("north_b", (byte) 0));
+        this.eastB = byteToConnection(nbt.getByteOr("east_b", (byte) 0));
+        this.southB = byteToConnection(nbt.getByteOr("south_b", (byte) 0));
+        this.westB = byteToConnection(nbt.getByteOr("west_b", (byte) 0));
 
         if (this.level != null && this.level.isClientSide()) {
             this.requestModelDataUpdate();
